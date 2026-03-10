@@ -14,9 +14,29 @@ import {
   CRow,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilLockLocked, cilUser } from '@coreui/icons'
+import { cilLockLocked, cilUser } from '@coreui/icons';
+import { useLogin } from '../../../core/hooks/useLogin';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const { mutate, isPending } = useLogin();
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState({
+    telefono: "",
+    password: "",
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    mutate(form, {
+      onSuccess: () => {
+        navigate("/dashboard");
+      }
+    });
+  };
+
   return (
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
       <CContainer>
@@ -25,14 +45,21 @@ const Login = () => {
             <CCardGroup>
               <CCard className="p-4">
                 <CCardBody>
-                  <CForm>
+                  <CForm onSubmit={handleSubmit} >
                     <h1>Login</h1>
                     <p className="text-body-secondary">Sign In to your account</p>
                     <CInputGroup className="mb-3">
                       <CInputGroupText>
                         <CIcon icon={cilUser} />
                       </CInputGroupText>
-                      <CFormInput placeholder="Username" autoComplete="username" />
+                      <CFormInput 
+                        placeholder="Celular" 
+                        autoComplete="Celular" 
+                        value={form.telefono}
+                        onChange={(e) =>
+                          setForm({ ...form, telefono: e.target.value })
+                        }
+                      />
                     </CInputGroup>
                     <CInputGroup className="mb-4">
                       <CInputGroupText>
@@ -42,12 +69,16 @@ const Login = () => {
                         type="password"
                         placeholder="Password"
                         autoComplete="current-password"
+                        value={form.password}
+                        onChange={(e) =>
+                          setForm({ ...form, password: e.target.value })
+                        }
                       />
                     </CInputGroup>
                     <CRow>
                       <CCol xs={6}>
-                        <CButton color="primary" className="px-4">
-                          Login
+                        <CButton color="primary" className="px-4" type='submit' >
+                          {isPending ? 'Cargando...':'Login'}
                         </CButton>
                       </CCol>
                       <CCol xs={6} className="text-right">

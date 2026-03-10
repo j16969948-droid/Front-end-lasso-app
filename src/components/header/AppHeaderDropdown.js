@@ -29,8 +29,8 @@ const AppHeaderDropdown = () => {
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" placement="bottom-end">
         <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">Perfil</CDropdownHeader>
- 
-        <CDropdownItem href="#">
+
+        {/* <CDropdownItem href="#">
           <CIcon icon={cilEnvelopeOpen} className="me-2" />
           Mensajes
           <CBadge color="success" className="ms-2">
@@ -64,15 +64,14 @@ const AppHeaderDropdown = () => {
           <CBadge color="secondary" className="ms-2">
             42
           </CBadge>
-        </CDropdownItem>
+        </CDropdownItem> */}
 
         <CDropdownDivider />
 
         <CDropdownItem href="#">
-          <CIcon icon={cilExitToApp} className="me-2" />
-            Cerrar Sesion
+          Iniciar Sesión
         </CDropdownItem>
-        
+
       </CDropdownMenu>
     </CDropdown>
   )

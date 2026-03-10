@@ -1,6 +1,6 @@
 import React from "react";
 
-const ServiceCard = ({ servicio, addToCart }) => {
+const ServiceCard = ({ servicio, addToCart, formatPrice }) => {
   return (
     <div
       className="card h-100 border-0 shadow-sm"
@@ -35,9 +35,7 @@ const ServiceCard = ({ servicio, addToCart }) => {
       </div>
 
       <div className="card-body p-4 text-white">
-        <h3 className="h5 fw-semibold mb-2">
-          {servicio.nombre}
-        </h3>
+        <h3 className="h5 fw-semibold mb-2">{servicio.nombre}</h3>
 
         <p className="text-secondary small mb-4">
           Acceso premium disponible
@@ -48,7 +46,7 @@ const ServiceCard = ({ servicio, addToCart }) => {
             className="fw-bold fs-5"
             style={{ color: "#818cf8" }}
           >
-            ${servicio.precio_publico}
+            {formatPrice(servicio.precio_publico)}
           </div>
 
           <button
@@ -56,16 +54,17 @@ const ServiceCard = ({ servicio, addToCart }) => {
               addToCart(
                 servicio.id,
                 servicio.nombre,
-                servicio.precio_publico
+                servicio.precio_publico,
+                servicio.imagen
               )
             }
-            className="btn text-white"
+            className="btn text-white fw-semibold"
             style={{
-              backgroundColor: "#4f46e5",
-              borderRadius: "0.5rem",
+              background: "linear-gradient(135deg, #4f46e5, #6366f1)",
+              borderRadius: "14px",
               padding: "0.5rem 1rem",
-              fontSize: "0.875rem",
               border: "none",
+              boxShadow: "0 10px 20px rgba(79,70,229,0.25)",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = "#6366f1";

@@ -47,14 +47,14 @@ const Login = () => {
                 <CCardBody>
                   <CForm onSubmit={handleSubmit} >
                     <h1>Login</h1>
-                    <p className="text-body-secondary">Sign In to your account</p>
+                    <p className="text-body-secondary">Inicia sesión</p>
                     <CInputGroup className="mb-3">
                       <CInputGroupText>
                         <CIcon icon={cilUser} />
                       </CInputGroupText>
-                      <CFormInput 
-                        placeholder="Celular" 
-                        autoComplete="Celular" 
+                      <CFormInput
+                        placeholder="Celular"
+                        autoComplete="Celular"
                         value={form.telefono}
                         onChange={(e) =>
                           setForm({ ...form, telefono: e.target.value })
@@ -78,12 +78,12 @@ const Login = () => {
                     <CRow>
                       <CCol xs={6}>
                         <CButton color="primary" className="px-4" type='submit' >
-                          {isPending ? 'Cargando...':'Login'}
+                          {isPending ? 'Cargando...' : 'Login'}
                         </CButton>
                       </CCol>
                       <CCol xs={6} className="text-right">
                         <CButton color="link" className="px-0">
-                          Forgot password?
+                          Olvidaste tu contraseña?
                         </CButton>
                       </CCol>
                     </CRow>
@@ -95,8 +95,7 @@ const Login = () => {
                   <div>
                     <h2>Sign up</h2>
                     <p>
-                      Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-                      tempor incididunt ut labore et dolore magna aliqua.
+                      Registrate para poder iniciar sesión
                     </p>
                     <Link to="/register">
                       <CButton color="primary" className="mt-3" active tabIndex={-1}>

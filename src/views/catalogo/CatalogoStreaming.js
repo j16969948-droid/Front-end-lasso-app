@@ -1,6 +1,7 @@
 import React from "react";
 import ServiceCard from "../../components/services/ServiceCard";
 import { useCatalogoServicios } from "../../core/hooks/useCatalogos";
+import AppHeader from "../../components/AppHeader";
 
 const CatalogoStreaming = ({ servicio }) => {
     const { data, isLoading, error } = useCatalogoServicios();
@@ -13,6 +14,7 @@ const CatalogoStreaming = ({ servicio }) => {
     }
     return (
         <>
+            <AppHeader />
             <section className="py-5 text-center">
                 <div className="container">
                     <h1 className="display-5 fw-bold mb-4">

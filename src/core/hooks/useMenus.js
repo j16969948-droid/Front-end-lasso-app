@@ -43,7 +43,7 @@ export const useMenusUser = () => {
 
     useEffect(() => {
         const menusLocalStorage = JSON.parse(DataService.getData("menus"));
-        if (menusLocalStorage.length) {
+        if (menusLocalStorage) {
             formatMenus(menusLocalStorage);
         } else {
             refetch();

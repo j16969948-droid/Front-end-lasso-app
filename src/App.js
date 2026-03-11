@@ -15,6 +15,7 @@ const Register = React.lazy(() => import('./views/pages/register/Register'))
 const Page404 = React.lazy(() => import('./views/pages/page404/Page404'))
 const Page500 = React.lazy(() => import('./views/pages/page500/Page500'))
 const PagosEntrantes = React.lazy(() => import('./views/tables/PagosEntrantes'))
+const PagosTotales = React.lazy(() => import('./views/tables/PagosTotales'))
 
 // Layout
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -54,6 +55,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/pagosEntrantes" element={<PagosEntrantes />} />
+          <Route path="/pagosTotales" element={<PagosTotales />} />
 
           {/* Dashboard (usa layout) */}
           <Route

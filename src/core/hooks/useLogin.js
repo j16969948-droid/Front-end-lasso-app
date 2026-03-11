@@ -17,6 +17,7 @@ export const useLogin = () => {
     mutationFn: loginUser,
     onSuccess: (data) => {
       DataService.saveData('token', data.token)
+      DataService.saveData('user', data.user)
     },
     onError: (error) => {
       alert("Error en login");

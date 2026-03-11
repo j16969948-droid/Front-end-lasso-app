@@ -2,14 +2,15 @@
  * @description get data from localStorage
  */
 export const getData = (datakey) => {
-  return window.localStorage.getItem(datakey);
+  const data = window.localStorage.getItem(datakey);
+  return data ? JSON.parse(data) : null;
 };
 
 /**
  * @description save data into localStorage
  */
 export const saveData = (datakey, data) => {
-  window.localStorage.setItem(datakey, data);
+  window.localStorage.setItem(datakey, JSON.stringify(data));
 };
 
 /**

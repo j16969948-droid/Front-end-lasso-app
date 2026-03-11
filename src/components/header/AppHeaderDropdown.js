@@ -20,8 +20,17 @@ import {
 import CIcon from '@coreui/icons-react'
 
 import avatar8 from './../../assets/images/avatars/8.jpg'
+import { useNavigate } from 'react-router-dom'
+import { isAuthenticated } from '../../utils/auth'
+import DataService from '../../core/services/DataService'
 
 const AppHeaderDropdown = () => {
+  const navigate = useNavigate()
+
+  const logout = () => {
+    DataService.destroyAllData()
+    navigate("/catalogo")
+  }
   return (
     <CDropdown variant="nav-item">
       <CDropdownToggle placement="bottom-end" className="py-0 pe-0" caret={false}>
@@ -29,8 +38,8 @@ const AppHeaderDropdown = () => {
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" placement="bottom-end">
         <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">Perfil</CDropdownHeader>
- 
-        <CDropdownItem href="#">
+
+        {/* <CDropdownItem href="#">
           <CIcon icon={cilEnvelopeOpen} className="me-2" />
           Mensajes
           <CBadge color="success" className="ms-2">
@@ -64,15 +73,19 @@ const AppHeaderDropdown = () => {
           <CBadge color="secondary" className="ms-2">
             42
           </CBadge>
-        </CDropdownItem>
+        </CDropdownItem> */}
 
         <CDropdownDivider />
-
-        <CDropdownItem href="#">
-          <CIcon icon={cilExitToApp} className="me-2" />
-            Cerrar Sesion
-        </CDropdownItem>
-        
+        {!isAuthenticated() && (
+          <CDropdownItem onClick={() => navigate("/login")}>
+            Iniciar Sesión
+          </CDropdownItem>
+        )}
+        {isAuthenticated() && (
+          <CDropdownItem onClick={logout}>
+            Cerrar Sesión
+          </CDropdownItem>
+        )}
       </CDropdownMenu>
     </CDropdown>
   )

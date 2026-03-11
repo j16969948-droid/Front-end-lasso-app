@@ -53,8 +53,10 @@ import avatar6 from 'src/assets/images/avatars/6.jpg'
 import WidgetsBrand from '../widgets/WidgetsBrand'
 import WidgetsDropdown from '../widgets/WidgetsDropdown'
 import MainChart from './MainChart'
+import { useCatalogoServicios } from '../../core/hooks/useCatalogos'
 
 const Dashboard = () => {
+  const { data: catalogoServicios } = useCatalogoServicios()
   const progressExample = [
     { title: 'Visits', value: '29.703 Users', percent: 40, color: 'success' },
     { title: 'Unique', value: '24.093 Users', percent: 20, color: 'info' },
@@ -175,7 +177,8 @@ const Dashboard = () => {
       activity: 'Last week',
     },
   ]
-
+  console.log(catalogoServicios);
+  
   return (
     <>
       <WidgetsDropdown className="mb-4" />
@@ -184,7 +187,7 @@ const Dashboard = () => {
           <CRow>
             <CCol sm={5}>
               <h4 id="traffic" className="card-title mb-0">
-                Traffic
+                
               </h4>
               <div className="small text-body-secondary">January - July 2023</div>
             </CCol>

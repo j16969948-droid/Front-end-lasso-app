@@ -545,7 +545,7 @@ const _nav = [
       {
         component: CNavItem,
         name: 'Error 404',
-        to: '/404',
+        to: '/404', 
       },
       {
         component: CNavItem,

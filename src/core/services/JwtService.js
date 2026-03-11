@@ -1,12 +1,12 @@
-const ID_TOKEN_KEY = "id_token";
+const ID_TOKEN_KEY = "token";
 
 /**
  * Obtener token desde localStorage
  */
 export const getToken = () => {
-  return window.localStorage.getItem(ID_TOKEN_KEY);
+  const token = localStorage.getItem("token");
+  return token ? JSON.parse(token) : null;
 };
-
 /**
  * Guardar token en localStorage
  */
@@ -15,7 +15,7 @@ export const saveToken = (token) => {
 };
 
 /**
- * Eliminar token de localStorage
+ * Eliminar token de localStorage 
  */
 export const destroyToken = () => {
   window.localStorage.removeItem(ID_TOKEN_KEY);

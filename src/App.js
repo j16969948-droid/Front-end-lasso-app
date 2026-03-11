@@ -14,6 +14,7 @@ const Login = React.lazy(() => import('./views/pages/login/Login'))
 const Register = React.lazy(() => import('./views/pages/register/Register'))
 const Page404 = React.lazy(() => import('./views/pages/page404/Page404'))
 const Page500 = React.lazy(() => import('./views/pages/page500/Page500'))
+const PagosEntrantes = React.lazy(() => import('./views/tables/PagosEntrantes'))
 
 // Layout
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -52,6 +53,7 @@ const App = () => {
           <Route path="/cart" element={<CartScreen />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/pagosEntrantes" element={<PagosEntrantes />} />
 
           {/* Dashboard (usa layout) */}
           <Route

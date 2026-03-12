@@ -46,7 +46,7 @@ const ServiceCard = ({ servicio, addToCart, formatPrice }) => {
             className="fw-bold fs-5"
             style={{ color: "#818cf8" }}
           >
-            {formatPrice(servicio.precio_publico)}
+            {formatPrice(servicio.precio_usuario)}
           </div>
 
           <button
@@ -54,7 +54,7 @@ const ServiceCard = ({ servicio, addToCart, formatPrice }) => {
               addToCart(
                 servicio.id,
                 servicio.nombre,
-                servicio.precio_publico,
+                servicio.precio_usuario,
                 servicio.imagen
               )
             }

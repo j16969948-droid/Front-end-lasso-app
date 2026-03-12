@@ -250,8 +250,8 @@ const PagosEntrantes = () => {
 
     return (
         <>
-            <CCard className="border-0 shadow-sm">
-                <CCardHeader className="border-bottom #4f46e5">
+            <CCard className="border-0">
+                <div className="border-bottom p-4">
                     <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                         <div>
                             <div className="fs-4 fw-bold">Pagos Entrantes</div>
@@ -272,7 +272,7 @@ const PagosEntrantes = () => {
                             </CBadge>
                         </div>
                     </div>
-                </CCardHeader>
+                </div>
 
                 <CCardBody>
                     <div className="p-3 p-md-4 mb-4 rounded-4 border #4f46e5">

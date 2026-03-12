@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { CNavItem, CNavGroup } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import {
-  cilPuzzle,
+    cilPuzzle,
 } from '@coreui/icons'
 const getMenusUser = async () => {
     const { data } = await Api.get("api/v1/sidebar");
@@ -18,6 +18,7 @@ export const useMenusUser = () => {
         queryKey: ["menusUsuario"],
         queryFn: getMenusUser,
         enabled: false,
+        staleTime: 0,
     });
 
     const formatMenus = (data) => {
@@ -37,7 +38,7 @@ export const useMenusUser = () => {
                 })
             }
         });
-                
+
         setMenus(format);
     }
 

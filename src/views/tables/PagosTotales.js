@@ -220,7 +220,7 @@ const PagosEmail = () => {
 
     return (
         <CCard className="border-0 shadow-sm">
-            <CCardHeader className="border-bottom #4f46e5">
+            <CCardHeader className="border-bottom">
                 <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                     <div>
                         <div className="fs-4 fw-bold">Pagos Email</div>

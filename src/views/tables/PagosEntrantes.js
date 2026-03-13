@@ -43,22 +43,22 @@ const PagosEntrantes = () => {
 
     const searchFunction = useMemo(() => (pago, termino) => {
         return (
-            String(pago?.cliente || '').toLowerCase().includes(termino) ||
-            String(pago?.monto || '').toLowerCase().includes(termino) ||
-            String(pago?.referencia || '').toLowerCase().includes(termino) ||
-            String(pago?.combo || '').toLowerCase().includes(termino) ||
-            String(pago?.medio || '').toLowerCase().includes(termino) ||
-            String(pago?.ordenante || '').toLowerCase().includes(termino)
+            String(pago?.cliente_id || '').toLowerCase().includes(termino) ||
+            String(pago?.monto_pagado || '').toLowerCase().includes(termino) ||
+            String(pago?.referencia_pago || '').toLowerCase().includes(termino) ||
+            String(pago?.combo_adquirido || '').toLowerCase().includes(termino) ||
+            String(pago?.medio_pago || '').toLowerCase().includes(termino) ||
+            String(pago?.user_id || '').toLowerCase().includes(termino)
         )
     }, [])
 
     const totalMontoFiltrado = useMemo(() => {
-        return data.filter(filterFunction).reduce((acc, pago) => acc + Number(pago?.monto || 0), 0)
+        return data.filter(filterFunction).reduce((acc, pago) => acc + Number(pago?.monto_pagado || 0), 0)
     }, [data, filterFunction])
 
     const handleVerComprobante = (pago) => {
-        if (!pago?.comprobante) return
-        setImagenSeleccionada(pago.comprobante)
+        if (!pago?.comprobante_url) return
+        setImagenSeleccionada(pago.comprobante_url)
         setPagoSeleccionado(pago)
         setModalVisible(true)
     }
@@ -71,11 +71,11 @@ const PagosEntrantes = () => {
 
     const columns = [
         { header: 'ID', key: 'id', className: 'fw-semibold' },
-        { header: 'Cliente', key: 'cliente', renderFunc: (pago) => <div className="fw-semibold">{pago.cliente || '-'}</div> },
-        { header: 'Ordenante', key: 'ordenante' },
-        { header: 'Servicio', key: 'combo' },
-        { header: 'Monto', key: 'monto', className: 'fw-semibold', renderFunc: (pago) => formatearMonto(pago.monto) },
-        { header: 'Medio', key: 'medio' },
+        { header: 'Cliente', key: 'cliente', renderFunc: (pago) => <div className="fw-semibold">{pago.cliente_id || '-'}</div> },
+        { header: 'Ordenante', key: 'ordenante', renderFunc: (pago) => <div className="fw-semibold">{pago.user_id || '-'}</div> },
+        { header: 'Servicio', key: 'combo', renderFunc: (pago) => <div className="fw-semibold">{pago.combo_adquirido || '-'}</div> },
+        { header: 'Monto', key: 'monto', className: 'fw-semibold', renderFunc: (pago) => formatearMonto(pago.monto_pagado) },
+        { header: 'Medio', key: 'medio', renderFunc: (pago) => <div className="fw-semibold">{pago.medio_pago || '-'}</div> },
         {
             header: 'Estado Pago',
             key: 'estado',
@@ -94,13 +94,13 @@ const PagosEntrantes = () => {
                 </CBadge>
             )
         },
-        { header: 'Referencia', key: 'referencia', className: 'text-break' },
-        { header: 'Fecha Comprobante', key: 'fecha_comp', renderFunc: (pago) => formatearFecha(pago.fecha_comp) },
+        { header: 'Referencia', key: 'referencia_pago', className: 'text-break' },
+        { header: 'Fecha Comprobante', key: 'fecha_comp', renderFunc: (pago) => formatearFecha(pago.fecha_comprobante) },
         {
             header: 'Comprobante',
             key: 'comprobante',
             renderFunc: (pago) => (
-                <CButton color="primary" variant="outline" size="sm" onClick={() => handleVerComprobante(pago)} disabled={!pago?.comprobante}>
+                <CButton color="primary" variant="outline" size="sm" onClick={() => handleVerComprobante(pago)} disabled={!pago?.comprobante_url}>
                     Ver
                 </CButton>
             )
@@ -149,7 +149,7 @@ const PagosEntrantes = () => {
                 <CModalHeader onClose={cerrarModal}>
                     <CModalTitle>
                         Comprobante
-                        {pagoSeleccionado ? ` - ID ${pagoSeleccionado.id}${pagoSeleccionado.referencia ? ` | Ref: ${pagoSeleccionado.referencia}` : ''}` : ''}
+                        {pagoSeleccionado ? ` - ID ${pagoSeleccionado.id}${pagoSeleccionado.referencia_pago ? ` | Ref: ${pagoSeleccionado.referencia_pago}` : ''}` : ''}
                     </CModalTitle>
                 </CModalHeader>
                 <CModalBody>

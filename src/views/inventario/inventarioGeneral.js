@@ -28,7 +28,7 @@ import DataTable from '../../components/DataTable'
 const Inventario = () => {
     const { data: inventarioData, isLoading: isLoadingInv, error: errorInv } = useInventario()
     const { data: serviciosData, isLoading: isLoadingServ } = useServicios()
-    
+
     const createMutation = useCreateInventario()
     const updateMutation = useUpdateInventario()
     const deleteMutation = useDeleteInventario()
@@ -42,7 +42,7 @@ const Inventario = () => {
     const [formulario, setFormulario] = useState({
         servicio_id: '', fecha_compra: '', correo: '', clave: '',
         perfil: '', pin: '', fecha_vencimiento: '', telefono_asignado: '',
-        cliente_id_asignado: '', estado: '', texto: '',
+        cliente_id_asignado: '', estado: 'disponible',
     })
 
     const filterFunction = (item) => {
@@ -65,7 +65,7 @@ const Inventario = () => {
         setFormulario({
             servicio_id: '', fecha_compra: '', correo: '', clave: '',
             perfil: '', pin: '', fecha_vencimiento: '', telefono_asignado: '',
-            cliente_id_asignado: '', estado: '', texto: '',
+            cliente_id_asignado: '', estado: 'disponible',
         })
     }
 
@@ -90,7 +90,6 @@ const Inventario = () => {
             telefono_asignado: item?.telefono_asignado || '',
             cliente_id_asignado: item?.cliente_id_asignado || '',
             estado: item?.estado || '',
-            texto: item?.texto || '',
         })
         setModalEditarVisible(true)
     }
@@ -102,12 +101,12 @@ const Inventario = () => {
 
     const validarFormulario = () => {
         const camposObligatorios = [
-            'servicio_id', 'fecha_compra', 'correo', 'clave', 
+            'servicio_id', 'fecha_compra', 'correo', 'clave',
             'perfil', 'pin', 'fecha_vencimiento', 'estado'
         ]
-        
+
         const faltantes = camposObligatorios.filter(campo => !formulario[campo])
-        
+
         if (faltantes.length > 0) {
             alert('Por favor, completa todos los campos obligatorios.')
             return false
@@ -167,15 +166,6 @@ const Inventario = () => {
             )
         },
         {
-            header: 'Texto',
-            key: 'texto',
-            renderFunc: (row) => (
-                <div style={{ maxWidth: '120px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={row.texto || ''}>
-                    {row.texto || '-'}
-                </div>
-            )
-        },
-        {
             header: 'Acciones',
             key: 'acciones',
             renderFunc: (row) => (
@@ -199,9 +189,9 @@ const Inventario = () => {
     )
 
     const opcionesEstado = [
-        { label: 'Disponible', value: 'Disponible' },
-        { label: 'Asignado', value: 'Asignado' },
-        { label: 'Vencido', value: 'Vencido' },
+        { label: 'Disponible', value: 'disponible' },
+        { label: 'Asignado', value: 'asignado' },
+        { label: 'Vencido', value: 'vencido' },
     ]
 
     if (isLoadingInv || isLoadingServ) return <LoadingState message="Cargando datos..." />
@@ -242,8 +232,6 @@ const Inventario = () => {
                         <CCol md={4}><CFormLabel>Perfil <span className="text-danger">*</span></CFormLabel><CFormInput name="perfil" value={formulario.perfil} onChange={handleChangeFormulario} /></CCol>
                         <CCol md={4}><CFormLabel>PIN <span className="text-danger">*</span></CFormLabel><CFormInput name="pin" value={formulario.pin} onChange={handleChangeFormulario} /></CCol>
                         <CCol md={4}><CFormLabel>Fecha vencimiento <span className="text-danger">*</span></CFormLabel><CFormInput name="fecha_vencimiento" type="date" value={formulario.fecha_vencimiento} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={4}><CFormLabel>Teléfono asignado</CFormLabel><CFormInput name="telefono_asignado" value={formulario.telefono_asignado} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={4}><CFormLabel>Cliente ID asignado</CFormLabel><CFormInput name="cliente_id_asignado" value={formulario.cliente_id_asignado} onChange={handleChangeFormulario} /></CCol>
                         <CCol md={4}>
                             <CFormLabel>Estado <span className="text-danger">*</span></CFormLabel>
                             <CFormSelect name="estado" value={formulario.estado} onChange={handleChangeFormulario}>
@@ -251,7 +239,6 @@ const Inventario = () => {
                                 {opcionesEstado.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                             </CFormSelect>
                         </CCol>
-                        <CCol md={12}><CFormLabel>Texto</CFormLabel><CFormTextarea name="texto" rows={3} value={formulario.texto} onChange={handleChangeFormulario} /></CCol>
                     </CRow>
                 </CModalBody>
                 <CModalFooter>
@@ -290,7 +277,6 @@ const Inventario = () => {
                                 {opcionesEstado.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                             </CFormSelect>
                         </CCol>
-                        <CCol md={12}><CFormLabel>Texto</CFormLabel><CFormTextarea name="texto" rows={3} value={formulario.texto} onChange={handleChangeFormulario} /></CCol>
                     </CRow>
                 </CModalBody>
                 <CModalFooter>

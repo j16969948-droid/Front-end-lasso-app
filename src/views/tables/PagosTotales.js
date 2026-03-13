@@ -49,7 +49,7 @@ const PagosEmail = () => {
         { header: 'Monto', key: 'monto', className: 'fw-semibold', renderFunc: (item) => formatearMonto(item.monto) },
         { header: 'Fecha pago', key: 'fecha_pago', renderFunc: (item) => formatearFecha(item.fecha_pago) },
         { header: 'Hora pago', key: 'hora_pago' },
-        { header: 'Registrado en sistema', key: 'registrado_en_sistema', renderFunc: (item) => item.registrado_en_sistema || item.registrado_sistema || '-' },
+        { header: 'Registrado en sistema', key: 'creado_en', renderFunc: (item) => item.creado_en || '-' },
         { header: 'Message ID', key: 'message_id', className: 'text-break' },
     ]
 

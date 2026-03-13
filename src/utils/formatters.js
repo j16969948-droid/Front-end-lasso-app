@@ -51,26 +51,30 @@ export const getBadgeColorEstado = (estado) => {
     const valor = String(estado || '').toLowerCase().trim()
 
     if (
+        valor === 'disponible' ||
         valor.includes('activo') ||
-        valor.includes('disponible') ||
         valor.includes('habilitado') ||
         valor.includes('publicado') ||
         valor.includes('aprobado') ||
         valor.includes('pagado') ||
         valor.includes('completado') ||
         valor.includes('encontrado') ||
-        valor === '1' ||
-        valor.includes('vendido') ||
-        valor.includes('asignado')
+        valor === '1'
     ) {
         return 'success'
     }
 
-    if (valor.includes('pendiente') || valor.includes('proceso') || valor.includes('revisión')) {
+    if (
+        valor === 'asignado' ||
+        valor.includes('pendiente') ||
+        valor.includes('proceso') ||
+        valor.includes('revisión')
+    ) {
         return 'warning'
     }
 
     if (
+        valor === 'vencido' ||
         valor.includes('inactivo') ||
         valor.includes('agotado') ||
         valor.includes('oculto') ||

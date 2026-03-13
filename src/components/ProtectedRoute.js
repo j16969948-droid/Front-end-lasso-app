@@ -1,17 +1,11 @@
-import React from 'react'
-import { Navigate } from 'react-router-dom'
-import { isAuthenticated, hasRole } from '../utils/auth'
+import React from "react";
+import { Navigate, Outlet } from "react-router-dom";
+import { getToken } from "../core/services/JwtService";
 
-const ProtectedRoute = ({ children, requiredRole = null }) => {
-  if (!isAuthenticated()) {
-    return <Navigate to="/login" replace />
-  }
+const ProtectedRoute = () => {
+  const token = getToken();
 
-  if (requiredRole && !hasRole(requiredRole)) {
-    return <Navigate to="/catalogo" replace />
-  }
+  return token ? <Outlet /> : <Navigate to="/catalogo" replace />;
+};
 
-  return children
-}
-
-export default ProtectedRoute
+export default ProtectedRoute;

@@ -1,13 +1,13 @@
     import React, { useEffect, useMemo, useState } from "react";
     import ServiceCard from "../../components/services/ServiceCard";
-    import { useCatalogoServicios } from "../../core/hooks/useCatalogos";
+    import { useServicios } from "../../core/hooks/useServicios";
     import AppHeader from "../../components/AppHeader";
     import AddToCart from "../../components/services/AddToCart";
 
     const STORAGE_KEY = "streaming_cart";
 
     const CatalogoStreaming = () => {
-        const { data, isLoading, error } = useCatalogoServicios();
+        const { data, isLoading, error } = useServicios();
         const [cart, setCart] = useState([]);
 
         useEffect(() => {

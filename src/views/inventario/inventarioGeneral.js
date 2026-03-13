@@ -12,19 +12,23 @@ import {
     CModalFooter,
     CFormLabel,
     CFormTextarea,
+    CFormSelect,
 } from '@coreui/react'
-import { 
-    useInventario, 
-    useCreateInventario, 
-    useUpdateInventario, 
-    useDeleteInventario 
+import {
+    useInventario,
+    useCreateInventario,
+    useUpdateInventario,
+    useDeleteInventario
 } from '../../core/hooks/useInventario'
+import { useServicios } from '../../core/hooks/useServicios'
 import { formatearFecha, getBadgeColorEstado } from '../../utils/formatters'
 import { LoadingState, ErrorState } from '../../components/TableFeedback'
 import DataTable from '../../components/DataTable'
 
 const Inventario = () => {
-    const { data: inventarioData, isLoading, error } = useInventario()
+    const { data: inventarioData, isLoading: isLoadingInv, error: errorInv } = useInventario()
+    const { data: serviciosData, isLoading: isLoadingServ } = useServicios()
+    
     const createMutation = useCreateInventario()
     const updateMutation = useUpdateInventario()
     const deleteMutation = useDeleteInventario()
@@ -33,6 +37,7 @@ const Inventario = () => {
     const [modalEditarVisible, setModalEditarVisible] = useState(false)
     const [modalEliminarVisible, setModalEliminarVisible] = useState(false)
     const [registroSeleccionado, setRegistroSeleccionado] = useState(null)
+    const [filtroServicio, setFiltroServicio] = useState('')
 
     const [formulario, setFormulario] = useState({
         servicio_id: '', fecha_compra: '', correo: '', clave: '',
@@ -40,10 +45,14 @@ const Inventario = () => {
         cliente_id_asignado: '', estado: '', texto: '',
     })
 
+    const filterFunction = (item) => {
+        return !filtroServicio || String(item?.servicio_id) === String(filtroServicio)
+    }
+
     const searchFunction = (item, termino) => {
         return (
             String(item?.id || '').toLowerCase().includes(termino) ||
-            String(item?.servicio_id || '').toLowerCase().includes(termino) ||
+            String(item?.servicio?.nombre || '').toLowerCase().includes(termino) ||
             String(item?.correo || '').toLowerCase().includes(termino) ||
             String(item?.perfil || '').toLowerCase().includes(termino) ||
             String(item?.pin || '').toLowerCase().includes(termino) ||
@@ -91,7 +100,23 @@ const Inventario = () => {
     const abrirModalEliminar = (item) => { setRegistroSeleccionado(item); setModalEliminarVisible(true); }
     const cerrarModalEliminar = () => { setModalEliminarVisible(false); setRegistroSeleccionado(null); }
 
+    const validarFormulario = () => {
+        const camposObligatorios = [
+            'servicio_id', 'fecha_compra', 'correo', 'clave', 
+            'perfil', 'pin', 'fecha_vencimiento', 'estado'
+        ]
+        
+        const faltantes = camposObligatorios.filter(campo => !formulario[campo])
+        
+        if (faltantes.length > 0) {
+            alert('Por favor, completa todos los campos obligatorios.')
+            return false
+        }
+        return true
+    }
+
     const handleCrearRegistro = async () => {
+        if (!validarFormulario()) return
         try {
             await createMutation.mutateAsync(formulario)
             cerrarModalCrear()
@@ -102,6 +127,7 @@ const Inventario = () => {
 
     const handleEditarRegistro = async () => {
         if (!registroSeleccionado) return
+        if (!validarFormulario()) return
         try {
             await updateMutation.mutateAsync({ id: registroSeleccionado.id, data: formulario })
             cerrarModalEditar()
@@ -122,7 +148,7 @@ const Inventario = () => {
 
     const columns = [
         { header: 'ID', key: 'id', className: 'fw-semibold' },
-        { header: 'Servicio ID', key: 'servicio_id' },
+        { header: 'Servicio', key: 'servicio_nombre', renderFunc: (row) => row.servicio?.nombre || 'N/A' },
         { header: 'Fecha compra', key: 'fecha_compra', renderFunc: (row) => formatearFecha(row.fecha_compra) },
         { header: 'Correo', key: 'correo', className: 'fw-semibold' },
         { header: 'Clave', key: 'clave' },
@@ -161,8 +187,25 @@ const Inventario = () => {
         },
     ]
 
-    if (isLoading) return <LoadingState message="Cargando inventario..." />
-    if (error) return <ErrorState message="No se pudo cargar el inventario" onRetry={() => window.location.reload()} />
+    const filterControls = (
+        <CCol md={12}>
+            <CFormSelect value={filtroServicio} onChange={(e) => setFiltroServicio(e.target.value)}>
+                <option value="">Todos los servicios</option>
+                {Array.isArray(serviciosData) && serviciosData.map(serv => (
+                    <option key={serv.id} value={serv.id}>{serv.nombre}</option>
+                ))}
+            </CFormSelect>
+        </CCol>
+    )
+
+    const opcionesEstado = [
+        { label: 'Disponible', value: 'Disponible' },
+        { label: 'Asignado', value: 'Asignado' },
+        { label: 'Vencido', value: 'Vencido' },
+    ]
+
+    if (isLoadingInv || isLoadingServ) return <LoadingState message="Cargando datos..." />
+    if (errorInv) return <ErrorState message="No se pudo cargar el inventario" onRetry={() => window.location.reload()} />
 
     return (
         <>
@@ -172,6 +215,9 @@ const Inventario = () => {
                 data={Array.isArray(inventarioData) ? inventarioData : []}
                 columns={columns}
                 searchFunction={searchFunction}
+                filterFunction={filterFunction}
+                filterControls={filterControls}
+                onClear={() => setFiltroServicio('')}
                 onAddItem={abrirModalCrear}
                 addItemLabel="+ Agregar registro"
                 searchPlaceholder="ID, servicio, correo, perfil, pin, teléfono, estado..."
@@ -181,16 +227,30 @@ const Inventario = () => {
                 <CModalHeader onClose={cerrarModalCrear}><CModalTitle>Agregar registro</CModalTitle></CModalHeader>
                 <CModalBody>
                     <CRow className="g-3">
-                        <CCol md={6}><CFormLabel>Servicio ID</CFormLabel><CFormInput name="servicio_id" value={formulario.servicio_id} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Fecha compra</CFormLabel><CFormInput name="fecha_compra" value={formulario.fecha_compra} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Correo</CFormLabel><CFormInput name="correo" value={formulario.correo} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Clave</CFormLabel><CFormInput name="clave" value={formulario.clave} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={4}><CFormLabel>Perfil</CFormLabel><CFormInput name="perfil" value={formulario.perfil} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={4}><CFormLabel>PIN</CFormLabel><CFormInput name="pin" value={formulario.pin} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={4}><CFormLabel>Fecha vencimiento</CFormLabel><CFormInput name="fecha_vencimiento" value={formulario.fecha_vencimiento} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={6}>
+                            <CFormLabel>Servicio <span className="text-danger">*</span></CFormLabel>
+                            <CFormSelect name="servicio_id" value={formulario.servicio_id} onChange={handleChangeFormulario}>
+                                <option value="">Selecciona un servicio</option>
+                                {Array.isArray(serviciosData) && serviciosData.map(serv => (
+                                    <option key={serv.id} value={serv.id}>{serv.nombre}</option>
+                                ))}
+                            </CFormSelect>
+                        </CCol>
+                        <CCol md={6}><CFormLabel>Fecha compra <span className="text-danger">*</span></CFormLabel><CFormInput name="fecha_compra" type="date" value={formulario.fecha_compra} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={6}><CFormLabel>Correo <span className="text-danger">*</span></CFormLabel><CFormInput name="correo" value={formulario.correo} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={6}><CFormLabel>Clave <span className="text-danger">*</span></CFormLabel><CFormInput name="clave" value={formulario.clave} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={4}><CFormLabel>Perfil <span className="text-danger">*</span></CFormLabel><CFormInput name="perfil" value={formulario.perfil} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={4}><CFormLabel>PIN <span className="text-danger">*</span></CFormLabel><CFormInput name="pin" value={formulario.pin} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={4}><CFormLabel>Fecha vencimiento <span className="text-danger">*</span></CFormLabel><CFormInput name="fecha_vencimiento" type="date" value={formulario.fecha_vencimiento} onChange={handleChangeFormulario} /></CCol>
                         <CCol md={4}><CFormLabel>Teléfono asignado</CFormLabel><CFormInput name="telefono_asignado" value={formulario.telefono_asignado} onChange={handleChangeFormulario} /></CCol>
                         <CCol md={4}><CFormLabel>Cliente ID asignado</CFormLabel><CFormInput name="cliente_id_asignado" value={formulario.cliente_id_asignado} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={4}><CFormLabel>Estado</CFormLabel><CFormInput name="estado" value={formulario.estado} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={4}>
+                            <CFormLabel>Estado <span className="text-danger">*</span></CFormLabel>
+                            <CFormSelect name="estado" value={formulario.estado} onChange={handleChangeFormulario}>
+                                <option value="">Selecciona un estado</option>
+                                {opcionesEstado.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                            </CFormSelect>
+                        </CCol>
                         <CCol md={12}><CFormLabel>Texto</CFormLabel><CFormTextarea name="texto" rows={3} value={formulario.texto} onChange={handleChangeFormulario} /></CCol>
                     </CRow>
                 </CModalBody>
@@ -206,16 +266,30 @@ const Inventario = () => {
                 <CModalHeader onClose={cerrarModalEditar}><CModalTitle>Editar registro {registroSeleccionado ? `- ID ${registroSeleccionado.id}` : ''}</CModalTitle></CModalHeader>
                 <CModalBody>
                     <CRow className="g-3">
-                        <CCol md={6}><CFormLabel>Servicio ID</CFormLabel><CFormInput name="servicio_id" value={formulario.servicio_id} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Fecha compra</CFormLabel><CFormInput name="fecha_compra" value={formulario.fecha_compra} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Correo</CFormLabel><CFormInput name="correo" value={formulario.correo} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Clave</CFormLabel><CFormInput name="clave" value={formulario.clave} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={4}><CFormLabel>Perfil</CFormLabel><CFormInput name="perfil" value={formulario.perfil} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={4}><CFormLabel>PIN</CFormLabel><CFormInput name="pin" value={formulario.pin} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={4}><CFormLabel>Fecha vencimiento</CFormLabel><CFormInput name="fecha_vencimiento" value={formulario.fecha_vencimiento} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={6}>
+                            <CFormLabel>Servicio <span className="text-danger">*</span></CFormLabel>
+                            <CFormSelect name="servicio_id" value={formulario.servicio_id} onChange={handleChangeFormulario}>
+                                <option value="">Selecciona un servicio</option>
+                                {Array.isArray(serviciosData) && serviciosData.map(serv => (
+                                    <option key={serv.id} value={serv.id}>{serv.nombre}</option>
+                                ))}
+                            </CFormSelect>
+                        </CCol>
+                        <CCol md={6}><CFormLabel>Fecha compra <span className="text-danger">*</span></CFormLabel><CFormInput name="fecha_compra" type="date" value={formulario.fecha_compra} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={6}><CFormLabel>Correo <span className="text-danger">*</span></CFormLabel><CFormInput name="correo" value={formulario.correo} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={6}><CFormLabel>Clave <span className="text-danger">*</span></CFormLabel><CFormInput name="clave" value={formulario.clave} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={4}><CFormLabel>Perfil <span className="text-danger">*</span></CFormLabel><CFormInput name="perfil" value={formulario.perfil} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={4}><CFormLabel>PIN <span className="text-danger">*</span></CFormLabel><CFormInput name="pin" value={formulario.pin} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={4}><CFormLabel>Fecha vencimiento <span className="text-danger">*</span></CFormLabel><CFormInput name="fecha_vencimiento" type="date" value={formulario.fecha_vencimiento} onChange={handleChangeFormulario} /></CCol>
                         <CCol md={4}><CFormLabel>Teléfono asignado</CFormLabel><CFormInput name="telefono_asignado" value={formulario.telefono_asignado} onChange={handleChangeFormulario} /></CCol>
                         <CCol md={4}><CFormLabel>Cliente ID asignado</CFormLabel><CFormInput name="cliente_id_asignado" value={formulario.cliente_id_asignado} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={4}><CFormLabel>Estado</CFormLabel><CFormInput name="estado" value={formulario.estado} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={4}>
+                            <CFormLabel>Estado <span className="text-danger">*</span></CFormLabel>
+                            <CFormSelect name="estado" value={formulario.estado} onChange={handleChangeFormulario}>
+                                <option value="">Selecciona un estado</option>
+                                {opcionesEstado.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                            </CFormSelect>
+                        </CCol>
                         <CCol md={12}><CFormLabel>Texto</CFormLabel><CFormTextarea name="texto" rows={3} value={formulario.texto} onChange={handleChangeFormulario} /></CCol>
                     </CRow>
                 </CModalBody>

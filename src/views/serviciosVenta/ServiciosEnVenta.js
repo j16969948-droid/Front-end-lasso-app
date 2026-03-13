@@ -11,16 +11,19 @@ import {
     CModalBody,
     CModalFooter,
     CFormLabel,
+    CFormSelect,
 } from '@coreui/react'
-import { useServicios } from '../../core/hooks/useServicios'
+import { useServicios, useCreateServicio, useUpdateServicio, useDeleteServicio } from '../../core/hooks/useServicios'
 import { formatearMonto } from '../../utils/formatters'
 import { LoadingState, ErrorState } from '../../components/TableFeedback'
 import DataTable from '../../components/DataTable'
 
 const ServiciosEnVenta = () => {
     const { data: serviciosData, isLoading, error } = useServicios()
+    const createServicio = useCreateServicio()
+    const updateServicio = useUpdateServicio()
+    const deleteServicio = useDeleteServicio()
 
-    const [servicios, setServicios] = useState([])
     const [modalCrearVisible, setModalCrearVisible] = useState(false)
     const [modalEditarVisible, setModalEditarVisible] = useState(false)
     const [modalEliminarVisible, setModalEliminarVisible] = useState(false)
@@ -31,9 +34,7 @@ const ServiciosEnVenta = () => {
         estado: '', imagen: '', proveedor: '', telefono_proveedor: '',
     })
 
-    useEffect(() => {
-        setServicios(Array.isArray(serviciosData) ? serviciosData : [])
-    }, [serviciosData])
+    const servicios = useMemo(() => Array.isArray(serviciosData) ? serviciosData : [], [serviciosData])
 
     const searchFunction = (servicio, termino) => {
         return (
@@ -49,8 +50,26 @@ const ServiciosEnVenta = () => {
     const resetFormulario = () => {
         setFormulario({
             nombre: '', slug: '', precio_usuario: '', precio_revendedor: '',
-            estado: '', imagen: '', proveedor: '', telefono_proveedor: '',
+            estado: 1, imagen: '', proveedor: '', telefono_proveedor: '',
         })
+    }
+
+    const validarFormulario = () => {
+        const camposObligatorios = [
+            { field: 'nombre', label: 'Nombre' },
+            { field: 'slug', label: 'Slug' },
+            { field: 'precio_usuario', label: 'Precio usuario' },
+            { field: 'precio_revendedor', label: 'Precio revendedor' },
+            { field: 'imagen', label: 'Imagen' },
+        ]
+
+        const faltantes = camposObligatorios.filter(item => !formulario[item.field])
+
+        if (faltantes.length > 0) {
+            alert(`Por favor, completa los siguientes campos obligatorios: ${faltantes.map(f => f.label).join(', ')}`)
+            return false
+        }
+        return true
     }
 
     const handleChangeFormulario = (e) => {
@@ -82,24 +101,31 @@ const ServiciosEnVenta = () => {
     const cerrarModalEliminar = () => { setModalEliminarVisible(false); setServicioSeleccionado(null); }
 
     const handleCrearServicio = () => {
-        const nuevoServicio = {
-            id: servicios.length > 0 ? Math.max(...servicios.map((item) => Number(item.id) || 0)) + 1 : 1,
-            ...formulario,
-        }
-        setServicios((prev) => [nuevoServicio, ...prev])
-        cerrarModalCrear()
+        if (!validarFormulario()) return
+        createServicio.mutate(formulario, {
+            onSuccess: () => {
+                cerrarModalCrear()
+            }
+        })
     }
 
     const handleEditarServicio = () => {
         if (!servicioSeleccionado) return
-        setServicios((prev) => prev.map((item) => item.id === servicioSeleccionado.id ? { ...item, ...formulario } : item))
-        cerrarModalEditar()
+        if (!validarFormulario()) return
+        updateServicio.mutate({ id: servicioSeleccionado.id, data: formulario }, {
+            onSuccess: () => {
+                cerrarModalEditar()
+            }
+        })
     }
 
     const handleEliminarServicio = () => {
         if (!servicioSeleccionado) return
-        setServicios((prev) => prev.filter((item) => item.id !== servicioSeleccionado.id))
-        cerrarModalEliminar()
+        deleteServicio.mutate(servicioSeleccionado.id, {
+            onSuccess: () => {
+                cerrarModalEliminar()
+            }
+        })
     }
 
     const columns = [
@@ -156,19 +182,20 @@ const ServiciosEnVenta = () => {
                 <CModalHeader onClose={cerrarModalCrear}><CModalTitle>Agregar servicio</CModalTitle></CModalHeader>
                 <CModalBody>
                     <CRow className="g-3">
-                        <CCol md={6}><CFormLabel>Nombre</CFormLabel><CFormInput name="nombre" value={formulario.nombre} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Slug</CFormLabel><CFormInput name="slug" value={formulario.slug} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Precio usuario</CFormLabel><CFormInput name="precio_usuario" type="number" value={formulario.precio_usuario} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Precio revendedor</CFormLabel><CFormInput name="precio_revendedor" type="number" value={formulario.precio_revendedor} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Estado</CFormLabel><CFormInput name="estado" value={formulario.estado} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Imagen</CFormLabel><CFormInput name="imagen" value={formulario.imagen} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={6}><CFormLabel>Nombre <span className="text-danger">*</span></CFormLabel><CFormInput name="nombre" value={formulario.nombre} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={6}><CFormLabel>Slug <span className="text-danger">*</span></CFormLabel><CFormInput name="slug" value={formulario.slug} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={6}><CFormLabel>Precio usuario <span className="text-danger">*</span></CFormLabel><CFormInput name="precio_usuario" type="number" value={formulario.precio_usuario} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={6}><CFormLabel>Precio revendedor <span className="text-danger">*</span></CFormLabel><CFormInput name="precio_revendedor" type="number" value={formulario.precio_revendedor} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={6}><CFormLabel>Imagen <span className="text-danger">*</span></CFormLabel><CFormInput name="imagen" value={formulario.imagen} onChange={handleChangeFormulario} /></CCol>
                         <CCol md={6}><CFormLabel>Proveedor</CFormLabel><CFormInput name="proveedor" value={formulario.proveedor} onChange={handleChangeFormulario} /></CCol>
                         <CCol md={6}><CFormLabel>Teléfono proveedor</CFormLabel><CFormInput name="telefono_proveedor" value={formulario.telefono_proveedor} onChange={handleChangeFormulario} /></CCol>
                     </CRow>
                 </CModalBody>
                 <CModalFooter>
                     <CButton color="secondary" onClick={cerrarModalCrear}>Cancelar</CButton>
-                    <CButton color="primary" onClick={handleCrearServicio}>Guardar</CButton>
+                    <CButton color="primary" onClick={handleCrearServicio} disabled={createServicio.isPending}>
+                        {createServicio.isPending ? 'Guardando...' : 'Guardar'}
+                    </CButton>
                 </CModalFooter>
             </CModal>
 
@@ -176,19 +203,27 @@ const ServiciosEnVenta = () => {
                 <CModalHeader onClose={cerrarModalEditar}><CModalTitle>Editar servicio {servicioSeleccionado ? `- ID ${servicioSeleccionado.id}` : ''}</CModalTitle></CModalHeader>
                 <CModalBody>
                     <CRow className="g-3">
-                        <CCol md={6}><CFormLabel>Nombre</CFormLabel><CFormInput name="nombre" value={formulario.nombre} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Slug</CFormLabel><CFormInput name="slug" value={formulario.slug} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Precio usuario</CFormLabel><CFormInput name="precio_usuario" type="number" value={formulario.precio_usuario} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Precio revendedor</CFormLabel><CFormInput name="precio_revendedor" type="number" value={formulario.precio_revendedor} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Estado</CFormLabel><CFormInput name="estado" value={formulario.estado} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Imagen</CFormLabel><CFormInput name="imagen" value={formulario.imagen} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={6}><CFormLabel>Nombre <span className="text-danger">*</span></CFormLabel><CFormInput name="nombre" value={formulario.nombre} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={6}><CFormLabel>Slug <span className="text-danger">*</span></CFormLabel><CFormInput name="slug" value={formulario.slug} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={6}><CFormLabel>Precio usuario <span className="text-danger">*</span></CFormLabel><CFormInput name="precio_usuario" type="number" value={formulario.precio_usuario} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={6}><CFormLabel>Precio revendedor <span className="text-danger">*</span></CFormLabel><CFormInput name="precio_revendedor" type="number" value={formulario.precio_revendedor} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={6}>
+                            <CFormLabel>Estado <span className="text-danger">*</span></CFormLabel>
+                            <CFormSelect name="estado" value={formulario.estado} onChange={handleChangeFormulario}>
+                                <option value={1}>Disponible</option>
+                                <option value={0}>No disponible</option>
+                            </CFormSelect>
+                        </CCol>
+                        <CCol md={6}><CFormLabel>Imagen <span className="text-danger">*</span></CFormLabel><CFormInput name="imagen" value={formulario.imagen} onChange={handleChangeFormulario} /></CCol>
                         <CCol md={6}><CFormLabel>Proveedor</CFormLabel><CFormInput name="proveedor" value={formulario.proveedor} onChange={handleChangeFormulario} /></CCol>
                         <CCol md={6}><CFormLabel>Teléfono proveedor</CFormLabel><CFormInput name="telefono_proveedor" value={formulario.telefono_proveedor} onChange={handleChangeFormulario} /></CCol>
                     </CRow>
                 </CModalBody>
                 <CModalFooter>
                     <CButton color="secondary" onClick={cerrarModalEditar}>Cancelar</CButton>
-                    <CButton color="primary" onClick={handleEditarServicio}>Actualizar</CButton>
+                    <CButton color="primary" onClick={handleEditarServicio} disabled={updateServicio.isPending}>
+                        {updateServicio.isPending ? 'Actualizando...' : 'Actualizar'}
+                    </CButton>
                 </CModalFooter>
             </CModal>
 

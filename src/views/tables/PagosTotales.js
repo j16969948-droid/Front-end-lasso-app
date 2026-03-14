@@ -74,10 +74,10 @@ const PagosEmail = () => {
     )
 
     const headerBadges = (
-        <>
-            <CBadge color="success" className="px-3 py-2 rounded-pill">Total filtrado: {formatearMonto(totalFiltrado)}</CBadge>
-            <CBadge color="warning" className="px-3 py-2 rounded-pill text-dark">Total hoy: {formatearMonto(totalMontoHoy)}</CBadge>
-        </>
+        <div className="d-flex flex-wrap gap-2">
+            <CBadge color="success" className="px-3 py-2 rounded-pill badge-pill">Total Filtrado: {formatearMonto(totalFiltrado)}</CBadge>
+            <CBadge color="warning" className="px-3 py-2 rounded-pill badge-pill text-dark">Total Hoy: {formatearMonto(totalMontoHoy)}</CBadge>
+        </div>
     )
 
     return (

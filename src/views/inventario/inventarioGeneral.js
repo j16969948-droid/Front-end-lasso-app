@@ -14,6 +14,8 @@ import {
     CFormTextarea,
     CFormSelect,
 } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilPencil, cilTrash } from '@coreui/icons'
 import {
     useInventario,
     useCreateInventario,
@@ -25,7 +27,7 @@ import { formatearFecha, getBadgeColorEstado } from '../../utils/formatters'
 import { LoadingState, ErrorState } from '../../components/TableFeedback'
 import DataTable from '../../components/DataTable'
 
-const Inventario = () => {
+const InventarioGeneral = () => {
     const { data: inventarioData, isLoading: isLoadingInv, error: errorInv } = useInventario()
     const { data: serviciosData, isLoading: isLoadingServ } = useServicios()
 
@@ -170,8 +172,14 @@ const Inventario = () => {
             key: 'acciones',
             renderFunc: (row) => (
                 <div className="d-flex gap-2">
-                    <CButton color="primary" variant="outline" size="sm" onClick={() => abrirModalEditar(row)}>Editar</CButton>
-                    <CButton color="danger" variant="outline" size="sm" onClick={() => abrirModalEliminar(row)}>Eliminar</CButton>
+                    <CButton className="btn-premium-action btn-action-edit" onClick={() => abrirModalEditar(row)}>
+                        <CIcon icon={cilPencil} size="sm" className="me-1" />
+                        Editar
+                    </CButton>
+                    <CButton className="btn-premium-action btn-action-delete" onClick={() => abrirModalEliminar(row)}>
+                        <CIcon icon={cilTrash} size="sm" className="me-1" />
+                        Eliminar
+                    </CButton>
                 </div>
             )
         },
@@ -179,7 +187,8 @@ const Inventario = () => {
 
     const filterControls = (
         <CCol md={12}>
-            <CFormSelect value={filtroServicio} onChange={(e) => setFiltroServicio(e.target.value)}>
+            <CFormLabel className="fw-semibold small text-uppercase text-secondary">Filtrar por Servicio</CFormLabel>
+            <CFormSelect className="premium-input" value={filtroServicio} onChange={(e) => setFiltroServicio(e.target.value)}>
                 <option value="">Todos los servicios</option>
                 {Array.isArray(serviciosData) && serviciosData.map(serv => (
                     <option key={serv.id} value={serv.id}>{serv.nombre}</option>
@@ -213,9 +222,11 @@ const Inventario = () => {
                 searchPlaceholder="ID, servicio, correo, perfil, pin, teléfono, estado..."
             />
 
-            <CModal visible={modalCrearVisible} onClose={cerrarModalCrear} alignment="center" size="xl">
-                <CModalHeader onClose={cerrarModalCrear}><CModalTitle>Agregar registro</CModalTitle></CModalHeader>
-                <CModalBody>
+            <CModal visible={modalCrearVisible} onClose={cerrarModalCrear} alignment="center" size="xl" className="premium-modal">
+                <CModalHeader onClose={cerrarModalCrear} className="border-0 pb-0">
+                    <CModalTitle className="fw-bold fs-4">Agregar Nuevo Registro</CModalTitle>
+                </CModalHeader>
+                <CModalBody className="p-4">
                     <CRow className="g-3">
                         <CCol md={6}>
                             <CFormLabel>Servicio <span className="text-danger">*</span></CFormLabel>
@@ -241,17 +252,19 @@ const Inventario = () => {
                         </CCol>
                     </CRow>
                 </CModalBody>
-                <CModalFooter>
-                    <CButton color="secondary" onClick={cerrarModalCrear}>Cancelar</CButton>
-                    <CButton color="primary" onClick={handleCrearRegistro} disabled={createMutation.isPending}>
-                        {createMutation.isPending ? 'Guardando...' : 'Guardar'}
+                <CModalFooter className="border-0 pt-0">
+                    <CButton color="secondary" variant="ghost" onClick={cerrarModalCrear} className="rounded-pill px-4">Cancelar</CButton>
+                    <CButton color="primary" onClick={handleCrearRegistro} disabled={createMutation.isPending} className="rounded-pill px-4">
+                        {createMutation.isPending ? 'Guardando...' : 'Guardar Registro'}
                     </CButton>
                 </CModalFooter>
             </CModal>
 
-            <CModal visible={modalEditarVisible} onClose={cerrarModalEditar} alignment="center" size="xl">
-                <CModalHeader onClose={cerrarModalEditar}><CModalTitle>Editar registro {registroSeleccionado ? `- ID ${registroSeleccionado.id}` : ''}</CModalTitle></CModalHeader>
-                <CModalBody>
+            <CModal visible={modalEditarVisible} onClose={cerrarModalEditar} alignment="center" size="xl" className="premium-modal">
+                <CModalHeader onClose={cerrarModalEditar} className="border-0 pb-0">
+                    <CModalTitle className="fw-bold fs-4">Editar Registro {registroSeleccionado ? `- ID ${registroSeleccionado.id}` : ''}</CModalTitle>
+                </CModalHeader>
+                <CModalBody className="p-4">
                     <CRow className="g-3">
                         <CCol md={6}>
                             <CFormLabel>Servicio <span className="text-danger">*</span></CFormLabel>
@@ -307,4 +320,4 @@ const Inventario = () => {
     )
 }
 
-export default Inventario
+export default InventarioGeneral    

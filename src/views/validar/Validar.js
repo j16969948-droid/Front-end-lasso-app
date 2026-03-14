@@ -36,31 +36,31 @@ const Validar = () => {
     }
 
     return (
-        <div className="fade-in">
-            <CCard className="border-0 shadow-sm mb-4 rounded-4">
+        <div className="fade-in-up">
+            <CCard className="premium-card mb-4">
                 <CCardBody className="p-4">
-                    <h4 className="fw-bold mb-3">Validar comprobante</h4>
-                    <p className="text-medium-emphasis mb-4">
-                        Ingresa la URL del comprobante para verificar los datos del pago.
+                    <h4 className="fw-bold mb-3">Validar Comprobante</h4>
+                    <p className="text-secondary mb-4">
+                        Ingresa la URL del comprobante para verificar automáticamente los datos del pago y cruzarlos con el sistema.
                     </p>
                     <CRow className="g-3 align-items-end">
                         <CCol md={9}>
-                            <CFormLabel className="fw-semibold">URL del Comprobante</CFormLabel>
+                            <CFormLabel className="fw-semibold small text-uppercase text-secondary">URL del Comprobante</CFormLabel>
                             <CFormInput
                                 type="text"
-                                placeholder="URL del comprobante"
+                                placeholder="https://ejemplo.com/comprobante.jpg"
                                 value={urlComprobante}
                                 onChange={(e) => setUrlComprobante(e.target.value)}
-                                className="py-2"
+                                className="premium-input"
                             />
                         </CCol>
                         <CCol md={3}>
                             <CButton
                                 color="primary"
-                                className="w-100 py-2 fw-semibold rounded-3 shadow-sm"
+                                className="w-100 py-2 fw-semibold rounded-pill shadow-sm"
                                 onClick={handleValidar}
                             >
-                                Validar
+                                Validar Ahora
                             </CButton>
                         </CCol>
                     </CRow>
@@ -69,7 +69,7 @@ const Validar = () => {
 
             <DataTable
                 title="Pagos Registrados"
-                subtitle="Consulta el historial para verificar la validez de los pagos"
+                subtitle="Consulta el historial para verificar la validez de los pagos procesados"
                 data={[]} // Sin datos por ahora
                 columns={columns}
                 searchFunction={searchFunction}

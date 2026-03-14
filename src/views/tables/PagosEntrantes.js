@@ -10,7 +10,10 @@ import {
     CModalTitle,
     CModalBody,
     CModalFooter,
+    CFormLabel,
 } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilExternalLink, cilCheckCircle } from '@coreui/icons'
 import { usePagosEntrantes, useValidarPagoManual } from '../../core/hooks/usePagosEntrantes'
 import { formatearMonto, formatearFecha } from '../../utils/formatters'
 import { LoadingState, ErrorState } from '../../components/TableFeedback'
@@ -168,20 +171,18 @@ const PagosEntrantes = () => {
             renderFunc: (pago) => (
                 <div className="d-flex gap-2">
                     <CButton
-                        color="primary"
-                        variant="outline"
-                        size="sm"
+                        className="btn-premium-action btn-action-view"
                         onClick={() => handleVerComprobante(pago)}
                         disabled={!pago?.comprobante_url}
                     >
+                        <CIcon icon={cilExternalLink} size="sm" className="me-1" />
                         Ver
                     </CButton>
                     <CButton
-                        color="success"
-                        size="sm"
-                        className="text-white fw-semibold"
+                        className="btn-premium-action btn-action-validate"
                         onClick={() => handleValidarManual(pago)}
                     >
+                        <CIcon icon={cilCheckCircle} size="sm" className="me-1" />
                         Validar
                     </CButton>
                 </div>
@@ -192,14 +193,16 @@ const PagosEntrantes = () => {
     const filterControls = (
         <CRow className="g-2">
             <CCol md={6}>
-                <CFormSelect size="sm" value={filtroEstadoPago} onChange={(e) => setFiltroEstadoPago(e.target.value)}>
-                    <option value="">Estado Pago: Todos</option>
+                <CFormLabel className="fw-semibold small text-uppercase text-secondary">Estado</CFormLabel>
+                <CFormSelect className="premium-input" size="sm" value={filtroEstadoPago} onChange={(e) => setFiltroEstadoPago(e.target.value)}>
+                    <option value="">Todos los estados</option>
                     {opcionesEstadoPago.map((estado) => <option key={estado} value={estado}>{estado}</option>)}
                 </CFormSelect>
             </CCol>
             <CCol md={6}>
-                <CFormSelect size="sm" value={filtroMedioPago} onChange={(e) => setFiltroMedioPago(e.target.value)}>
-                    <option value="">Medio Pago: Todos</option>
+                <CFormLabel className="fw-semibold small text-uppercase text-secondary">Medio de Pago</CFormLabel>
+                <CFormSelect className="premium-input" size="sm" value={filtroMedioPago} onChange={(e) => setFiltroMedioPago(e.target.value)}>
+                    <option value="">Todos los medios</option>
                     {opcionesMedioPago.map((medio) => <option key={medio} value={medio}>{medio}</option>)}
                 </CFormSelect>
             </CCol>
@@ -227,24 +230,27 @@ const PagosEntrantes = () => {
                 searchPlaceholder="Cliente, referencia, servicio o medio"
             />
 
-            <CModal visible={modalVisible} onClose={cerrarModal} size="xl" alignment="center">
-                <CModalHeader onClose={cerrarModal}>
-                    <CModalTitle>
-                        Comprobante
-                        {pagoSeleccionado ? ` - ID ${pagoSeleccionado.id}${pagoSeleccionado.referencia_pago ? ` | Ref: ${pagoSeleccionado.referencia_pago}` : ''}` : ''}
+            <CModal visible={modalVisible} onClose={cerrarModal} size="xl" alignment="center" className="premium-modal">
+                <CModalHeader onClose={cerrarModal} className="border-0 pb-0">
+                    <CModalTitle className="fw-bold fs-4">
+                        Visualización de Comprobante
+                        {pagoSeleccionado ? <span className="text-secondary small ms-2">ID: {pagoSeleccionado.id}</span> : ''}
                     </CModalTitle>
                 </CModalHeader>
-                <CModalBody>
+                <CModalBody className="p-4">
                     {imagenSeleccionada ? (
-                        <div className="text-center">
-                            <img src={imagenSeleccionada} alt="Comprobante" style={{ maxWidth: '100%', maxHeight: '75vh', objectFit: 'contain', borderRadius: '12px' }} />
+                        <div className="text-center p-3 bg-light rounded-3">
+                            <img src={imagenSeleccionada} alt="Comprobante" style={{ maxWidth: '100%', maxHeight: '70vh', objectFit: 'contain', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
                         </div>
                     ) : (
-                        <div className="text-center text-medium-emphasis py-4">No hay comprobante disponible</div>
+                        <div className="text-center text-secondary py-5">
+                            <div className="fs-5 fw-semibold mb-2">No hay comprobante disponible</div>
+                            <div className="small">Este pago no tiene una imagen asociada.</div>
+                        </div>
                     )}
                 </CModalBody>
-                <CModalFooter>
-                    <CButton color="secondary" onClick={cerrarModal}>Cerrar</CButton>
+                <CModalFooter className="border-0 pt-0">
+                    <CButton color="secondary" variant="ghost" onClick={cerrarModal} className="rounded-pill px-4">Cerrar</CButton>
                 </CModalFooter>
             </CModal>
         </>

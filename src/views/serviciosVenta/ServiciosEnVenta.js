@@ -13,6 +13,8 @@ import {
     CFormLabel,
     CFormSelect,
 } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilPencil, cilTrash } from '@coreui/icons'
 import { useServicios, useCreateServicio, useUpdateServicio, useDeleteServicio } from '../../core/hooks/useServicios'
 import { formatearMonto } from '../../utils/formatters'
 import { LoadingState, ErrorState } from '../../components/TableFeedback'
@@ -155,8 +157,14 @@ const ServiciosEnVenta = () => {
             key: 'acciones', 
             renderFunc: (s) => (
                 <div className="d-flex gap-2">
-                    <CButton color="primary" variant="outline" size="sm" onClick={() => abrirModalEditar(s)}>Editar</CButton>
-                    <CButton color="danger" variant="outline" size="sm" onClick={() => abrirModalEliminar(s)}>Eliminar</CButton>
+                    <CButton className="btn-premium-action btn-action-edit" onClick={() => abrirModalEditar(s)}>
+                        <CIcon icon={cilPencil} size="sm" className="me-1" />
+                        Editar
+                    </CButton>
+                    <CButton className="btn-premium-action btn-action-delete" onClick={() => abrirModalEliminar(s)}>
+                        <CIcon icon={cilTrash} size="sm" className="me-1" />
+                        Eliminar
+                    </CButton>
                 </div>
             ) 
         },
@@ -178,9 +186,11 @@ const ServiciosEnVenta = () => {
                 searchPlaceholder="ID, nombre, slug, estado, proveedor o teléfono"
             />
 
-            <CModal visible={modalCrearVisible} onClose={cerrarModalCrear} alignment="center" size="lg">
-                <CModalHeader onClose={cerrarModalCrear}><CModalTitle>Agregar servicio</CModalTitle></CModalHeader>
-                <CModalBody>
+            <CModal visible={modalCrearVisible} onClose={cerrarModalCrear} alignment="center" size="lg" className="premium-modal">
+                <CModalHeader onClose={cerrarModalCrear} className="border-0 pb-0">
+                    <CModalTitle className="fw-bold fs-4">Agregar Nuevo Servicio</CModalTitle>
+                </CModalHeader>
+                <CModalBody className="p-4">
                     <CRow className="g-3">
                         <CCol md={6}><CFormLabel>Nombre <span className="text-danger">*</span></CFormLabel><CFormInput name="nombre" value={formulario.nombre} onChange={handleChangeFormulario} /></CCol>
                         <CCol md={6}><CFormLabel>Slug <span className="text-danger">*</span></CFormLabel><CFormInput name="slug" value={formulario.slug} onChange={handleChangeFormulario} /></CCol>
@@ -191,17 +201,19 @@ const ServiciosEnVenta = () => {
                         <CCol md={6}><CFormLabel>Teléfono proveedor</CFormLabel><CFormInput name="telefono_proveedor" value={formulario.telefono_proveedor} onChange={handleChangeFormulario} /></CCol>
                     </CRow>
                 </CModalBody>
-                <CModalFooter>
-                    <CButton color="secondary" onClick={cerrarModalCrear}>Cancelar</CButton>
-                    <CButton color="primary" onClick={handleCrearServicio} disabled={createServicio.isPending}>
-                        {createServicio.isPending ? 'Guardando...' : 'Guardar'}
+                <CModalFooter className="border-0 pt-0">
+                    <CButton color="secondary" variant="ghost" onClick={cerrarModalCrear} className="rounded-pill px-4">Cancelar</CButton>
+                    <CButton color="primary" onClick={handleCrearServicio} disabled={createServicio.isPending} className="rounded-pill px-4">
+                        {createServicio.isPending ? 'Guardando...' : 'Guardar Servicio'}
                     </CButton>
                 </CModalFooter>
             </CModal>
 
-            <CModal visible={modalEditarVisible} onClose={cerrarModalEditar} alignment="center" size="lg">
-                <CModalHeader onClose={cerrarModalEditar}><CModalTitle>Editar servicio {servicioSeleccionado ? `- ID ${servicioSeleccionado.id}` : ''}</CModalTitle></CModalHeader>
-                <CModalBody>
+            <CModal visible={modalEditarVisible} onClose={cerrarModalEditar} alignment="center" size="lg" className="premium-modal">
+                <CModalHeader onClose={cerrarModalEditar} className="border-0 pb-0">
+                    <CModalTitle className="fw-bold fs-4">Editar Servicio {servicioSeleccionado ? `- ID ${servicioSeleccionado.id}` : ''}</CModalTitle>
+                </CModalHeader>
+                <CModalBody className="p-4">
                     <CRow className="g-3">
                         <CCol md={6}><CFormLabel>Nombre <span className="text-danger">*</span></CFormLabel><CFormInput name="nombre" value={formulario.nombre} onChange={handleChangeFormulario} /></CCol>
                         <CCol md={6}><CFormLabel>Slug <span className="text-danger">*</span></CFormLabel><CFormInput name="slug" value={formulario.slug} onChange={handleChangeFormulario} /></CCol>

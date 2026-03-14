@@ -21,7 +21,7 @@ import CIcon from '@coreui/icons-react'
 
 import avatar8 from './../../assets/images/avatars/8.jpg'
 import { useNavigate } from 'react-router-dom'
-import { isAuthenticated } from '../../utils/auth'
+import { isAuthenticated, hasRole } from '../../utils/auth'
 import DataService from '../../core/services/DataService'
 
 const AppHeaderDropdown = () => {
@@ -31,6 +31,7 @@ const AppHeaderDropdown = () => {
     DataService.destroyAllData()
     navigate("/catalogo")
   }
+  const hasRoleAdmin = hasRole('admin')
   return (
     <CDropdown variant="nav-item">
       <CDropdownToggle placement="bottom-end" className="py-0 pe-0" caret={false}>
@@ -74,7 +75,12 @@ const AppHeaderDropdown = () => {
             42
           </CBadge>
         </CDropdownItem> */}
-
+        <CDropdownDivider />
+        {hasRoleAdmin && (
+          <CDropdownItem onClick={() => navigate("/Dashboard")}>
+            Dashboard
+          </CDropdownItem>
+        )}
         <CDropdownDivider />
         {!isAuthenticated() && (
           <CDropdownItem onClick={() => navigate("/login")}>

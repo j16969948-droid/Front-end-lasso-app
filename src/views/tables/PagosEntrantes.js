@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import {
     CFormSelect,
     CRow,
@@ -12,16 +11,16 @@ import {
     CModalBody,
     CModalFooter,
 } from '@coreui/react'
-import { usePagosEntrantes } from '../../core/hooks/usePagosEntrantes'
-import { formatearMonto, formatearFecha, getBadgeColorEstado } from '../../utils/formatters'
+import { usePagosEntrantes, useValidarPagoManual } from '../../core/hooks/usePagosEntrantes'
+import { formatearMonto, formatearFecha } from '../../utils/formatters'
 import { LoadingState, ErrorState } from '../../components/TableFeedback'
 import DataTable from '../../components/DataTable'
 
 const PagosEntrantes = () => {
-    const navigate = useNavigate()
     const { data: pagosEntrantes, isLoading, error } = usePagosEntrantes()
-
+    const { mutate: validarManual } = useValidarPagoManual()
     const [filtroEstadoPago, setFiltroEstadoPago] = useState('')
+    const [filtroMedioPago, setFiltroMedioPago] = useState('')
     const [modalVisible, setModalVisible] = useState(false)
     const [imagenSeleccionada, setImagenSeleccionada] = useState('')
     const [pagoSeleccionado, setPagoSeleccionado] = useState(null)
@@ -29,13 +28,18 @@ const PagosEntrantes = () => {
     const data = useMemo(() => (Array.isArray(pagosEntrantes) ? pagosEntrantes : []), [pagosEntrantes])
 
     const opcionesEstadoPago = useMemo(() => {
-        return [...new Set(data.map((item) => item?.estado).filter(Boolean))]
+        return ['Aprobado', 'Pendiente', 'Repetido', 'Sin match', 'Pago ya reportado']
+    }, [])
+
+    const opcionesMedioPago = useMemo(() => {
+        return [...new Set(data.map((item) => item?.medio_pago).filter(Boolean))]
     }, [data])
 
     const filterFunction = useMemo(() => (pago) => {
         const cumpleEstadoPago = !filtroEstadoPago || String(pago?.estado) === String(filtroEstadoPago)
-        return cumpleEstadoPago
-    }, [filtroEstadoPago])
+        const cumpleMedioPago = !filtroMedioPago || String(pago?.medio_pago) === String(filtroMedioPago)
+        return cumpleEstadoPago && cumpleMedioPago
+    }, [filtroEstadoPago, filtroMedioPago])
 
     const searchFunction = useMemo(() => (pago, termino) => {
         return (
@@ -64,7 +68,18 @@ const PagosEntrantes = () => {
         setImagenSeleccionada('')
         setPagoSeleccionado(null)
     }
-
+    const handleValidarManual = (pago) => {
+        if (window.confirm(`¿Estás seguro de validar el pago #${pago.id} manualmente?`)) {
+            validarManual(pago.id, {
+                onSuccess: (data) => {
+                    console.log(data.mensaje)
+                },
+                onError: (err) => {
+                    alert('Error al validar el pago: ' + (err.response?.data?.error || err.message))
+                }
+            })
+        }
+    }
     const columns = [
         { header: 'ID', key: 'id', className: 'fw-semibold' },
         {
@@ -104,7 +119,7 @@ const PagosEntrantes = () => {
                     estiloExtra = { backgroundColor: '#E1306C', color: 'white' }
                 } else if (medio.includes('nequi')) {
                     estiloExtra = { backgroundColor: '#733190', color: 'white' }
-                }
+                }   
 
                 return (
                     <CBadge
@@ -127,9 +142,18 @@ const PagosEntrantes = () => {
             renderFunc: (pago) => {
                 const estado = String(pago.estado || '').toLowerCase()
                 let color = 'secondary'
-                if (estado.includes('validado')) color = 'success'
-                else if (estado.includes('pendiente')) color = 'warning'
-                else if (estado.includes('rechazado')) color = 'danger'
+
+                if (estado === 'aprobado') {
+                    color = 'success'
+                } else if (estado === 'pendiente') {
+                    color = 'warning'
+                } else if (estado === 'repetido') {
+                    color = 'info'
+                } else if (estado === 'sin match') {
+                    color = 'danger'
+                } else if (estado === 'pago ya reportado') {
+                    color = 'secondary'
+                }
 
                 return (
                     <CBadge color={color} className="rounded-pill px-3 py-2 fw-semibold">
@@ -156,7 +180,7 @@ const PagosEntrantes = () => {
                         color="success"
                         size="sm"
                         className="text-white fw-semibold"
-                        onClick={() => navigate('/validar', { state: { url: pago.comprobante_url } })}
+                        onClick={() => handleValidarManual(pago)}
                     >
                         Validar
                     </CButton>
@@ -167,10 +191,16 @@ const PagosEntrantes = () => {
 
     const filterControls = (
         <CRow className="g-2">
-            <CCol md={12}>
+            <CCol md={6}>
                 <CFormSelect size="sm" value={filtroEstadoPago} onChange={(e) => setFiltroEstadoPago(e.target.value)}>
                     <option value="">Estado Pago: Todos</option>
                     {opcionesEstadoPago.map((estado) => <option key={estado} value={estado}>{estado}</option>)}
+                </CFormSelect>
+            </CCol>
+            <CCol md={6}>
+                <CFormSelect size="sm" value={filtroMedioPago} onChange={(e) => setFiltroMedioPago(e.target.value)}>
+                    <option value="">Medio Pago: Todos</option>
+                    {opcionesMedioPago.map((medio) => <option key={medio} value={medio}>{medio}</option>)}
                 </CFormSelect>
             </CCol>
         </CRow>
@@ -191,6 +221,7 @@ const PagosEntrantes = () => {
                 filterControls={filterControls}
                 onClear={() => {
                     setFiltroEstadoPago('')
+                    setFiltroMedioPago('')
                 }}
                 headerBadges={<CBadge color="success" className="px-3 py-2 rounded-pill">Total: {formatearMonto(totalMontoFiltrado)}</CBadge>}
                 searchPlaceholder="Cliente, referencia, servicio o medio"

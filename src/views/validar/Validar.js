@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import {
     CCard,
     CCardBody,
@@ -11,7 +12,8 @@ import {
 import DataTable from '../../components/DataTable'
 
 const Validar = () => {
-    const [urlComprobante, setUrlComprobante] = useState('')
+    const location = useLocation()
+    const [urlComprobante, setUrlComprobante] = useState(location.state?.url || '')
 
     const handleValidar = () => {
         console.log('Validando comprobante:', urlComprobante)

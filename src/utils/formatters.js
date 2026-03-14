@@ -59,6 +59,7 @@ export const getBadgeColorEstado = (estado) => {
         valor.includes('pagado') ||
         valor.includes('completado') ||
         valor.includes('encontrado') ||
+        valor.includes('validado') ||
         valor === '1'
     ) {
         return 'success'

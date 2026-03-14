@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
     CFormSelect,
     CRow,
@@ -17,10 +18,10 @@ import { LoadingState, ErrorState } from '../../components/TableFeedback'
 import DataTable from '../../components/DataTable'
 
 const PagosEntrantes = () => {
+    const navigate = useNavigate()
     const { data: pagosEntrantes, isLoading, error } = usePagosEntrantes()
 
     const [filtroEstadoPago, setFiltroEstadoPago] = useState('')
-    const [filtroMatchEstado, setFiltroMatchEstado] = useState('')
     const [modalVisible, setModalVisible] = useState(false)
     const [imagenSeleccionada, setImagenSeleccionada] = useState('')
     const [pagoSeleccionado, setPagoSeleccionado] = useState(null)
@@ -31,15 +32,10 @@ const PagosEntrantes = () => {
         return [...new Set(data.map((item) => item?.estado).filter(Boolean))]
     }, [data])
 
-    const opcionesMatchEstado = useMemo(() => {
-        return [...new Set(data.map((item) => item?.match_estado).filter(Boolean))]
-    }, [data])
-
     const filterFunction = useMemo(() => (pago) => {
         const cumpleEstadoPago = !filtroEstadoPago || String(pago?.estado) === String(filtroEstadoPago)
-        const cumpleMatchEstado = !filtroMatchEstado || String(pago?.match_estado) === String(filtroMatchEstado)
-        return cumpleEstadoPago && cumpleMatchEstado
-    }, [filtroEstadoPago, filtroMatchEstado])
+        return cumpleEstadoPago
+    }, [filtroEstadoPago])
 
     const searchFunction = useMemo(() => (pago, termino) => {
         return (
@@ -71,54 +67,110 @@ const PagosEntrantes = () => {
 
     const columns = [
         { header: 'ID', key: 'id', className: 'fw-semibold' },
-        { header: 'Cliente', key: 'cliente', renderFunc: (pago) => <div className="fw-semibold">{pago.cliente_id || '-'}</div> },
-        { header: 'Ordenante', key: 'ordenante', renderFunc: (pago) => <div className="fw-semibold">{pago.user_id || '-'}</div> },
-        { header: 'Servicio', key: 'combo', renderFunc: (pago) => <div className="fw-semibold">{pago.combo_adquirido || '-'}</div> },
-        { header: 'Monto', key: 'monto', className: 'fw-semibold', renderFunc: (pago) => formatearMonto(pago.monto_pagado) },
-        { header: 'Medio', key: 'medio', renderFunc: (pago) => <div className="fw-semibold">{pago.medio_pago || '-'}</div> },
         {
-            header: 'Estado Pago',
-            key: 'estado',
-            renderFunc: (pago) => (
-                <CBadge color={getBadgeColorEstado(pago.estado)} className="rounded-pill px-3 py-2 fw-semibold">
-                    {pago.estado || 'Sin estado'}
-                </CBadge>
-            )
+            header: 'Fecha',
+            key: 'fecha_comp',
+            renderFunc: (pago) => formatearFecha(pago.fecha_comprobante)
         },
         {
-            header: 'Match Estado',
-            key: 'match_estado',
-            renderFunc: (pago) => (
-                <CBadge color={getBadgeColorEstado(pago.match_estado)} className="rounded-pill px-3 py-2 fw-semibold">
-                    {pago.match_estado || 'Sin estado'}
-                </CBadge>
-            )
+            header: 'Hora',
+            key: 'hora_comp',
+            renderFunc: (pago) => pago.hora_comprobante || '-'
+        },
+        {
+            header: 'Cliente',
+            key: 'cliente',
+            renderFunc: (pago) => <div className="fw-semibold">{pago.cliente_id || '-'}</div>
+        },
+        {
+            header: 'Combo',
+            key: 'combo',
+            renderFunc: (pago) => <div className="fw-semibold">{pago.combo_adquirido || '-'}</div>
+        },
+        {
+            header: 'Monto',
+            key: 'monto',
+            className: 'fw-semibold',
+            renderFunc: (pago) => formatearMonto(pago.monto_pagado)
+        },
+        {
+            header: 'Medio',
+            key: 'medio',
+            renderFunc: (pago) => {
+                const medio = String(pago.medio_pago || '').toLowerCase()
+                let estiloExtra = {}
+
+                if (medio.includes('bre b') || medio.includes('bre-b')) {
+                    estiloExtra = { backgroundColor: '#E1306C', color: 'white' }
+                } else if (medio.includes('nequi')) {
+                    estiloExtra = { backgroundColor: '#733190', color: 'white' }
+                }
+
+                return (
+                    <CBadge
+                        className="rounded-pill px-3 py-2 fw-semibold"
+                        style={{
+                            ...estiloExtra,
+                            border: 'none',
+                            ...(Object.keys(estiloExtra).length === 0 ? { backgroundColor: '#6c757d', color: 'white' } : {})
+                        }}
+                    >
+                        {pago.medio_pago || '-'}
+                    </CBadge>
+                )
+            }
         },
         { header: 'Referencia', key: 'referencia_pago', className: 'text-break' },
-        { header: 'Fecha Comprobante', key: 'fecha_comp', renderFunc: (pago) => formatearFecha(pago.fecha_comprobante) },
         {
-            header: 'Comprobante',
-            key: 'comprobante',
+            header: 'Estado',
+            key: 'estado',
+            renderFunc: (pago) => {
+                const estado = String(pago.estado || '').toLowerCase()
+                let color = 'secondary'
+                if (estado.includes('validado')) color = 'success'
+                else if (estado.includes('pendiente')) color = 'warning'
+                else if (estado.includes('rechazado')) color = 'danger'
+
+                return (
+                    <CBadge color={color} className="rounded-pill px-3 py-2 fw-semibold">
+                        {pago.estado ? pago.estado : 'Sin definir'}
+                    </CBadge>
+                )
+            }
+        },
+        {
+            header: 'Acciones',
+            key: 'acciones',
             renderFunc: (pago) => (
-                <CButton color="primary" variant="outline" size="sm" onClick={() => handleVerComprobante(pago)} disabled={!pago?.comprobante_url}>
-                    Ver
-                </CButton>
+                <div className="d-flex gap-2">
+                    <CButton
+                        color="primary"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleVerComprobante(pago)}
+                        disabled={!pago?.comprobante_url}
+                    >
+                        Ver
+                    </CButton>
+                    <CButton
+                        color="success"
+                        size="sm"
+                        className="text-white fw-semibold"
+                        onClick={() => navigate('/validar', { state: { url: pago.comprobante_url } })}
+                    >
+                        Validar
+                    </CButton>
+                </div>
             )
         },
     ]
 
     const filterControls = (
         <CRow className="g-2">
-            <CCol md={6}>
+            <CCol md={12}>
                 <CFormSelect size="sm" value={filtroEstadoPago} onChange={(e) => setFiltroEstadoPago(e.target.value)}>
                     <option value="">Estado Pago: Todos</option>
                     {opcionesEstadoPago.map((estado) => <option key={estado} value={estado}>{estado}</option>)}
-                </CFormSelect>
-            </CCol>
-            <CCol md={6}>
-                <CFormSelect size="sm" value={filtroMatchEstado} onChange={(e) => setFiltroMatchEstado(e.target.value)}>
-                    <option value="">Match: Todos</option>
-                    {opcionesMatchEstado.map((estado) => <option key={estado} value={estado}>{estado}</option>)}
                 </CFormSelect>
             </CCol>
         </CRow>
@@ -139,7 +191,6 @@ const PagosEntrantes = () => {
                 filterControls={filterControls}
                 onClear={() => {
                     setFiltroEstadoPago('')
-                    setFiltroMatchEstado('')
                 }}
                 headerBadges={<CBadge color="success" className="px-3 py-2 rounded-pill">Total: {formatearMonto(totalMontoFiltrado)}</CBadge>}
                 searchPlaceholder="Cliente, referencia, servicio o medio"

@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux'
 import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
 import './scss/examples.scss'
+import './styles/premium-ui.css'
 import ProtectedRoute from './components/ProtectedRoute'
 
 // Pages

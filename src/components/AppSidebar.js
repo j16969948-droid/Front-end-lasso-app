@@ -61,7 +61,7 @@ const AppSidebar = () => {
   return (
     <Suspense fallback={<div>Cargando menú...</div>}>
       <CSidebar
-        className="border-end"
+        className="border-end premium-sidebar"
         colorScheme="dark"
         position="fixed"
         unfoldable={unfoldable}

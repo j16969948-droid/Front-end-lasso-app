@@ -7,8 +7,11 @@ import {
     CCard,
     CCardBody,
     CBadge,
+    CSpinner,
+    CAlert,
 } from '@coreui/react'
 import { usePagosTotales } from '../../core/hooks/usePagosTotales'
+import { useValidarComprobante } from '../../core/hooks/useValidarComprobante'
 import { formatearMonto } from '../../utils/formatters'
 import { LoadingState, ErrorState } from '../../components/TableFeedback'
 import DataTable from '../../components/DataTable'
@@ -16,28 +19,29 @@ import DataTable from '../../components/DataTable'
 // ── Validador de comprobantes ─────────────────────────────────────────────────
 const ValidadorComprobante = () => {
     const [url, setUrl] = useState('')
-    const [resultado, setResultado] = useState(null)
+    const { mutate: validar, data: resultado, isPending, error, reset } = useValidarComprobante()
 
     const handleValidar = () => {
         if (!url.trim()) return
-        // Lógica de OCR / validación futura
-        console.log('Validando:', url)
-        setResultado(null) // placeholder
+        validar(url.trim())
     }
 
     const handleLimpiar = () => {
         setUrl('')
-        setResultado(null)
+        reset()
     }
 
+    const ocr = resultado?.datos_ocr || null
+    const pagoExistente = resultado?.pago_existente || null
+
     const campos = [
-        { label: 'HORA', value: resultado?.hora ?? '-' },
-        { label: 'REFERENCIA', value: resultado?.referencia ?? '-' },
-        { label: 'MONTO', value: resultado?.monto ?? '-' },
-        { label: 'MEDIO', value: resultado?.medio ?? '-' },
-        { label: 'CLIENTE', value: resultado?.cliente ?? '-' },
-        { label: 'NÚMERO', value: resultado?.numero ?? '-' },
-        { label: 'FECHA', value: resultado?.fecha ?? '-' },
+        { label: 'HORA', value: ocr?.hora_comprobante },
+        { label: 'REFERENCIA', value: ocr?.referencia_pago },
+        { label: 'MONTO', value: ocr ? formatearMonto(ocr.monto_pagado) : null },
+        { label: 'MEDIO', value: ocr?.medio_pago },
+        { label: 'RED', value: ocr?.red_pago },
+        { label: 'FECHA', value: ocr?.fecha_comprobante },
+        { label: 'ESTADO', value: pagoExistente?.estado },
     ]
 
     return (
@@ -60,25 +64,43 @@ const ValidadorComprobante = () => {
                         placeholder="Pega aquí el enlace del comprobante..."
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleValidar()}
                         className="premium-input"
+                        disabled={isPending}
                     />
                     <CButton
                         color="success"
                         className="px-4 fw-semibold rounded-pill"
                         onClick={handleValidar}
+                        disabled={isPending || !url.trim()}
                         style={{ whiteSpace: 'nowrap' }}
                     >
-                        Validar
+                        {isPending ? <><CSpinner size="sm" className="me-1" />Analizando...</> : 'Validar'}
                     </CButton>
                     <CButton
                         color="secondary"
                         variant="ghost"
                         className="px-3 rounded-pill"
                         onClick={handleLimpiar}
+                        disabled={isPending}
                     >
                         Limpiar
                     </CButton>
                 </div>
+
+                {/* Error */}
+                {error && (
+                    <CAlert color="danger" className="py-2 small">
+                        ❌ {error?.response?.data?.message || 'Error al analizar el comprobante.'}
+                    </CAlert>
+                )}
+
+                {/* Pago existente encontrado */}
+                {pagoExistente && (
+                    <CAlert color="info" className="py-2 small mb-3">
+                        ✅ Pago encontrado en el sistema — ID <strong>#{pagoExistente.id}</strong> · Estado: <strong>{pagoExistente.estado}</strong>
+                    </CAlert>
+                )}
 
                 {/* Campos de resultado */}
                 <CRow className="g-2">
@@ -86,13 +108,17 @@ const ValidadorComprobante = () => {
                         <CCol key={c.label} xs={6} sm={4} md={3} lg="auto" className="flex-grow-1">
                             <div
                                 className="rounded-3 p-3 text-center"
-                                style={{ background: 'var(--cui-tertiary-bg, #f8f9fa)', minWidth: '90px' }}
+                                style={{
+                                    background: ocr && c.value ? 'var(--cui-tertiary-bg, #f0fdf4)' : 'var(--cui-tertiary-bg, #f8f9fa)',
+                                    minWidth: '90px',
+                                    transition: 'background 0.3s'
+                                }}
                             >
                                 <div className="text-secondary fw-semibold" style={{ fontSize: '0.65rem', letterSpacing: '0.05em' }}>
                                     {c.label}
                                 </div>
                                 <div className="fw-bold mt-1" style={{ fontSize: '0.85rem' }}>
-                                    {c.value}
+                                    {isPending ? <CSpinner size="sm" /> : (c.value || '-')}
                                 </div>
                             </div>
                         </CCol>

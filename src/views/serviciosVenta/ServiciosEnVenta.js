@@ -157,11 +157,11 @@ const ServiciosEnVenta = () => {
             key: 'acciones', 
             renderFunc: (s) => (
                 <div className="d-flex gap-2">
-                    <CButton className="btn-premium-action btn-action-edit" onClick={() => abrirModalEditar(s)}>
+                    <CButton className="btn-premium btn-premium-warning" onClick={() => abrirModalEditar(s)}>
                         <CIcon icon={cilPencil} size="sm" className="me-1" />
                         Editar
                     </CButton>
-                    <CButton className="btn-premium-action btn-action-delete" onClick={() => abrirModalEliminar(s)}>
+                    <CButton className="btn-premium btn-premium-danger" onClick={() => abrirModalEliminar(s)}>
                         <CIcon icon={cilTrash} size="sm" className="me-1" />
                         Eliminar
                     </CButton>
@@ -201,9 +201,9 @@ const ServiciosEnVenta = () => {
                         <CCol md={6}><CFormLabel>Teléfono proveedor</CFormLabel><CFormInput name="telefono_proveedor" value={formulario.telefono_proveedor} onChange={handleChangeFormulario} /></CCol>
                     </CRow>
                 </CModalBody>
-                <CModalFooter className="border-0 pt-0">
-                    <CButton color="secondary" variant="ghost" onClick={cerrarModalCrear} className="rounded-pill px-4">Cancelar</CButton>
-                    <CButton color="primary" onClick={handleCrearServicio} disabled={createServicio.isPending} className="rounded-pill px-4">
+                <CModalFooter className="border-0 pt-0 gap-2">
+                    <CButton color="secondary" onClick={cerrarModalCrear} className="btn-premium btn-premium-secondary">Cancelar</CButton>
+                    <CButton color="primary" onClick={handleCrearServicio} disabled={createServicio.isPending} className="btn-premium btn-premium-primary">
                         {createServicio.isPending ? 'Guardando...' : 'Guardar Servicio'}
                     </CButton>
                 </CModalFooter>
@@ -231,9 +231,9 @@ const ServiciosEnVenta = () => {
                         <CCol md={6}><CFormLabel>Teléfono proveedor</CFormLabel><CFormInput name="telefono_proveedor" value={formulario.telefono_proveedor} onChange={handleChangeFormulario} /></CCol>
                     </CRow>
                 </CModalBody>
-                <CModalFooter>
-                    <CButton color="secondary" onClick={cerrarModalEditar}>Cancelar</CButton>
-                    <CButton color="primary" onClick={handleEditarServicio} disabled={updateServicio.isPending}>
+                <CModalFooter className="border-0 pt-0 gap-2">
+                    <CButton color="secondary" onClick={cerrarModalEditar} className="btn-premium btn-premium-secondary">Cancelar</CButton>
+                    <CButton color="primary" onClick={handleEditarServicio} disabled={updateServicio.isPending} className="btn-premium btn-premium-primary">
                         {updateServicio.isPending ? 'Actualizando...' : 'Actualizar'}
                     </CButton>
                 </CModalFooter>
@@ -248,9 +248,9 @@ const ServiciosEnVenta = () => {
                         <div>No hay servicio seleccionado.</div>
                     )}
                 </CModalBody>
-                <CModalFooter>
-                    <CButton color="secondary" onClick={cerrarModalEliminar}>Cancelar</CButton>
-                    <CButton color="danger" onClick={handleEliminarServicio}>Eliminar</CButton>
+                <CModalFooter className="border-0 pt-0 gap-2">
+                    <CButton color="secondary" onClick={cerrarModalEliminar} className="btn-premium btn-premium-secondary">Cancelar</CButton>
+                    <CButton color="danger" onClick={handleEliminarServicio} className="btn-premium btn-premium-danger">Eliminar</CButton>
                 </CModalFooter>
             </CModal>
         </>

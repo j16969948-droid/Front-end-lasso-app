@@ -194,7 +194,7 @@ const PagosEntrantes = () => {
             renderFunc: (pago) => (
                 <div className="d-flex gap-2">
                     <CButton
-                        className="btn-premium-action btn-action-view"
+                        className="btn-premium btn-premium-primary"
                         onClick={() => handleVerComprobante(pago)}
                         disabled={!pago?.comprobante_url}
                     >
@@ -202,7 +202,7 @@ const PagosEntrantes = () => {
                         Ver
                     </CButton>
                     <CButton
-                        className="btn-premium-action btn-action-validate"
+                        className="btn-premium btn-premium-success"
                         onClick={() => handleValidarManual(pago)}
                     >
                         <CIcon icon={cilCheckCircle} size="sm" className="me-1" />
@@ -382,13 +382,14 @@ const PagosEntrantes = () => {
                     {imagenSeleccionada && (
                         <CButton
                             color="dark"
-                            className="rounded-pill px-4 fw-semibold"
+                            className="btn-premium btn-premium-primary"
                             onClick={() => window.open(imagenSeleccionada, '_blank')}
                         >
+                            <CIcon icon={cilExternalLink} size="sm" className="me-1" />
                             Abrir imagen
                         </CButton>
                     )}
-                    <CButton color="secondary" variant="ghost" onClick={cerrarModal} className="rounded-pill px-4">
+                    <CButton color="secondary" onClick={cerrarModal} className="btn-premium btn-premium-secondary">
                         Cerrar
                     </CButton>
                 </CModalFooter>

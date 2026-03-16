@@ -20,11 +20,15 @@ const getIcon = (name) => {
     const lowerName = name.toLowerCase();
     switch (lowerName) {
         case 'dashboard': return cilSpeedometer;
+        case 'gestión ventas': return cilCart;
+        case 'gestión inventario': return cilStorage;
+        case 'ventas': return cilCart;
+        case 'inventario': return cilStorage;
+        case 'administración': return cilSettings;
         case 'admin': return cilSettings;
         case 'cliente': return cilUser;
         case 'pagos entrantes': return cilWallet;
         case 'pagos totales': return cilWallet;
-        case 'inventario': return cilStorage;
         case 'servicios en venta': return cilCart;
         case 'validar': return cilCheckCircle;
         default: return cilPuzzle;

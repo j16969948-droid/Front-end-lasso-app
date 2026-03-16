@@ -70,7 +70,7 @@ const ValidadorComprobante = () => {
                     />
                     <CButton
                         color="success text-white"
-                        className="px-4 fw-semibold rounded-pill"
+                        className="btn-premium btn-premium-success"
                         onClick={handleValidar}
                         disabled={isPending || !url.trim()}
                         style={{ whiteSpace: 'nowrap' }}
@@ -79,8 +79,7 @@ const ValidadorComprobante = () => {
                     </CButton>
                     <CButton
                         color="secondary"
-                        variant="ghost"
-                        className="px-3 rounded-pill"
+                        className="btn-premium btn-premium-secondary"
                         onClick={handleLimpiar}
                         disabled={isPending}
                     >
@@ -187,12 +186,12 @@ const PagosEmail = () => {
                 />
             </CCol>
             <CCol md={7}>
-                <div className="d-flex flex-wrap gap-1">
-                    <CButton color="primary" variant="outline" size="sm"
+                <div className="d-flex flex-wrap gap-2">
+                    <CButton color="primary" size="sm" className="btn-premium btn-premium-primary py-1 px-3"
                         onClick={() => setFechaFiltro(new Date().toISOString().split('T')[0])}>
                         Hoy
                     </CButton>
-                    <CButton color="secondary" variant="outline" size="sm"
+                    <CButton color="secondary" size="sm" className="btn-premium btn-premium-secondary py-1 px-3"
                         onClick={() => {
                             const ayer = new Date()
                             ayer.setDate(ayer.getDate() - 1)
@@ -200,7 +199,7 @@ const PagosEmail = () => {
                         }}>
                         Ayer
                     </CButton>
-                    <CButton color="secondary" variant="outline" size="sm"
+                    <CButton color="secondary" size="sm" className="btn-premium btn-premium-secondary py-1 px-3"
                         onClick={() => setFechaFiltro('')}>
                         Todos
                     </CButton>

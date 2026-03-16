@@ -172,11 +172,11 @@ const InventarioGeneral = () => {
             key: 'acciones',
             renderFunc: (row) => (
                 <div className="d-flex gap-2">
-                    <CButton className="btn-premium-action btn-action-edit" onClick={() => abrirModalEditar(row)}>
+                    <CButton className="btn-premium btn-premium-warning" onClick={() => abrirModalEditar(row)}>
                         <CIcon icon={cilPencil} size="sm" className="me-1" />
                         Editar
                     </CButton>
-                    <CButton className="btn-premium-action btn-action-delete" onClick={() => abrirModalEliminar(row)}>
+                    <CButton className="btn-premium btn-premium-danger" onClick={() => abrirModalEliminar(row)}>
                         <CIcon icon={cilTrash} size="sm" className="me-1" />
                         Eliminar
                     </CButton>
@@ -252,9 +252,9 @@ const InventarioGeneral = () => {
                         </CCol>
                     </CRow>
                 </CModalBody>
-                <CModalFooter className="border-0 pt-0">
-                    <CButton color="secondary" variant="ghost" onClick={cerrarModalCrear} className="rounded-pill px-4">Cancelar</CButton>
-                    <CButton color="primary" onClick={handleCrearRegistro} disabled={createMutation.isPending} className="rounded-pill px-4">
+                <CModalFooter className="border-0 pt-0 gap-2">
+                    <CButton color="secondary" onClick={cerrarModalCrear} className="btn-premium btn-premium-secondary">Cancelar</CButton>
+                    <CButton color="primary" onClick={handleCrearRegistro} disabled={createMutation.isPending} className="btn-premium btn-premium-primary">
                         {createMutation.isPending ? 'Guardando...' : 'Guardar Registro'}
                     </CButton>
                 </CModalFooter>
@@ -292,9 +292,9 @@ const InventarioGeneral = () => {
                         </CCol>
                     </CRow>
                 </CModalBody>
-                <CModalFooter>
-                    <CButton color="secondary" onClick={cerrarModalEditar}>Cancelar</CButton>
-                    <CButton color="primary" onClick={handleEditarRegistro} disabled={updateMutation.isPending}>
+                <CModalFooter className="border-0 pt-0 gap-2">
+                    <CButton color="secondary" onClick={cerrarModalEditar} className="btn-premium btn-premium-secondary">Cancelar</CButton>
+                    <CButton color="primary" onClick={handleEditarRegistro} disabled={updateMutation.isPending} className="btn-premium btn-premium-primary">
                         {updateMutation.isPending ? 'Actualizando...' : 'Actualizar'}
                     </CButton>
                 </CModalFooter>
@@ -309,9 +309,9 @@ const InventarioGeneral = () => {
                         <div>No hay registro seleccionado.</div>
                     )}
                 </CModalBody>
-                <CModalFooter>
-                    <CButton color="secondary" onClick={cerrarModalEliminar}>Cancelar</CButton>
-                    <CButton color="danger" onClick={handleEliminarRegistro} disabled={deleteMutation.isPending}>
+                <CModalFooter className="border-0 pt-0 gap-2">
+                    <CButton color="secondary" onClick={cerrarModalEliminar} className="btn-premium btn-premium-secondary">Cancelar</CButton>
+                    <CButton color="danger" onClick={handleEliminarRegistro} disabled={deleteMutation.isPending} className="btn-premium btn-premium-danger">
                         {deleteMutation.isPending ? 'Eliminando...' : 'Eliminar'}
                     </CButton>
                 </CModalFooter>

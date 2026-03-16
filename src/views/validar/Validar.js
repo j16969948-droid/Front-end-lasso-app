@@ -57,7 +57,7 @@ const Validar = () => {
                         <CCol md={3}>
                             <CButton
                                 color="primary"
-                                className="w-100 py-2 fw-semibold rounded-pill shadow-sm"
+                                className="w-100 btn-premium btn-premium-primary"
                                 onClick={handleValidar}
                             >
                                 Validar Ahora

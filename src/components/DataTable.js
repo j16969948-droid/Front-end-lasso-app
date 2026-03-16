@@ -75,7 +75,7 @@ const DataTable = ({
                         <div className="d-flex flex-wrap gap-2">
                             {headerBadges}
                             {onAddItem && (
-                                <CButton color="primary" className="rounded-pill px-4" onClick={onAddItem}>
+                                <CButton color="primary" className="btn-premium btn-premium-primary" onClick={onAddItem}>
                                     {addItemLabel}
                                 </CButton>
                             )}
@@ -97,7 +97,7 @@ const DataTable = ({
                             </CCol>
                             {filterControls && <CCol md={6}>{filterControls}</CCol>}
                             <CCol md={filterControls ? 2 : 2}>
-                                <CButton color="secondary" variant="outline" className="w-100 rounded-pill" onClick={handleLimpiar}>Limpiar</CButton>
+                                <CButton color="secondary" className="w-100 btn-premium btn-premium-secondary" onClick={handleLimpiar}>Limpiar</CButton>
                             </CCol>
                         </CRow>
                     </div>

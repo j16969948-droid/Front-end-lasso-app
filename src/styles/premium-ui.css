@@ -242,30 +242,103 @@
   font-weight: 600 !important;
 }
 
-/* Premium Action Buttons */
-.btn-premium-action {
+/* Base Premium Button Class */
+.btn-premium {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   border-radius: 10px !important;
-  padding: 0.5rem 1rem !important;
+  padding: 0.5rem 1.25rem !important;
   font-weight: 600 !important;
-  font-size: 0.82rem !important;
+  font-size: 0.85rem !important;
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
   border: 1px solid transparent !important;
   text-transform: none !important;
 }
 
-.btn-premium-action:hover {
-  transform: translateY(-3px) scale(1.05);
+.btn-premium:hover {
+  transform: translateY(-3px) scale(1.02);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-.btn-premium-action:active {
+.btn-premium:active {
   transform: translateY(-1px) scale(0.98);
 }
 
+/* Premium Button Variants */
+.btn-premium-primary {
+  background-color: rgba(99, 102, 241, 0.15) !important;
+  color: #6366f1 !important;
+  border: 1px solid rgba(99, 102, 241, 0.3) !important;
+}
+
+.btn-premium-primary:hover {
+  background-color: #6366f1 !important;
+  color: white !important;
+  border-color: #6366f1 !important;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+}
+
+.btn-premium-secondary {
+  background-color: rgba(100, 116, 139, 0.1) !important;
+  color: #64748b !important;
+  border: 1px solid rgba(100, 116, 139, 0.2) !important;
+}
+
+.btn-premium-secondary:hover {
+  background-color: #64748b !important;
+  color: white !important;
+  border-color: #64748b !important;
+  box-shadow: 0 4px 12px rgba(100, 116, 139, 0.2) !important;
+}
+
+.btn-premium-success {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  color: #10b981 !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+}
+
+.btn-premium-success:hover {
+  background-color: #10b981 !important;
+  color: white !important;
+  border-color: #10b981 !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+}
+
+.btn-premium-danger {
+  background-color: rgba(244, 63, 94, 0.15) !important;
+  color: #f43f5e !important;
+  border: 1px solid rgba(244, 63, 94, 0.3) !important;
+}
+
+.btn-premium-danger:hover {
+  background-color: #f43f5e !important;
+  color: white !important;
+  border-color: #f43f5e !important;
+  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3) !important;
+}
+
+.btn-premium-warning {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  color: #f59e0b !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+}
+
+.btn-premium-warning:hover {
+  background-color: #f59e0b !important;
+  color: white !important;
+  border-color: #f59e0b !important;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
+}
+
+/* Dark mode specific adjustments */
+[data-coreui-theme="dark"] .btn-premium-primary { border-color: rgba(99, 102, 241, 0.3) !important; }
+[data-coreui-theme="dark"] .btn-premium-success { border-color: rgba(16, 185, 129, 0.3) !important; }
+[data-coreui-theme="dark"] .btn-premium-danger { border-color: rgba(244, 63, 94, 0.3) !important; }
+[data-coreui-theme="dark"] .btn-premium-warning { border-color: rgba(245, 158, 11, 0.3) !important; }
+
+/* Legacy Action Buttons (backward compatibility) */
 .btn-action-view {
   background-color: rgba(99, 102, 241, 0.15) !important;
   color: #6366f1 !important;
@@ -276,7 +349,6 @@
   background-color: #6366f1 !important;
   color: white !important;
   border-color: #6366f1 !important;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
 }
 
 .btn-action-edit {
@@ -289,7 +361,6 @@
   background-color: #f59e0b !important;
   color: white !important;
   border-color: #f59e0b !important;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
 }
 
 .btn-action-delete {
@@ -302,7 +373,6 @@
   background-color: #f43f5e !important;
   color: white !important;
   border-color: #f43f5e !important;
-  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3) !important;
 }
 
 .btn-action-validate {
@@ -315,10 +385,23 @@
   background-color: #10b981 !important;
   color: white !important;
   border-color: #10b981 !important;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
 }
 
-[data-coreui-theme="dark"] .btn-action-view { border-color: rgba(99, 102, 241, 0.3) !important; }
-[data-coreui-theme="dark"] .btn-action-edit { border-color: rgba(245, 158, 11, 0.3) !important; }
-[data-coreui-theme="dark"] .btn-action-delete { border-color: rgba(244, 63, 94, 0.3) !important; }
-[data-coreui-theme="dark"] .btn-action-validate { border-color: rgba(16, 185, 129, 0.3) !important; }
+/* Base class for all action buttons to inherit transitions and effects */
+.btn-action-view, .btn-action-edit, .btn-action-delete, .btn-action-validate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 10px !important;
+  padding: 0.5rem 1rem !important;
+  font-weight: 600 !important;
+  font-size: 0.82rem !important;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  border: 1px solid transparent !important;
+}
+
+.btn-action-view:hover, .btn-action-edit:hover, .btn-action-delete:hover, .btn-action-validate:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}

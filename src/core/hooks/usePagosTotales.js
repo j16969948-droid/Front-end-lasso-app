@@ -1,15 +1,14 @@
 import Api from "../services/ApiService";
 import { useQuery } from "@tanstack/react-query";
 
-const getPagosTotales = async () => {
-    const response = await Api.get("api/v1/pagos/email");
-    console.log(response.data);
+const getPagosTotales = async (params = {}) => {
+    const response = await Api.get("api/v1/pagos/email", { params });
     return response.data;
 };
 
-export const usePagosTotales = () => {
+export const usePagosTotales = (filters = {}) => {
     return useQuery({
-        queryKey: ["pagosTotales"],
-        queryFn: getPagosTotales,
+        queryKey: ["pagosTotales", filters],
+        queryFn: () => getPagosTotales(filters),
     });
 };

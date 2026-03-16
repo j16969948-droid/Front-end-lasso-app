@@ -1,16 +1,16 @@
 import Api from "../services/ApiService";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-const getPagosEntrantes = async () => {
-    const response = await Api.get("api/v1/pagos-entrantes");
+const getPagosEntrantes = async (params = {}) => {
+    const response = await Api.get("api/v1/pagos-entrantes", { params });
     console.log(response.data);
     return response.data;
 };
 
-export const usePagosEntrantes = () => {
+export const usePagosEntrantes = (filters = {}) => {
     return useQuery({
-        queryKey: ["pagosEntrantes"],
-        queryFn: getPagosEntrantes,
+        queryKey: ["pagosEntrantes", filters],
+        queryFn: () => getPagosEntrantes(filters),
     });
 };
 

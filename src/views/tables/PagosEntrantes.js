@@ -11,22 +11,40 @@ import {
     CModalBody,
     CModalFooter,
     CFormLabel,
+    CFormInput,
+    CWidgetStatsC,
+    CCard,
+    CCardBody,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilExternalLink, cilCheckCircle } from '@coreui/icons'
 import { usePagosEntrantes, useValidarPagoManual } from '../../core/hooks/usePagosEntrantes'
-import { formatearMonto, formatearFecha } from '../../utils/formatters'
+import { formatearMonto } from '../../utils/formatters'
 import { LoadingState, ErrorState } from '../../components/TableFeedback'
 import DataTable from '../../components/DataTable'
 
 const PagosEntrantes = () => {
-    const { data: pagosEntrantes, isLoading, error } = usePagosEntrantes()
-    const { mutate: validarManual } = useValidarPagoManual()
     const [filtroEstadoPago, setFiltroEstadoPago] = useState('')
     const [filtroMedioPago, setFiltroMedioPago] = useState('')
+    const [filtroFecha, setFiltroFecha] = useState('')
+
+    const filters = useMemo(() => {
+        return {
+            estado: filtroEstadoPago || undefined,
+            medio_pago: filtroMedioPago || undefined,
+            fecha: filtroFecha || undefined,
+            statistics: 1
+        };
+    }, [filtroEstadoPago, filtroMedioPago, filtroFecha])
+
+    const { data: responseData, isLoading, error } = usePagosEntrantes(filters)
+    const { mutate: validarManual } = useValidarPagoManual()
     const [modalVisible, setModalVisible] = useState(false)
     const [imagenSeleccionada, setImagenSeleccionada] = useState('')
     const [pagoSeleccionado, setPagoSeleccionado] = useState(null)
+
+    const pagosEntrantes = responseData?.data || []
+    const statistics = responseData?.statistics || null
 
     const data = useMemo(() => (Array.isArray(pagosEntrantes) ? pagosEntrantes : []), [pagosEntrantes])
 
@@ -38,11 +56,7 @@ const PagosEntrantes = () => {
         return [...new Set(data.map((item) => item?.medio_pago).filter(Boolean))]
     }, [data])
 
-    const filterFunction = useMemo(() => (pago) => {
-        const cumpleEstadoPago = !filtroEstadoPago || String(pago?.estado) === String(filtroEstadoPago)
-        const cumpleMedioPago = !filtroMedioPago || String(pago?.medio_pago) === String(filtroMedioPago)
-        return cumpleEstadoPago && cumpleMedioPago
-    }, [filtroEstadoPago, filtroMedioPago])
+    const filterFunction = null // Filtering handled by backend
 
     const searchFunction = useMemo(() => (pago, termino) => {
         return (
@@ -56,8 +70,8 @@ const PagosEntrantes = () => {
     }, [])
 
     const totalMontoFiltrado = useMemo(() => {
-        return data.filter(filterFunction).reduce((acc, pago) => acc + Number(pago?.monto_pagado || 0), 0)
-    }, [data, filterFunction])
+        return statistics?.monto_total_aprobados || 0
+    }, [statistics])
 
     const handleVerComprobante = (pago) => {
         if (!pago?.comprobante_url) return
@@ -87,12 +101,17 @@ const PagosEntrantes = () => {
         { header: 'ID', key: 'id', className: 'fw-semibold' },
         {
             header: 'Fecha',
-            key: 'fecha_comp',
-            renderFunc: (pago) => formatearFecha(pago.fecha_comprobante)
+            key: 'fecha_comprobante',
+            renderFunc: (pago) => {
+                if (!pago.fecha_comprobante) return '-'
+                // Convert to YYYY-MM-DD string
+                const datePart = String(pago.fecha_comprobante).split(/[ T]/)[0]
+                return datePart.replace(/\//g, '-') // Ensure dashes
+            }
         },
         {
             header: 'Hora',
-            key: 'hora_comp',
+            key: 'hora_comprobante',
             renderFunc: (pago) => pago.hora_comprobante || '-'
         },
         {
@@ -122,7 +141,7 @@ const PagosEntrantes = () => {
                     estiloExtra = { backgroundColor: '#E1306C', color: 'white' }
                 } else if (medio.includes('nequi')) {
                     estiloExtra = { backgroundColor: '#733190', color: 'white' }
-                }   
+                }
 
                 return (
                     <CBadge
@@ -191,15 +210,25 @@ const PagosEntrantes = () => {
     ]
 
     const filterControls = (
-        <CRow className="g-2">
-            <CCol md={6}>
+        <CRow className="g-3">
+            <CCol md={4}>
+                <CFormLabel className="fw-semibold small text-uppercase text-secondary">Fecha</CFormLabel>
+                <CFormInput
+                    type="date"
+                    className="premium-input"
+                    size="sm"
+                    value={filtroFecha}
+                    onChange={(e) => setFiltroFecha(e.target.value)}
+                />
+            </CCol>
+            <CCol md={4}>
                 <CFormLabel className="fw-semibold small text-uppercase text-secondary">Estado</CFormLabel>
                 <CFormSelect className="premium-input" size="sm" value={filtroEstadoPago} onChange={(e) => setFiltroEstadoPago(e.target.value)}>
                     <option value="">Todos los estados</option>
                     {opcionesEstadoPago.map((estado) => <option key={estado} value={estado}>{estado}</option>)}
                 </CFormSelect>
             </CCol>
-            <CCol md={6}>
+            <CCol md={4}>
                 <CFormLabel className="fw-semibold small text-uppercase text-secondary">Medio de Pago</CFormLabel>
                 <CFormSelect className="premium-input" size="sm" value={filtroMedioPago} onChange={(e) => setFiltroMedioPago(e.target.value)}>
                     <option value="">Todos los medios</option>
@@ -214,6 +243,51 @@ const PagosEntrantes = () => {
 
     return (
         <>
+            {statistics && (
+                <CRow className="mb-4">
+                    <CCol sm={6} lg={3}>
+                        <CWidgetStatsC
+                            className="mb-3 premium-card h-100 shadow-sm border-0 border-start border-4 border-primary"
+                            icon={<CIcon icon={cilCheckCircle} height={36} className="text-primary" />}
+                            progress={{ color: 'primary', value: 100 }}
+                            text="Total Pagos Hoy"
+                            title="Pagos del Día"
+                            value={statistics.total_pagos_dia || 0}
+                        />
+                    </CCol>
+                    <CCol sm={6} lg={3}>
+                        <CWidgetStatsC
+                            className="mb-3 premium-card h-100 shadow-sm border-0 border-start border-4 border-success"
+                            icon={<CIcon icon={cilCheckCircle} height={36} className="text-success" />}
+                            progress={{ color: 'success', value: 100 }}
+                            text="Pagos validados satisfactoriamente"
+                            title="Aprobados"
+                            value={statistics.total_aprobados || 0}
+                        />
+                    </CCol>
+                    <CCol sm={6} lg={3}>
+                        <CWidgetStatsC
+                            className="mb-3 premium-card h-100 shadow-sm border-0 border-start border-4 border-warning"
+                            icon={<CIcon icon={cilCheckCircle} height={36} className="text-warning" />}
+                            progress={{ color: 'warning', value: 100 }}
+                            text="Pagos que requieren revisión"
+                            title="Pendientes"
+                            value={statistics.total_pendientes || 0}
+                        />
+                    </CCol>
+                    <CCol sm={6} lg={3}>
+                        <CWidgetStatsC
+                            className="mb-3 premium-card h-100 shadow-sm border-0 border-start border-4 border-info"
+                            icon={<CIcon icon={cilCheckCircle} height={36} className="text-info" />}
+                            progress={{ color: 'info', value: 100 }}
+                            text="Monto total de pagos aprobados"
+                            title="Monto Aprobado"
+                            value={formatearMonto(statistics.monto_total_aprobados || 0)}
+                        />
+                    </CCol>
+                </CRow>
+            )}
+
             <DataTable
                 title="Pagos Entrantes"
                 subtitle="Gestiona, filtra y revisa el estado de los pagos recibidos"
@@ -225,6 +299,7 @@ const PagosEntrantes = () => {
                 onClear={() => {
                     setFiltroEstadoPago('')
                     setFiltroMedioPago('')
+                    setFiltroFecha('')
                 }}
                 headerBadges={<CBadge color="success" className="px-3 py-2 rounded-pill">Total: {formatearMonto(totalMontoFiltrado)}</CBadge>}
                 searchPlaceholder="Cliente, referencia, servicio o medio"

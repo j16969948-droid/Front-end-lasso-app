@@ -306,6 +306,7 @@ const PagosEntrantes = () => {
                     setFiltroFecha('')
                 }}
                 searchPlaceholder="Cliente, referencia, servicio o medio"
+                itemsPerPage={50}
             />
 
             <CModal visible={modalVisible} onClose={cerrarModal} size="xl" alignment="center" className="premium-modal">

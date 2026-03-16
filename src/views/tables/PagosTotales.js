@@ -69,7 +69,7 @@ const ValidadorComprobante = () => {
                         disabled={isPending}
                     />
                     <CButton
-                        color="success"
+                        color="success text-white"
                         className="px-4 fw-semibold rounded-pill"
                         onClick={handleValidar}
                         disabled={isPending || !url.trim()}
@@ -151,7 +151,7 @@ const PagosEmail = () => {
             String(pago?.id || '').toLowerCase().includes(termino) ||
             String(pago?.ordenante || '').toLowerCase().includes(termino) ||
             String(pago?.monto || '').toLowerCase().includes(termino) ||
-            String(pago?.message_id || '').toLowerCase().includes(termino)
+            String(pago?.user_id || '').toLowerCase().includes(termino)
         )
     }, [])
 
@@ -168,8 +168,13 @@ const PagosEmail = () => {
             }
         },
         { header: 'Hora pago', key: 'hora_pago' },
-        { header: 'Registrado en', key: 'creado_en', renderFunc: (item) => item.creado_en || '-' },
-        { header: 'Message ID', key: 'message_id', className: 'text-break' },
+        {
+            header: 'Usuario',
+            key: 'user_id',
+            renderFunc: (item) => item.user_id
+                ? <span className="fw-semibold text-primary">#{item.user_id}</span>
+                : <span className="text-secondary small">Sin vincular</span>
+        },
     ]
 
     const filterControls = (
@@ -230,12 +235,8 @@ const PagosEmail = () => {
                 searchFunction={searchFunction}
                 filterControls={filterControls}
                 onClear={() => setFechaFiltro(new Date().toISOString().split('T')[0])}
-                headerBadges={
-                    <CBadge color="success" className="px-3 py-2 rounded-pill">
-                        Total: {formatearMonto(totalMonto)}
-                    </CBadge>
-                }
                 searchPlaceholder="ID, ordenante, monto o message ID"
+                itemsPerPage={50}
             />
         </div>
     )

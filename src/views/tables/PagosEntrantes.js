@@ -26,7 +26,7 @@ import DataTable from '../../components/DataTable'
 const PagosEntrantes = () => {
     const [filtroEstadoPago, setFiltroEstadoPago] = useState('')
     const [filtroMedioPago, setFiltroMedioPago] = useState('')
-    const [filtroFecha, setFiltroFecha] = useState('')
+    const [filtroFecha, setFiltroFecha] = useState(() => new Date().toISOString().split('T')[0])
 
     const filters = useMemo(() => {
         return {
@@ -103,10 +103,14 @@ const PagosEntrantes = () => {
             header: 'Fecha',
             key: 'fecha_comprobante',
             renderFunc: (pago) => {
-                if (!pago.fecha_comprobante) return '-'
-                // Convert to YYYY-MM-DD string
-                const datePart = String(pago.fecha_comprobante).split(/[ T]/)[0]
-                return datePart.replace(/\//g, '-') // Ensure dashes
+                const fecha = pago.fecha_comprobante || pago.fecha
+                if (!fecha) return '-'
+                // Extract YYYY-MM-DD using regex to be safe
+                const match = String(fecha).match(/(\d{4})[-/](\d{2})[-/](\d{2})/)
+                if (match) {
+                    return `${match[1]}-${match[2]}-${match[3]}`
+                }
+                return String(fecha).split(/[ T]/)[0].replace(/\//g, '-')
             }
         },
         {
@@ -301,7 +305,6 @@ const PagosEntrantes = () => {
                     setFiltroMedioPago('')
                     setFiltroFecha('')
                 }}
-                headerBadges={<CBadge color="success" className="px-3 py-2 rounded-pill">Total: {formatearMonto(totalMontoFiltrado)}</CBadge>}
                 searchPlaceholder="Cliente, referencia, servicio o medio"
             />
 

@@ -73,8 +73,6 @@ const DataTable = ({
                             {subtitle && <div className="text-secondary small">{subtitle}</div>}
                         </div>
                         <div className="d-flex flex-wrap gap-2">
-                            <CBadge color="primary" className="px-3 py-2 rounded-pill badge-pill">Registros: {datosFiltrados.length}</CBadge>
-                            <CBadge color="info" className="px-3 py-2 rounded-pill badge-pill">Página {paginaActual} / {totalPaginas}</CBadge>
                             {headerBadges}
                             {onAddItem && (
                                 <CButton color="primary" className="rounded-pill px-4" onClick={onAddItem}>

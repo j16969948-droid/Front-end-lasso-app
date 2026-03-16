@@ -248,7 +248,7 @@ const PagosEntrantes = () => {
     return (
         <>
             {statistics && (
-                <CRow className="mb-4">
+                <CRow className="mb-4 p-2">
                     <CCol sm={6} lg={3}>
                         <CWidgetStatsC
                             className="mb-3 premium-card h-100 shadow-sm border-0 border-start border-4 border-primary"
@@ -310,25 +310,86 @@ const PagosEntrantes = () => {
 
             <CModal visible={modalVisible} onClose={cerrarModal} size="xl" alignment="center" className="premium-modal">
                 <CModalHeader onClose={cerrarModal} className="border-0 pb-0">
-                    <CModalTitle className="fw-bold fs-4">
-                        Visualización de Comprobante
-                        {pagoSeleccionado ? <span className="text-secondary small ms-2">ID: {pagoSeleccionado.id}</span> : ''}
-                    </CModalTitle>
+                    <div>
+                        <CModalTitle className="fw-bold fs-5">Detalle del pago</CModalTitle>
+                        <p className="text-secondary small mb-0">Información asociada al comprobante seleccionado.</p>
+                    </div>
                 </CModalHeader>
+
                 <CModalBody className="p-4">
-                    {imagenSeleccionada ? (
-                        <div className="text-center p-3 bg-light rounded-3">
-                            <img src={imagenSeleccionada} alt="Comprobante" style={{ maxWidth: '100%', maxHeight: '70vh', objectFit: 'contain', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                        </div>
-                    ) : (
-                        <div className="text-center text-secondary py-5">
-                            <div className="fs-5 fw-semibold mb-2">No hay comprobante disponible</div>
-                            <div className="small">Este pago no tiene una imagen asociada.</div>
-                        </div>
-                    )}
+                    <CRow className="g-3">
+                        {/* Imagen del comprobante */}
+                        <CCol md={5}>
+                            <div className="h-100 d-flex align-items-center justify-content-center rounded-4 overflow-hidden"
+                                style={{ background: '#f0f0f0', minHeight: '320px' }}>
+                                {imagenSeleccionada ? (
+                                    <img
+                                        src={imagenSeleccionada}
+                                        alt="Comprobante"
+                                        style={{ width: '100%', height: '100%', objectFit: 'contain', maxHeight: '480px' }}
+                                    />
+                                ) : (
+                                    <div className="text-center text-secondary py-5">
+                                        <div className="fs-6 fw-semibold mb-1">Sin imagen</div>
+                                        <div className="small">No hay comprobante disponible</div>
+                                    </div>
+                                )}
+                            </div>
+                        </CCol>
+
+                        {/* Campos de detalle */}
+                        <CCol md={7}>
+                            <CRow className="g-2">
+                                {[
+                                    { label: 'ID', value: pagoSeleccionado?.id },
+                                    { label: 'CLIENTE', value: pagoSeleccionado?.cliente_id },
+                                    { label: 'COMBO', value: pagoSeleccionado?.combo_adquirido, full: true },
+                                    { label: 'MONTO', value: formatearMonto(pagoSeleccionado?.monto_pagado) },
+                                    { label: 'ESTADO', value: pagoSeleccionado?.estado },
+                                    { label: 'FECHA', value: (() => {
+                                        const f = pagoSeleccionado?.fecha_comprobante || pagoSeleccionado?.fecha
+                                        if (!f) return '-'
+                                        const m = String(f).match(/(\d{4})[-/](\d{2})[-/](\d{2})/)
+                                        return m ? `${m[1]}-${m[2]}-${m[3]}` : String(f).split(/[ T]/)[0]
+                                    })() },
+                                    { label: 'HORA', value: pagoSeleccionado?.hora_comprobante },
+                                    { label: 'MEDIO', value: pagoSeleccionado?.medio_pago },
+                                    { label: 'RED', value: pagoSeleccionado?.medio_pago },
+                                    { label: 'REFERENCIA', value: pagoSeleccionado?.referencia_pago, full: true },
+                                    { label: 'PAGO EMAIL ID', value: pagoSeleccionado?.pago_email_id, full: true },
+                                    { label: 'DIFERENCIA', value: pagoSeleccionado?.diferencia_minutos != null ? `${pagoSeleccionado.diferencia_minutos} min` : '-', full: true },
+                                ].map(({ label, value, full }) => (
+                                    <CCol key={label} xs={full ? 12 : 6}>
+                                        <div className="rounded-3 p-3"
+                                            style={{ background: 'var(--cui-tertiary-bg, #f8f9fa)', height: '100%' }}>
+                                            <div className="fw-semibold text-secondary"
+                                                style={{ fontSize: '0.65rem', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                                                {label}
+                                            </div>
+                                            <div className="fw-semibold mt-1" style={{ fontSize: '0.9rem' }}>
+                                                {value || '-'}
+                                            </div>
+                                        </div>
+                                    </CCol>
+                                ))}
+                            </CRow>
+                        </CCol>
+                    </CRow>
                 </CModalBody>
-                <CModalFooter className="border-0 pt-0">
-                    <CButton color="secondary" variant="ghost" onClick={cerrarModal} className="rounded-pill px-4">Cerrar</CButton>
+
+                <CModalFooter className="border-0 pt-0 gap-2">
+                    {imagenSeleccionada && (
+                        <CButton
+                            color="dark"
+                            className="rounded-pill px-4 fw-semibold"
+                            onClick={() => window.open(imagenSeleccionada, '_blank')}
+                        >
+                            Abrir imagen
+                        </CButton>
+                    )}
+                    <CButton color="secondary" variant="ghost" onClick={cerrarModal} className="rounded-pill px-4">
+                        Cerrar
+                    </CButton>
                 </CModalFooter>
             </CModal>
         </>

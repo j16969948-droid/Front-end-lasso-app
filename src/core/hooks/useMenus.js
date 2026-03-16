@@ -13,6 +13,7 @@ import {
     cilStorage,
     cilCart,
     cilCheckCircle,
+    cilChart,
 } from '@coreui/icons'
 
 const getIcon = (name) => {
@@ -23,6 +24,7 @@ const getIcon = (name) => {
         case 'gestión ventas': return cilCart;
         case 'gestión inventario': return cilStorage;
         case 'ventas': return cilCart;
+        case 'informe': return cilChart;
         case 'inventario': return cilStorage;
         case 'administración': return cilSettings;
         case 'admin': return cilSettings;

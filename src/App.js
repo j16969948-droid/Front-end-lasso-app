@@ -21,6 +21,7 @@ const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 const InventarioGeneral = React.lazy(() => import('./views/inventario/inventarioGeneral'))
 const ServiciosEnVenta = React.lazy(() => import('./views/serviciosVenta/ServiciosEnVenta'))
 const Validar = React.lazy(() => import('./views/validar/Validar'))
+const Informe = React.lazy(() => import('./views/ventas/Informe'))
 
 // Layout
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -66,6 +67,7 @@ const App = () => {
               <Route path="/inventarioGeneral" element={<InventarioGeneral />} />
               <Route path="/serviciosEnVenta" element={<ServiciosEnVenta />} />
               <Route path="/validar" element={<Validar />} />
+              <Route path="/informe" element={<Informe />} />
             </Route>
           </Route>
         </Routes>

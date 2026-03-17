@@ -121,7 +121,7 @@ const PagosEntrantes = () => {
         {
             header: 'Cliente',
             key: 'cliente',
-            renderFunc: (pago) => <div className="fw-semibold">{pago.cliente_id || '-'}</div>
+            renderFunc: (pago) => <div className="fw-semibold">{pago.user_id || '-'}</div>
         },
         {
             header: 'Combo',
@@ -347,12 +347,14 @@ const PagosEntrantes = () => {
                                     { label: 'COMBO', value: pagoSeleccionado?.combo_adquirido, full: true },
                                     { label: 'MONTO', value: formatearMonto(pagoSeleccionado?.monto_pagado) },
                                     { label: 'ESTADO', value: pagoSeleccionado?.estado },
-                                    { label: 'FECHA', value: (() => {
-                                        const f = pagoSeleccionado?.fecha_comprobante || pagoSeleccionado?.fecha
-                                        if (!f) return '-'
-                                        const m = String(f).match(/(\d{4})[-/](\d{2})[-/](\d{2})/)
-                                        return m ? `${m[1]}-${m[2]}-${m[3]}` : String(f).split(/[ T]/)[0]
-                                    })() },
+                                    {
+                                        label: 'FECHA', value: (() => {
+                                            const f = pagoSeleccionado?.fecha_comprobante || pagoSeleccionado?.fecha
+                                            if (!f) return '-'
+                                            const m = String(f).match(/(\d{4})[-/](\d{2})[-/](\d{2})/)
+                                            return m ? `${m[1]}-${m[2]}-${m[3]}` : String(f).split(/[ T]/)[0]
+                                        })()
+                                    },
                                     { label: 'HORA', value: pagoSeleccionado?.hora_comprobante },
                                     { label: 'MEDIO', value: pagoSeleccionado?.medio_pago },
                                     { label: 'RED', value: pagoSeleccionado?.medio_pago },

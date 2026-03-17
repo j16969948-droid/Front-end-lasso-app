@@ -11,7 +11,7 @@ import {
     CAlert,
 } from '@coreui/react'
 import { usePagosTotales } from '../../core/hooks/usePagosTotales'
-import { useValidarComprobante } from '../../core/hooks/useValidarComprobante'
+import { useValidarComprobante, useVincularPago } from '../../core/hooks/useValidarComprobante'
 import { formatearMonto } from '../../utils/formatters'
 import { LoadingState, ErrorState } from '../../components/TableFeedback'
 import DataTable from '../../components/DataTable'
@@ -20,9 +20,11 @@ import DataTable from '../../components/DataTable'
 const ValidadorComprobante = () => {
     const [url, setUrl] = useState('')
     const { mutate: validar, data: resultado, isPending, error, reset } = useValidarComprobante()
+    const { mutate: vincular, isPending: isVinculando, isSuccess: isVinculado, data: vincularData } = useVincularPago()
 
     const handleValidar = () => {
         if (!url.trim()) return
+        reset()
         validar(url.trim())
     }
 
@@ -31,21 +33,27 @@ const ValidadorComprobante = () => {
         reset()
     }
 
+    const handleVincular = () => {
+        if (!pagoExistente?.id || !emailMatch?.id) return
+        vincular({
+            pago_entrante_id: pagoExistente.id,
+            pago_email_id: emailMatch.id
+        })
+    }
+
     const ocr = resultado?.datos_ocr || null
     const pagoExistente = resultado?.pago_existente || null
+    const emailMatch = resultado?.pago_email || null
 
     const campos = [
-        { label: 'HORA', value: ocr?.hora_comprobante },
+        { label: 'HORA OCR', value: ocr?.hora_comprobante },
+        { label: 'MONTO OCR', value: ocr ? formatearMonto(ocr.monto_pagado) : null },
         { label: 'REFERENCIA', value: ocr?.referencia_pago },
-        { label: 'MONTO', value: ocr ? formatearMonto(ocr.monto_pagado) : null },
-        { label: 'MEDIO', value: ocr?.medio_pago },
-        { label: 'RED', value: ocr?.red_pago },
-        { label: 'FECHA', value: ocr?.fecha_comprobante },
-        { label: 'ESTADO', value: pagoExistente?.estado },
+        { label: 'FECHA OCR', value: ocr?.fecha_comprobante },
     ]
 
     return (
-        <CCard className="premium-card mb-4">
+        <CCard className="premium-card mb-4 shadow-sm border-0">
             <CCardBody className="p-4">
                 <div className="d-flex align-items-center gap-2 mb-1">
                     <h5 className="fw-bold mb-0">Validador de comprobantes</h5>
@@ -54,7 +62,7 @@ const ValidadorComprobante = () => {
                     </CBadge>
                 </div>
                 <p className="text-secondary small mb-3">
-                    Pega la URL del comprobante para analizar OCR, revisar coincidencias y registrar el pago.
+                    Pega la URL del comprobante para extraer datos OCR y cruzarlos con el sistema y correos del banco.
                 </p>
 
                 {/* Input + botones */}
@@ -65,64 +73,124 @@ const ValidadorComprobante = () => {
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleValidar()}
-                        className="premium-input"
-                        disabled={isPending}
+                        className="premium-input flex-grow-1"
+                        disabled={isPending || isVinculando}
                     />
                     <CButton
-                        color="success text-white"
-                        className="btn-premium btn-premium-success"
+                        color="success"
+                        className="btn-premium btn-premium-success text-white px-4"
                         onClick={handleValidar}
-                        disabled={isPending || !url.trim()}
+                        disabled={isPending || isVinculando || !url.trim()}
                         style={{ whiteSpace: 'nowrap' }}
                     >
                         {isPending ? <><CSpinner size="sm" className="me-1" />Analizando...</> : 'Validar'}
                     </CButton>
                     <CButton
                         color="secondary"
-                        className="btn-premium btn-premium-secondary"
+                        variant="outline"
+                        className="btn-premium"
                         onClick={handleLimpiar}
-                        disabled={isPending}
+                        disabled={isPending || isVinculando}
                     >
                         Limpiar
                     </CButton>
                 </div>
 
-                {/* Error */}
+                {/* Alertas */}
                 {error && (
-                    <CAlert color="danger" className="py-2 small">
+                    <CAlert color="danger" className="py-2 small border-0">
                         ❌ {error?.response?.data?.message || 'Error al analizar el comprobante.'}
                     </CAlert>
                 )}
-
-                {/* Pago existente encontrado */}
-                {pagoExistente && (
-                    <CAlert color="info" className="py-2 small mb-3">
-                        ✅ Pago encontrado en el sistema — ID <strong>#{pagoExistente.id}</strong> · Estado: <strong>{pagoExistente.estado}</strong>
+                
+                {isVinculado && (
+                    <CAlert color="success" className="py-2 small border-0">
+                        ✅ {vincularData?.mensaje || 'Pago vinculado y aprobado correctamente.'}
                     </CAlert>
                 )}
 
-                {/* Campos de resultado */}
-                <CRow className="g-2">
-                    {campos.map((c) => (
-                        <CCol key={c.label} xs={6} sm={4} md={3} lg="auto" className="flex-grow-1">
-                            <div
-                                className="rounded-3 p-3 text-center"
-                                style={{
-                                    background: ocr && c.value ? 'var(--cui-tertiary-bg, #f0fdf4)' : 'var(--cui-tertiary-bg, #f8f9fa)',
-                                    minWidth: '90px',
-                                    transition: 'background 0.3s'
-                                }}
-                            >
-                                <div className="text-secondary fw-semibold" style={{ fontSize: '0.65rem', letterSpacing: '0.05em' }}>
-                                    {c.label}
-                                </div>
-                                <div className="fw-bold mt-1" style={{ fontSize: '0.85rem' }}>
-                                    {isPending ? <CSpinner size="sm" /> : (c.value || '-')}
-                                </div>
+                {/* Resultados de Cruce */}
+                {ocr && (
+                    <CRow className="g-3 mt-1">
+                        {/* OCR DATA */}
+                        <CCol md={4}>
+                            <div className="p-3 rounded-3 bg-light h-100 border border-light-subtle">
+                                <h6 className="fw-bold small text-secondary text-uppercase mb-3" style={{ fontSize: '0.65rem', letterSpacing: '0.05em' }}>
+                                    📄 Datos OCR
+                                </h6>
+                                {campos.map(c => (
+                                    <div key={c.label} className="mb-2 d-flex justify-content-between align-items-center border-bottom border-white pb-1">
+                                        <span className="text-secondary" style={{ fontSize: '0.7rem' }}>{c.label}</span>
+                                        <span className="fw-bold small">{c.value || '-'}</span>
+                                    </div>
+                                ))}
                             </div>
                         </CCol>
-                    ))}
-                </CRow>
+
+                        {/* SISTEMA MATCH */}
+                        <CCol md={4}>
+                            <div className={`p-3 rounded-3 h-100 border ${pagoExistente ? 'bg-success-subtle border-success-subtle' : 'bg-danger-subtle border-danger-subtle'}`}>
+                                <h6 className="fw-bold small text-secondary text-uppercase mb-3" style={{ fontSize: '0.65rem', letterSpacing: '0.05em' }}>
+                                    {pagoExistente ? '✅ Registro Sistema' : '❌ Sin Registro'}
+                                </h6>
+                                {pagoExistente ? (
+                                    <>
+                                        <div className="mb-2 d-flex justify-content-between border-bottom border-white pb-1">
+                                            <span className="text-secondary small">ID Pago</span>
+                                            <span className="fw-bold small">#{pagoExistente.id}</span>
+                                        </div>
+                                        <div className="mb-2 d-flex justify-content-between border-bottom border-white pb-1">
+                                            <span className="text-secondary small">Cliente</span>
+                                            <span className="fw-bold small text-truncate" style={{ maxWidth: '100px' }}>{pagoExistente.user_id || pagoExistente.cliente_id || '-'}</span>
+                                        </div>
+                                        <div className="mb-0 d-flex justify-content-between align-items-center">
+                                            <span className="text-secondary small">Estado</span>
+                                            <CBadge color={pagoExistente.estado === 'aprobado' ? 'success' : 'warning'} className="rounded-pill">
+                                                {pagoExistente.estado}
+                                            </CBadge>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="text-secondary small">No se encontró pago manual registrado.</div>
+                                )}
+                            </div>
+                        </CCol>
+
+                        {/* EMAIL MATCH */}
+                        <CCol md={4}>
+                            <div className={`p-3 rounded-3 h-100 border ${emailMatch ? 'bg-info-subtle border-info-subtle' : 'bg-warning-subtle border-warning-subtle'}`}>
+                                <h6 className="fw-bold small text-secondary text-uppercase mb-3" style={{ fontSize: '0.65rem', letterSpacing: '0.05em' }}>
+                                    {emailMatch ? '📩 Email Banco' : '❓ Sin Email'}
+                                </h6>
+                                {emailMatch ? (
+                                    <>
+                                        <div className="mb-2 d-flex justify-content-between border-bottom border-white pb-1">
+                                            <span className="text-secondary small">Monto Email</span>
+                                            <span className="fw-bold small">{formatearMonto(emailMatch.monto)}</span>
+                                        </div>
+                                        <div className="mb-2 d-flex justify-content-between border-bottom border-white pb-1">
+                                            <span className="text-secondary small">Hora Email</span>
+                                            <span className="fw-bold small">{emailMatch.hora_pago}</span>
+                                        </div>
+                                        {pagoExistente && !pagoExistente.pago_email_id && (
+                                            <CButton 
+                                                color="success" 
+                                                size="sm" 
+                                                className="w-100 mt-2 text-white fw-bold shadow-sm"
+                                                onClick={handleVincular}
+                                                disabled={isVinculando || isVinculado}
+                                            >
+                                                {isVinculando ? <CSpinner size="sm" /> : 'Vincular y Aprobar'}
+                                            </CButton>
+                                        )}
+                                    </>
+                                ) : (
+                                    <div className="text-secondary small">No se encontró correo de banco coincidente.</div>
+                                )}
+                            </div>
+                        </CCol>
+                    </CRow>
+                )}
             </CCardBody>
         </CCard>
     )

@@ -11,3 +11,14 @@ export const useValidarComprobante = () => {
         mutationFn: validarComprobante,
     }); 
 };
+
+const vincularPago = async (datos) => {
+    const response = await Api.post("api/v1/vincular-pago", datos);
+    return response.data;
+};
+
+export const useVincularPago = () => {
+    return useMutation({
+        mutationFn: vincularPago,
+    });
+};

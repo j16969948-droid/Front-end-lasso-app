@@ -16,7 +16,7 @@ import { formatearMonto } from '../../utils/formatters'
 import { LoadingState, ErrorState } from '../../components/TableFeedback'
 import DataTable from '../../components/DataTable'
 
-// ── Validador de comprobantes ─────────────────────────────────────────────────
+// ── Validador de comprobantes 
 const ValidadorComprobante = () => {
     const [url, setUrl] = useState('')
     const { mutate: validar, data: resultado, isPending, error, reset } = useValidarComprobante()
@@ -128,7 +128,7 @@ const ValidadorComprobante = () => {
     )
 }
 
-// ── Página principal ──────────────────────────────────────────────────────────
+// ── Página principal 
 const PagosEmail = () => {
     const [fechaFiltro, setFechaFiltro] = useState(() => new Date().toISOString().split('T')[0])
 

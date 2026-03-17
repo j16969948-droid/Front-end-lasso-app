@@ -9,5 +9,5 @@ const validarComprobante = async (url) => {
 export const useValidarComprobante = () => {
     return useMutation({
         mutationFn: validarComprobante,
-    });
+    }); 
 };

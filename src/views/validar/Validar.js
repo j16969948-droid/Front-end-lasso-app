@@ -8,31 +8,33 @@ import {
     CRow,
     CCol,
     CFormLabel,
+    CBadge,
+    CAlert,
+    CSpinner,
 } from '@coreui/react'
-import DataTable from '../../components/DataTable'
+import { useValidarComprobante } from '../../core/hooks/useValidarComprobante'
+import { formatearMonto } from '../../utils/formatters'
 
 const Validar = () => {
     const location = useLocation()
     const [urlComprobante, setUrlComprobante] = useState(location.state?.url || '')
+    const { mutate: validar, data: resultado, isPending, isError, error, reset } = useValidarComprobante()
 
     const handleValidar = () => {
-        console.log('Validando comprobante:', urlComprobante)
-        // Lógica de validación aquí
+        if (!urlComprobante.trim()) return
+        reset()
+        validar(urlComprobante.trim())
     }
 
-    const columns = [
-        { header: 'ID', key: 'id' },
-        { header: 'Fecha', key: 'fecha' },
-        { header: 'Monto', key: 'monto' },
-        { header: 'Estado', key: 'estado' },
-        { header: 'Referencia', key: 'referencia' },
-    ]
+    const ocr = resultado?.datos_ocr
+    const match = resultado?.pago_existente
 
-    const searchFunction = (pago, termino) => {
-        return (
-            String(pago?.id || '').toLowerCase().includes(termino) ||
-            String(pago?.referencia || '').toLowerCase().includes(termino)
-        )
+    const estadoColor = (estado) => {
+        const e = String(estado || '').toLowerCase()
+        if (e === 'aprobado' || e === 'validado') return 'success'
+        if (e === 'pendiente') return 'warning'
+        if (e === 'sin match') return 'danger'
+        return 'secondary'
     }
 
     return (
@@ -51,7 +53,9 @@ const Validar = () => {
                                 placeholder="https://ejemplo.com/comprobante.jpg"
                                 value={urlComprobante}
                                 onChange={(e) => setUrlComprobante(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleValidar()}
                                 className="premium-input"
+                                disabled={isPending}
                             />
                         </CCol>
                         <CCol md={3}>
@@ -59,22 +63,84 @@ const Validar = () => {
                                 color="primary"
                                 className="w-100 btn-premium btn-premium-primary"
                                 onClick={handleValidar}
+                                disabled={isPending || !urlComprobante.trim()}
                             >
-                                Validar Ahora
+                                {isPending ? <><CSpinner size="sm" className="me-2" />Procesando...</> : 'Validar Ahora'}
                             </CButton>
                         </CCol>
                     </CRow>
                 </CCardBody>
             </CCard>
 
-            <DataTable
-                title="Pagos Registrados"
-                subtitle="Consulta el historial para verificar la validez de los pagos procesados"
-                data={[]} // Sin datos por ahora
-                columns={columns}
-                searchFunction={searchFunction}
-                searchPlaceholder="Buscar por ID o referencia..."
-            />
+            {isError && (
+                <CAlert color="danger" className="mb-4">
+                    <strong>Error:</strong> {error?.response?.data?.message || error?.message || 'Ocurrió un error al procesar el comprobante'}
+                </CAlert>
+            )}
+
+            {ocr && (
+                <CRow className="g-4">
+                    <CCol md={6}>
+                        <CCard className="premium-card h-100">
+                            <CCardBody className="p-4">
+                                <h6 className="fw-bold mb-3 text-uppercase text-secondary" style={{ fontSize: '0.75rem', letterSpacing: '0.08em' }}>
+                                    📄 Datos extraídos por OCR
+                                </h6>
+                                {[
+                                    { label: 'Monto', value: formatearMonto(ocr.monto_pagado) },
+                                    { label: 'Fecha', value: ocr.fecha_comprobante || '-' },
+                                    { label: 'Hora', value: ocr.hora_comprobante || '-' },
+                                    { label: 'Medio de pago', value: ocr.medio_pago || '-' },
+                                    { label: 'Red de pago', value: ocr.red_pago || '-' },
+                                    { label: 'Referencia', value: ocr.referencia_pago || '-' },
+                                ].map(({ label, value }) => (
+                                    <div key={label} className="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                        <span className="text-secondary small fw-semibold">{label}</span>
+                                        <span className="fw-semibold">{value}</span>
+                                    </div>
+                                ))}
+                            </CCardBody>
+                        </CCard>
+                    </CCol>
+
+                    <CCol md={6}>
+                        <CCard className={`premium-card h-100 border-start border-4 ${match ? 'border-success' : 'border-danger'}`}>
+                            <CCardBody className="p-4">
+                                <h6 className="fw-bold mb-3 text-uppercase text-secondary" style={{ fontSize: '0.75rem', letterSpacing: '0.08em' }}>
+                                    {match ? '✅ Pago encontrado en el sistema' : '❌ Sin coincidencia en el sistema'}
+                                </h6>
+                                {match ? (
+                                    <>
+                                        {[
+                                            { label: 'ID Pago', value: match.id },
+                                            { label: 'Cliente', value: match.cliente_id || match.user_id || '-' },
+                                            { label: 'Monto registrado', value: formatearMonto(match.monto_pagado) },
+                                            { label: 'Fecha comprobante', value: match.fecha_comprobante || '-' },
+                                            { label: 'Hora comprobante', value: match.hora_comprobante || '-' },
+                                            { label: 'Referencia', value: match.referencia_pago || '-' },
+                                        ].map(({ label, value }) => (
+                                            <div key={label} className="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                                <span className="text-secondary small fw-semibold">{label}</span>
+                                                <span className="fw-semibold">{value}</span>
+                                            </div>
+                                        ))}
+                                        <div className="d-flex justify-content-between align-items-center pt-3">
+                                            <span className="text-secondary small fw-semibold">Estado</span>
+                                            <CBadge color={estadoColor(match.estado)} className="rounded-pill px-3 py-2">
+                                                {match.estado || 'Sin definir'}
+                                            </CBadge>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <p className="text-secondary small mt-2 mb-0">
+                                        No se encontró ningún pago en <code>pagos_entrantes</code> que coincida con la fecha, hora y monto del comprobante.
+                                    </p>
+                                )}
+                            </CCardBody>
+                        </CCard>
+                    </CCol>
+                </CRow>
+            )}
         </div>
     )
 }

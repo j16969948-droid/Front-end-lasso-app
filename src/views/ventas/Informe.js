@@ -199,9 +199,9 @@ const Informe = () => {
     const isLoading = loadingEmail || loadingEntrantes
 
     return (
-        <div className="fade-up">
+        <div className="fade-up">|
             {/* Header */}
-            <div className="d-flex align-items-center justify-content-between mb-5 flex-wrap gap-4 px-2">
+            <div className="d-flex align-items-center justify-content-between flex-wrap gap-4 p-4">
                 <div>
                     <div className="d-flex align-items-center gap-3 mb-2">
                         <h1 className="section-title mb-0">Informe Financiero</h1>

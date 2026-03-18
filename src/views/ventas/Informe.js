@@ -7,7 +7,15 @@ import {
     CButton,
     CFormInput,
     CSpinner,
+    CTable,
+    CTableHead,
+    CTableRow,
+    CTableHeaderCell,
+    CTableBody,
+    CTableDataCell,
 } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilCalendar, cilFilter, cilSync, cilCheckCircle, cilLayers, cilChartLine } from '@coreui/icons'
 import { usePagosTotales } from '../../core/hooks/usePagosTotales'
 import { usePagosEntrantes } from '../../core/hooks/usePagosEntrantes'
 import { formatearMonto } from '../../utils/formatters'
@@ -16,87 +24,78 @@ import { formatearMonto } from '../../utils/formatters'
 
 const hoy = () => new Date().toISOString().split('T')[0]
 
-const StatCard = ({ label, value, sub, accent = false }) => (
-    <CCard
-        className="border-0 h-100"
+const StatCard = ({ label, value, sub, accent = false, icon }) => (
+    <div className={`premium-card p-4 h-100 border-0 shadow-sm position-relative overflow-hidden ${accent ? 'text-white' : ''}`}
         style={{
-            background: accent
-                ? 'linear-gradient(135deg, #0f172a 60%, #1e293b)'
-                : 'var(--cui-card-bg, #fff)',
-            borderRadius: '1rem',
-            boxShadow: accent
-                ? '0 8px 32px rgba(15,23,42,0.25)'
-                : '0 2px 12px rgba(0,0,0,0.06)',
-        }}
-    >
-        <CCardBody className="p-4">
-            <p className="mb-1" style={{ fontSize: '0.7rem', letterSpacing: '0.08em', fontWeight: 600, color: accent ? 'rgba(255,255,255,0.55)' : 'var(--cui-secondary-color)', textTransform: 'uppercase' }}>
+            background: accent ? 'linear-gradient(135deg, #4f46e5 0%, #3730a3 100%)' : 'var(--lasso-card-bg)',
+            backdropFilter: 'blur(10px)'
+        }}>
+        <div className="position-relative z-1">
+            <div className={`text-uppercase fw-bold mb-1 opacity-75 ${accent ? '' : 'text-muted'}`} style={{ fontSize: '0.7rem', letterSpacing: '0.1em' }}>
                 {label}
-            </p>
-            <div className="fw-bold" style={{ fontSize: accent ? '1.9rem' : '1.7rem', color: accent ? '#fff' : 'var(--cui-body-color)', lineHeight: 1.1 }}>
-                {value}
             </div>
-            {sub && (
-                <p className="mb-0 mt-1" style={{ fontSize: '0.75rem', color: accent ? 'rgba(255,255,255,0.45)' : 'var(--cui-secondary-color)' }}>
-                    {sub}
-                </p>
-            )}
-        </CCardBody>
-    </CCard>
-)
-
-const MedioCard = ({ label, monto, pagos, accent = false }) => (
-    <div
-        className="rounded-4 p-3 h-100"
-        style={{
-            background: accent ? 'linear-gradient(135deg,#0f172a,#1e293b)' : 'var(--cui-tertiary-bg,#f8f9fa)',
-            border: accent ? 'none' : '1px solid var(--cui-border-color)',
-        }}
-    >
-        <p className="mb-1" style={{ fontSize: '0.65rem', letterSpacing: '0.08em', fontWeight: 700, color: accent ? 'rgba(255,255,255,0.5)' : 'var(--cui-secondary-color)', textTransform: 'uppercase' }}>
-            {label}
-        </p>
-        <p className="fw-bold mb-0" style={{ fontSize: '1.25rem', color: accent ? '#fff' : 'var(--cui-body-color)' }}>
-            ${formatearMonto(monto)}
-        </p>
-        <p className="mb-0 mt-1" style={{ fontSize: '0.7rem', color: accent ? 'rgba(255,255,255,0.4)' : 'var(--cui-secondary-color)' }}>
-            Pagos: {pagos}
-        </p>
+            <h2 className={`fw-bold mb-1 ${!accent && label.toLowerCase().includes('total') ? 'text-success' : ''}`}>{value}</h2>
+            {sub && <div className={`small opacity-75 ${accent ? '' : 'text-muted'}`}>{sub}</div>}
+        </div>
+        {icon && <CIcon icon={icon} size="xs" className="position-absolute opacity-10" style={{ right: '20px', bottom: '20px', transform: 'scale(2.5)' }} />}
     </div>
 )
 
-const SectionCard = ({ title, subtitle, children }) => (
-    <CCard className="border-0 mb-4" style={{ borderRadius: '1rem', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-        <CCardBody className="p-4">
-            <h6 className="fw-bold mb-0">{title}</h6>
-            <p className="text-secondary small mb-3" style={{ fontSize: '0.78rem' }}>{subtitle}</p>
+const MedioCard = ({ label, monto, pagos, accent = false }) => (
+    <div className={`premium-card p-3 h-100 border-0 ${accent ? 'text-white shadow-sm' : 'shadow-none'}`}
+        style={{
+            background: accent ? 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' : 'var(--lasso-card-bg)',
+            transition: 'transform 0.2s'
+        }}>
+        <div className="text-uppercase fw-bold mb-2 opacity-75 text-muted" style={{ fontSize: '0.65rem', letterSpacing: '0.1em' }}>
+            {label}
+        </div>
+        <div className="fw-bold mb-1 text-success" style={{ fontSize: '1.2rem' }}>
+            ${formatearMonto(monto)}
+        </div>
+        <div className="small opacity-50 fw-semibold text-muted">
+            {pagos} {pagos === 1 ? 'Pago' : 'Pagos'}
+        </div>
+    </div>
+)
+
+const SectionCard = ({ title, subtitle, children, icon }) => (
+    <CCard className="premium-card mb-4 border-0 shadow-sm">
+        <CCardBody className="p-4 p-md-5">
+            <div className="d-flex align-items-center gap-3 mb-4">
+                {icon && <div className="p-2 bg-primary bg-opacity-10 rounded-3"><CIcon icon={icon} className="text-primary" /></div>}
+                <div>
+                    <h5 className="fw-bold mb-1">{title}</h5>
+                    {subtitle && <p className="text-muted small mb-0">{subtitle}</p>}
+                </div>
+            </div>
             {children}
         </CCardBody>
     </CCard>
 )
 
-const TablePremium = ({ headers, rows, emptyMsg = 'Sin datos' }) => (
-    <div className="table-responsive">
-        <table className="table table-hover mb-0" style={{ fontSize: '0.82rem' }}>
-            <thead>
-                <tr style={{ background: 'linear-gradient(90deg,#0f172a,#1e3a5f)', color: '#fff' }}>
+const TableLasso = ({ headers, rows, emptyMsg = 'Sin datos' }) => (
+    <div className="table-lasso-container">
+        <CTable align="middle" className="mb-0 table-lasso" responsive hover>
+            <CTableHead>
+                <CTableRow>
                     {headers.map((h, i) => (
-                        <th key={i} className="py-2 px-3 fw-semibold" style={{ color: '#fff', border: 'none', whiteSpace: 'nowrap' }}>{h}</th>
+                        <CTableHeaderCell key={i} className="text-uppercase small pt-3 pb-3" style={{ letterSpacing: '0.05em' }}>{h}</CTableHeaderCell>
                     ))}
-                </tr>
-            </thead>
-            <tbody>
+                </CTableRow>
+            </CTableHead>
+            <CTableBody>
                 {rows.length === 0
-                    ? <tr><td colSpan={headers.length} className="text-center text-secondary py-4">{emptyMsg}</td></tr>
+                    ? <CTableRow><CTableDataCell colSpan={headers.length} className="text-center text-muted py-5">{emptyMsg}</CTableDataCell></CTableRow>
                     : rows.map((row, i) => (
-                        <tr key={i} style={{ transition: 'background 0.15s' }}>
+                        <CTableRow key={i}>
                             {row.map((cell, j) => (
-                                <td key={j} className="py-2 px-3 align-middle">{cell}</td>
+                                <CTableDataCell key={j} className="py-3">{cell}</CTableDataCell>
                             ))}
-                        </tr>
+                        </CTableRow>
                     ))}
-            </tbody>
-        </table>
+            </CTableBody>
+        </CTable>
     </div>
 )
 
@@ -155,7 +154,7 @@ const Informe = () => {
     const totalEntrantesMonto = useMemo(() => pagosEntrantes.reduce((s, p) => s + Number(p?.monto_pagado || 0), 0), [pagosEntrantes])
     const totalEntrantesCount = pagosEntrantes.length
 
-    // ── Medios de pago (pagos entrantes Breb) 
+    // ── Medios de pago 
     const MEDIOS = ['Bre-B', 'Nequi', 'Bancolombia', 'Daviplata']
     const mediosData = useMemo(() => {
         const map = {}
@@ -172,7 +171,7 @@ const Informe = () => {
         return map
     }, [pagosEntrantes])
 
-    // ── Resumen por día (pagos entrantes Breb) 
+    // ── Resumen por día 
     const resumenDia = useMemo(() => {
         const map = {}
         pagosEntrantes.forEach(p => {
@@ -200,79 +199,84 @@ const Informe = () => {
     const isLoading = loadingEmail || loadingEntrantes
 
     return (
-        <div className="fade-in-up px-1">
+        <div className="fade-up">
             {/* Header */}
-            <div className="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-2 p-4">
+            <div className="d-flex align-items-center justify-content-between mb-5 flex-wrap gap-4 px-2">
                 <div>
-                    <div className="d-flex align-items-center gap-3 mb-1">
-                        <h4 className="fw-bold mb-0">Informe</h4>
-                        <span className="px-2 py-1 rounded-pill fw-semibold" style={{ fontSize: '0.7rem', background: 'rgba(15,23,42,0.08)', color: 'var(--cui-body-color)' }}>
-                            Solo aprobados
+                    <div className="d-flex align-items-center gap-3 mb-2">
+                        <h1 className="section-title mb-0">Informe Financiero</h1>
+                        <span className="badge-lasso badge-lasso-soft-secondary text-uppercase small" style={{ letterSpacing: '0.05em' }}>
+                            Aprobados
                         </span>
                     </div>
-                    <p className="text-secondary small mb-0">Vista general de pagos aprobados y medios de pago</p>
+                    <p className="section-subtitle mb-0">Análisis detallado de recaudación y distribución de medios de pago.</p>
                 </div>
-                <div className="d-flex align-items-center gap-2 px-3 py-2 rounded-3" style={{ background: 'var(--cui-tertiary-bg,#f8f9fa)', fontSize: '0.75rem' }}>
+                <div className="d-flex align-items-center gap-2 px-3 py-2 bg-body-tertiary rounded-pill shadow-sm small border">
                     {isLoading
-                        ? <CSpinner size="sm" />
-                        : <span className="fw-semibold text-secondary">Actualizado {lastUpdated.toLocaleTimeString('es-CO')}</span>
+                        ? <><CSpinner size="sm" className="text-primary me-1" /> Actualizando...</>
+                        : <><CIcon icon={cilSync} size="sm" className="text-muted" /> Sincronizado: {lastUpdated.toLocaleTimeString('es-CO')}</>
                     }
                 </div>
             </div>
 
             {/* Stats superiores */}
-            <CRow className="g-3 mb-4">
-                <CCol xs={12} sm={4}>
+            <CRow className="g-4 mb-5">
+                <CCol xs={12} md={4}>
                     <StatCard
-                        label="Pagos aprobados"
+                        label="Pagos Aprobados"
                         value={isLoading ? '—' : totalAprobadoCount}
-                        sub={`Monto: $${formatearMonto(totalAprobadoMonto)}`}
+                        sub={`Recaudación: $${formatearMonto(totalAprobadoMonto)}`}
+                        icon={cilCheckCircle}
                     />
                 </CCol>
-                <CCol xs={12} sm={4}>
+                <CCol xs={12} md={4}>
                     <StatCard
-                        label="Pagos Breb detectados"
+                        label="Pagos Bre-B"
                         value={isLoading ? '—' : totalEntrantesCount}
-                        sub={`Monto: $${formatearMonto(totalEntrantesMonto)}`}
+                        sub={`Detectados: $${formatearMonto(totalEntrantesMonto)}`}
+                        icon={cilLayers}
                     />
                 </CCol>
-                <CCol xs={12} sm={4}>
+                <CCol xs={12} md={4}>
                     <StatCard
                         accent
-                        label="Total aprobado"
+                        label="Total Recaudado"
                         value={isLoading ? '—' : `$${formatearMonto(totalAprobadoMonto)}`}
-                        sub={`Pagos: ${totalAprobadoCount}`}
+                        sub={`${totalAprobadoCount} transacciones exitosas`}
+                        icon={cilChartLine}
                     />
                 </CCol>
             </CRow>
 
             {/* Filtros de fecha */}
-            <SectionCard title="" subtitle="">
-                <CRow className="g-2 align-items-end">
-                    <CCol xs={12} sm={4}>
-                        <label className="form-label fw-semibold" style={{ fontSize: '0.75rem' }}>Desde</label>
-                        <CFormInput type="date" value={desde} onChange={e => setDesde(e.target.value)} className="premium-input" />
-                    </CCol>
-                    <CCol xs={12} sm={4}>
-                        <label className="form-label fw-semibold" style={{ fontSize: '0.75rem' }}>Hasta</label>
-                        <CFormInput type="date" value={hasta} onChange={e => setHasta(e.target.value)} className="premium-input" />
-                    </CCol>
-                    <CCol xs={12} sm={4} className="d-flex gap-2">
-                        <CButton className="btn-premium btn-premium-primary flex-fill" onClick={handleFiltrar} disabled={isLoading}>
-                            {isLoading ? <CSpinner size="sm" /> : 'Filtrar'}
-                        </CButton>
-                        <CButton className="btn-premium btn-premium-secondary flex-fill" onClick={handleLimpiar} disabled={isLoading}>
-                            Limpiar
-                        </CButton>
-                    </CCol>
-                </CRow>
-            </SectionCard>
+            <CCard className="premium-card mb-5 border-0 shadow-sm bg-body-tertiary">
+                <CCardBody className="p-4">
+                    <CRow className="g-3 align-items-end">
+                        <CCol xs={12} sm={4}>
+                            <label className="fw-bold small text-uppercase text-muted mb-2 ps-1">Fecha Inicial</label>
+                            <CFormInput type="date" value={desde} onChange={e => setDesde(e.target.value)} className="lasso-input" />
+                        </CCol>
+                        <CCol xs={12} sm={4}>
+                            <label className="fw-bold small text-uppercase text-muted mb-2 ps-1">Fecha Final</label>
+                            <CFormInput type="date" value={hasta} onChange={e => setHasta(e.target.value)} className="lasso-input" />
+                        </CCol>
+                        <CCol xs={12} sm={4} className="d-flex gap-2">
+                            <CButton className="btn-lasso btn-lasso-primary flex-fill py-2" onClick={handleFiltrar} disabled={isLoading}>
+                                <CIcon icon={cilFilter} className="me-2" /> Filtrar
+                            </CButton>
+                            <CButton className="btn-lasso btn-lasso-soft-secondary flex-fill py-2" onClick={handleLimpiar} disabled={isLoading}>
+                                Limpiar
+                            </CButton>
+                        </CCol>
+                    </CRow>
+                </CCardBody>
+            </CCard>
 
             {/* Medios de pago */}
-            <SectionCard title="Medios de pago" subtitle="Resumen consolidado del rango seleccionado.">
+            <SectionCard title="Distribución por Medios" subtitle="Consolidado por plataforma de pago en el rango seleccionado." icon={cilLayers}>
                 <CRow className="g-3">
                     {MEDIOS.map(m => (
-                        <CCol key={m} xs={6} sm={3}>
+                        <CCol key={m} xs={6} md={3}>
                             <MedioCard
                                 label={m}
                                 monto={mediosData[m]?.monto || 0}
@@ -280,50 +284,44 @@ const Informe = () => {
                             />
                         </CCol>
                     ))}
-                    <CCol xs={12} sm={12} className="mt-2">
-                        <div className="d-flex justify-content-end">
-                            <MedioCard
-                                accent
-                                label="Total"
-                                monto={totalAprobadoMonto}
-                                pagos={totalAprobadoCount}
-                            />
-                        </div>
-                    </CCol>
                 </CRow>
             </SectionCard>
 
-            {/* Resumen por día */}
-            <SectionCard title="Resumen por día" subtitle="Cantidad y monto de pagos aprobados por fecha.">
-                {isLoading
-                    ? <div className="text-center py-4"><CSpinner /></div>
-                    : <TablePremium
-                        headers={['Fecha', 'Total pagos', 'Monto']}
-                        rows={resumenDia.map(([fecha, d]) => [
-                            <span className="text-primary fw-semibold">{fecha}</span>,
-                            <span className="text-warning fw-bold">{d.count}</span>,
-                            <span className="text-primary fw-bold">${formatearMonto(d.monto)}</span>,
-                        ])}
-                        emptyMsg="Sin datos para el rango seleccionado"
-                    />
-                }
-            </SectionCard>
+            <CRow className="g-4">
+                <CCol lg={6}>
+                    <SectionCard title="Histórico Diario" subtitle="Tendencia de recaudación agrupada por día." icon={cilCalendar}>
+                        {isLoading
+                            ? <div className="text-center py-5"><CSpinner variant="grow" color="primary" /></div>
+                            : <TableLasso
+                                headers={['Fecha', 'Ventas', 'Monto']}
+                                rows={resumenDia.map(([fecha, d]) => [
+                                    <span className="fw-bold">{fecha}</span>,
+                                    <span className="badge-lasso badge-lasso-soft-warning">{d.count}</span>,
+                                    <span className="fw-bold text-success">${formatearMonto(d.monto)}</span>,
+                                ])}
+                                emptyMsg="Sin registros en estas fechas"
+                            />
+                        }
+                    </SectionCard>
+                </CCol>
 
-            {/* Detalle por medio */}
-            <SectionCard title="Detalle por medio de pago" subtitle="Distribución agrupada por tipo de medio.">
-                {isLoading
-                    ? <div className="text-center py-4"><CSpinner /></div>
-                    : <TablePremium
-                        headers={['Medio', 'Cantidad', 'Monto total']}
-                        rows={detalleMedio.map(([medio, d]) => [
-                            <span className="fw-semibold">{medio}</span>,
-                            d.count,
-                            <span className="fw-bold">${formatearMonto(d.monto_pagado)}</span>,
-                        ])}
-                        emptyMsg="Sin pagos registrados"
-                    />
-                }
-            </SectionCard>
+                <CCol lg={6}>
+                    <SectionCard title="Resumen General" subtitle="Desglose total por cada medio detectado." icon={cilChartLine}>
+                        {isLoading
+                            ? <div className="text-center py-5"><CSpinner variant="grow" color="primary" /></div>
+                            : <TableLasso
+                                headers={['Medio', 'Cantidad', 'Total Recaudado']}
+                                rows={detalleMedio.map(([medio, d]) => [
+                                    <span className="fw-semibold">{medio}</span>,
+                                    <span className="fw-medium">{d.count}</span>,
+                                    <span className="fw-bold text-success">${formatearMonto(d.monto_pagado)}</span>,
+                                ])}
+                                emptyMsg="No hay pagos que mostrar"
+                            />
+                        }
+                    </SectionCard>
+                </CCol>
+            </CRow>
         </div>
     )
 }

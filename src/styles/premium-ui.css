@@ -1,407 +1,412 @@
-/* Global Premium UI Styles */
-:root {
-  --premium-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  --premium-shadow-hover: 0 15px 35px rgba(0, 0, 0, 0.12);
-  --premium-radius: 12px;
-  --premium-border: rgba(0, 0, 0, 0.05);
-  --premium-table-header-bg: #f8fafc;
-  --premium-table-header-text: #64748b;
-  --premium-table-hover: #f1f5f9;
-  --premium-input-border: #e2e8f0;
+/* 
+ * Lasso App - UI System 
+ * A modern, clean, and consistent design language for the administrative interface.
+ */
 
-  /* Sidebar Premium Variables */
-  --sidebar-bg-gradient: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-  --sidebar-active-bg: rgba(99, 102, 241, 0.15);
-  --sidebar-active-color: #818cf8;
-  --sidebar-glow: 0 0 15px rgba(99, 102, 241, 0.3);
-  --sidebar-item-hover-bg: rgba(255, 255, 255, 0.03);
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Colors - Modern Professional Palette */
+  --lasso-primary: #6366f1;
+  --lasso-primary-soft: rgba(99, 102, 241, 0.1);
+  --lasso-primary-hover: #4f46e5;
+  
+  --lasso-success: #10b981;
+  --lasso-success-soft: rgba(16, 185, 129, 0.1);
+  
+  --lasso-danger: #ef4444;
+  --lasso-danger-soft: rgba(239, 68, 68, 0.1);
+  
+  --lasso-warning: #f59e0b;
+  --lasso-warning-soft: rgba(245, 158, 11, 0.1);
+  
+  --lasso-info: #0ea5e9;
+  --lasso-info-soft: rgba(14, 165, 233, 0.1);
+
+  /* Neutrals */
+  --lasso-bg: #f8fafc;
+  --lasso-card-bg: #ffffff;
+  --lasso-border: rgba(0, 0, 0, 0.05);
+  --lasso-text-main: #1e293b;
+  --lasso-text-muted: #64748b;
+
+  /* Effects */
+  --lasso-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --lasso-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --lasso-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+  --lasso-radius: 16px;
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-blur: blur(12px);
+
+  /* Animation */
+  --lasso-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 [data-coreui-theme="dark"] {
-  --premium-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-  --premium-shadow-hover: 0 15px 35px rgba(0, 0, 0, 0.6);
-  --premium-border: rgba(255, 255, 255, 0.1);
-  --premium-table-header-bg: #1e293b;
-  --premium-table-header-text: #94a3b8;
-  --premium-table-hover: rgba(255, 255, 255, 0.05);
-  --premium-input-border: #334155;
-
-  /* Sidebar Premium Variables Dark */
-  --sidebar-bg-gradient: linear-gradient(180deg, #0f172a 0%, #020617 100%);
-  --sidebar-active-bg: rgba(99, 102, 241, 0.2);
-  --sidebar-active-color: #6366f1;
+  --lasso-bg: #0f172a;
+  --lasso-card-bg: #1e293b;
+  --lasso-border: rgba(255, 255, 255, 0.08);
+  --lasso-text-main: #f1f5f9;
+  --lasso-text-muted: #94a3b8;
+  --glass-bg: rgba(30, 41, 59, 0.7);
 }
 
-/* Sidebar Improvements */
-.premium-sidebar {
-  background: var(--sidebar-bg-gradient) !important;
-  border-right: 1px solid var(--premium-border) !important;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+/* Base Styles */
+body {
+  font-family: 'Outfit', sans-serif !important;
+  background-color: var(--lasso-bg) !important;
+  color: var(--lasso-text-main);
+  overflow-x: hidden;
 }
 
-.premium-sidebar .sidebar-header {
-  border-bottom: 1px solid var(--premium-border) !important;
-  background: transparent !important;
+/* Glassmorphism Components */
+.premium-card {
+  background: var(--lasso-card-bg);
+  border: 1px solid var(--lasso-border) !important;
+  border-radius: var(--lasso-radius) !important;
+  box-shadow: var(--lasso-shadow-lg) !important;
+  backdrop-filter: var(--glass-blur);
+  transition: var(--lasso-transition);
+  overflow: hidden;
 }
 
-.premium-sidebar .sidebar-footer {
-  border-top: 1px solid var(--premium-border) !important;
-  background: transparent !important;
+.premium-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 25px 30px -5px rgba(0,0,0,0.08) !important;
 }
 
-.premium-sidebar .nav-link {
-  border-radius: 8px !important;
-  margin: 4px 8px !important;
+.premium-card-static:hover {
+  transform: none !important;
+  box-shadow: var(--lasso-shadow-lg) !important;
+}
+
+/* Typography */
+.section-title {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--lasso-text-main);
+}
+
+.section-subtitle {
+  color: var(--lasso-text-muted);
+  font-size: 0.9rem;
+}
+
+/* Premium Buttons */
+.btn-lasso {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px !important;
+  padding: 0.6rem 1.25rem !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  transition: var(--lasso-transition) !important;
+  border: 1px solid transparent !important;
+}
+
+.btn-lasso-primary {
+  background: var(--lasso-primary) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3) !important;
+}
+
+.btn-lasso-primary:hover {
+  background: var(--lasso-primary-hover) !important;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4) !important;
+}
+
+.btn-lasso-success {
+  background: var(--lasso-success) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3) !important;
+}
+
+.btn-lasso-success:hover {
+  background: #059669 !important;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4) !important;
+}
+
+.btn-lasso-soft-primary {
+  background: var(--lasso-primary-soft) !important;
+  color: var(--lasso-primary) !important;
+}
+
+.btn-lasso-soft-primary:hover {
+  background: var(--lasso-primary) !important;
+  color: white !important;
+}
+
+.btn-lasso-soft-danger {
+  background: var(--lasso-danger-soft) !important;
+  color: var(--lasso-danger) !important;
+}
+
+.btn-lasso-soft-danger:hover {
+  background: var(--lasso-danger) !important;
+  color: white !important;
+}
+
+/* Badges - Unified System */
+.badge-lasso {
+  padding: 6px 14px !important;
+  border-radius: 100px !important;
+  font-weight: 600 !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
+}
+
+.badge-lasso-success {
+  background: var(--lasso-success-soft) !important;
+  color: var(--lasso-success) !important;
+  border-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+.badge-lasso-danger {
+  background: var(--lasso-danger-soft) !important;
+  color: var(--lasso-danger) !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+.badge-lasso-warning {
+  background: var(--lasso-warning-soft) !important;
+  color: var(--lasso-warning) !important;
+  border-color: rgba(245, 158, 11, 0.2) !important;
+}
+
+.badge-lasso-info {
+  background: var(--lasso-info-soft) !important;
+  color: var(--lasso-info) !important;
+  border-color: rgba(14, 165, 233, 0.2) !important;
+}
+
+.badge-lasso-purple {
+  background: rgba(168, 85, 247, 0.1) !important;
+  color: #a855f7 !important;
+  border-color: rgba(168, 85, 247, 0.2) !important;
+}
+
+/* Extra Soft Buttons */
+.btn-lasso-soft-success {
+  background: var(--lasso-success-soft) !important;
+  color: var(--lasso-success) !important;
+}
+
+.btn-lasso-soft-success:hover {
+  background: var(--lasso-success) !important;
+  color: white !important;
+}
+
+/* Table Premium overhaul */
+.table-lasso-container {
+  border-radius: var(--lasso-radius);
+  border: 1px solid var(--lasso-border);
+  overflow: hidden;
+  background: var(--lasso-card-bg);
+}
+
+.table-lasso thead th {
+  background: var(--lasso-bg) !important;
+  color: var(--lasso-text-muted) !important;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 1.25rem 1rem !important;
+  border-bottom: 1px solid var(--lasso-border) !important;
+}
+
+.table-lasso tbody td {
+  padding: 1.25rem 1rem !important;
+  border-bottom: 1px solid var(--lasso-border) !important;
+  vertical-align: middle !important;
+  font-size: 0.9rem;
+  transition: var(--lasso-transition);
+}
+
+.table-lasso tbody tr:hover td {
+  background-color: var(--lasso-primary-soft) !important;
+}
+
+/* Form Controls */
+.lasso-input {
+  border-radius: 12px !important;
+  padding: 0.75rem 1rem !important;
+  border: 1.5px solid var(--lasso-border) !important;
+  background-color: var(--lasso-bg) !important;
+  transition: var(--lasso-transition) !important;
+  font-size: 0.95rem !important;
+}
+
+.lasso-input:focus {
+  background-color: var(--lasso-card-bg) !important;
+  border-color: var(--lasso-primary) !important;
+  box-shadow: 0 0 0 4px var(--lasso-primary-soft) !important;
+  outline: none;
+}
+
+/* Modals */
+.lasso-modal .modal-content {
+  border: none !important;
+  border-radius: 24px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  backdrop-filter: blur(20px);
+}
+
+.lasso-modal .modal-header {
+  border-bottom: 1px solid var(--lasso-border) !important;
+  padding: 1.5rem 2rem !important;
+}
+
+.lasso-modal .modal-body {
+  padding: 2rem !important;
+}
+
+.lasso-modal .modal-footer {
+  border-top: 1px solid var(--lasso-border) !important;
+  padding: 1.5rem 2rem !important;
+}
+
+/* Quick Animations */
+.fade-up {
+  animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Premium Sidebar --- */
+.sidebar {
+  background: #0f172a !important;
+  border-right: 1px solid rgba(255,255,255,0.05) !important;
+}
+
+.sidebar-nav .nav-link {
+  border-radius: 12px !important;
+  margin: 4px 12px !important;
   padding: 10px 16px !important;
   font-weight: 500 !important;
-  color: rgba(255, 255, 255, 0.7) !important;
-  transition: all 0.3s ease !important;
+  color: #94a3b8 !important;
+  transition: var(--lasso-transition) !important;
   display: flex !important;
   align-items: center !important;
-  position: relative !important;
 }
 
-.premium-sidebar .nav-link:hover {
-  background: var(--sidebar-item-hover-bg) !important;
-  color: #fff !important;
-  transform: translateX(4px) !important;
-}
-
-.premium-sidebar .nav-link .nav-icon {
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-  color: rgba(255, 255, 255, 0.5) !important;
-  margin-right: 12px !important;
-  margin-left: 0 !important;
-  width: 1.2rem !important;
-  height: 1.2rem !important;
-  flex-shrink: 0 !important;
-}
-
-.premium-sidebar .nav-link:hover .nav-icon {
-  transform: scale(1.15) rotate(-5deg) !important;
-  color: var(--sidebar-active-color) !important;
-}
-
-.premium-sidebar .nav-link.active {
-  background: var(--sidebar-active-bg) !important;
-  color: var(--sidebar-active-color) !important;
-  box-shadow: var(--sidebar-glow) !important;
-}
-
-.premium-sidebar .nav-link.active .nav-icon {
-  color: var(--sidebar-active-color) !important;
-}
-
-.premium-sidebar .nav-group-items {
-  background: transparent !important;
-  padding-left: 10px !important;
-}
-
-.premium-sidebar .nav-group.show > .nav-link-group {
-  font-weight: 600 !important;
-}
-
-/* Glassmorphism effect for sidebar when unfoldable */
-.sidebar-narrow-unfoldable:not(:hover) .premium-sidebar {
-  backdrop-filter: blur(10px);
-}
-
-/* Base card improvements */
-.premium-card {
-  border: none !important;
-  border-radius: var(--premium-radius) !important;
-  overflow: hidden;
-  box-shadow: var(--premium-shadow);
-}
-
-
-
-/* Gradients */
-.bg-gradient-indigo {
-  background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%) !important;
+.sidebar-nav .nav-link:hover {
+  background: rgba(255,255,255,0.05) !important;
   color: white !important;
 }
 
-.bg-gradient-cyan {
-  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+.sidebar-nav .nav-link.active {
+  background: var(--lasso-primary) !important;
   color: white !important;
+  box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4) !important;
 }
 
-.bg-gradient-emerald {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-  color: white !important;
+/* Ensures icon is close to text ('inside the text flow') */
+.sidebar-nav .nav-link {
+  display: flex !important;
+  align-items: center !important;
+  padding: 10px 16px !important;
+  gap: 10px !important; /* Force tight grouping */
 }
 
-.bg-gradient-rose {
-  background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%) !important;
-  color: white !important;
-}
-
-.bg-gradient-amber {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
-  color: white !important;
-}
-
-/* Animations */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.fade-in-up {
-  animation: fadeInUp 0.5s ease-out forwards;
-}
-
-.wrapper {
-  overflow-x: hidden !important;
-}
-
-.delay-1 { animation-delay: 0.1s; }
-.delay-2 { animation-delay: 0.2s; }
-.delay-3 { animation-delay: 0.3s; }
-.delay-4 { animation-delay: 0.4s; }
-.delay-5 { animation-delay: 0.5s; }
-
-.table-premium-container,
-.table-responsive {
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
-}
-
-.table-premium-container::-webkit-scrollbar,
-.table-responsive::-webkit-scrollbar,
-.table-premium-container *::-webkit-scrollbar,
-.table-responsive *::-webkit-scrollbar {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-}
-
-.table-premium-container {
-  border-radius: var(--premium-radius);
-  overflow: hidden;
-  border: 1px solid var(--premium-border);
-}
-
-.table-premium tbody tr,
-.table-premium tbody tr:hover,
-.table-premium tbody tr.table-active,
-.table-premium tbody tr:active,
-.table-premium tbody td:hover {
-  background-color: transparent !important;
-  transition: none !important;
-  transform: none !important;
-}
-
-.table-premium thead th {
-  background-color: var(--premium-table-header-bg) !important;
-  color: var(--premium-table-header-text) !important;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  letter-spacing: 0.025em;
-  padding: 1rem !important;
-  border-bottom: 2px solid var(--premium-border) !important;
-}
-
-.table-premium tbody td {
-  padding: 1rem !important;
-  vertical-align: middle !important;
-}
-
-.table-premium tbody tr {
-  border-bottom: 1px solid var(--premium-border);
-}
-
-
-
-/* Form controls */
-.premium-input {
-  border-radius: 8px !important;
-  border: 1px solid var(--premium-input-border) !important;
-  background-color: transparent !important;
+.lasso-sidebar-icon {
+  width: 1.1rem !important;
+  height: 1.1rem !important;
   color: inherit !important;
-  padding: 0.6rem 1rem !important;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+  flex: 0 0 1.1rem !important;
+  transition: var(--lasso-transition);
+  margin: 0 !important;
+  position: static !important;
 }
 
-.premium-input:focus {
-  border-color: #6366f1 !important;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+.sidebar-nav .nav-link:hover .lasso-sidebar-icon {
+  transform: scale(1.1);
 }
 
-/* Badges */
-.badge-pill {
-  padding: 0.4em 1em !important;
-  font-weight: 600 !important;
-}
 
-/* Base Premium Button Class */
-.btn-premium {
+/* Legacy Overrides to prevent breakage - using duplications instead of @extend for standard CSS */
+.premium-input { 
+  border-radius: 12px !important;
+  padding: 0.75rem 1rem !important;
+  border: 1.5px solid var(--lasso-border) !important;
+  background-color: var(--lasso-bg) !important;
+  transition: var(--lasso-transition) !important;
+  font-size: 0.95rem !important;
+}
+.btn-premium { 
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border-radius: 10px !important;
-  padding: 0.5rem 1.25rem !important;
+  border-radius: 12px !important;
+  padding: 0.6rem 1.25rem !important;
   font-weight: 600 !important;
-  font-size: 0.85rem !important;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  font-size: 0.875rem !important;
+  transition: var(--lasso-transition) !important;
   border: 1px solid transparent !important;
-  text-transform: none !important;
 }
-
-.btn-premium:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.btn-premium:active {
-  transform: translateY(-1px) scale(0.98);
-}
-
-/* Premium Button Variants */
-.btn-premium-primary {
-  background-color: rgba(99, 102, 241, 0.15) !important;
-  color: #6366f1 !important;
-  border: 1px solid rgba(99, 102, 241, 0.3) !important;
-}
-
-.btn-premium-primary:hover {
-  background-color: #6366f1 !important;
+.btn-premium-primary { 
+  background: var(--lasso-primary) !important;
   color: white !important;
-  border-color: #6366f1 !important;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px !important;
+  padding: 0.6rem 1.25rem !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  transition: var(--lasso-transition) !important;
+  border: 1px solid transparent !important;
 }
-
+.btn-premium-danger { 
+  background: var(--lasso-danger-soft) !important;
+  color: var(--lasso-danger) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px !important;
+  padding: 0.6rem 1.25rem !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  transition: var(--lasso-transition) !important;
+  border: 1px solid transparent !important;
+}
+.btn-premium-warning { 
+  background: var(--lasso-warning-soft) !important;
+  color: var(--lasso-warning) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px !important;
+  padding: 0.6rem 1.25rem !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  transition: var(--lasso-transition) !important;
+  border: 1px solid transparent !important;
+}
 .btn-premium-secondary {
-  background-color: rgba(100, 116, 139, 0.1) !important;
-  color: #64748b !important;
-  border: 1px solid rgba(100, 116, 139, 0.2) !important;
-}
-
-.btn-premium-secondary:hover {
-  background-color: #64748b !important;
-  color: white !important;
-  border-color: #64748b !important;
-  box-shadow: 0 4px 12px rgba(100, 116, 139, 0.2) !important;
-}
-
-.btn-premium-success {
-  background-color: rgba(16, 185, 129, 0.15) !important;
-  color: #10b981 !important;
-  border: 1px solid rgba(16, 185, 129, 0.3) !important;
-}
-
-.btn-premium-success:hover {
-  background-color: #10b981 !important;
-  color: white !important;
-  border-color: #10b981 !important;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
-}
-
-.btn-premium-danger {
-  background-color: rgba(244, 63, 94, 0.15) !important;
-  color: #f43f5e !important;
-  border: 1px solid rgba(244, 63, 94, 0.3) !important;
-}
-
-.btn-premium-danger:hover {
-  background-color: #f43f5e !important;
-  color: white !important;
-  border-color: #f43f5e !important;
-  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.3) !important;
-}
-
-.btn-premium-warning {
-  background-color: rgba(245, 158, 11, 0.15) !important;
-  color: #f59e0b !important;
-  border: 1px solid rgba(245, 158, 11, 0.3) !important;
-}
-
-.btn-premium-warning:hover {
-  background-color: #f59e0b !important;
-  color: white !important;
-  border-color: #f59e0b !important;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
-}
-
-/* Dark mode specific adjustments */
-[data-coreui-theme="dark"] .btn-premium-primary { border-color: rgba(99, 102, 241, 0.3) !important; }
-[data-coreui-theme="dark"] .btn-premium-success { border-color: rgba(16, 185, 129, 0.3) !important; }
-[data-coreui-theme="dark"] .btn-premium-danger { border-color: rgba(244, 63, 94, 0.3) !important; }
-[data-coreui-theme="dark"] .btn-premium-warning { border-color: rgba(245, 158, 11, 0.3) !important; }
-
-/* Legacy Action Buttons (backward compatibility) */
-.btn-action-view {
-  background-color: rgba(99, 102, 241, 0.15) !important;
-  color: #6366f1 !important;
-  border: 1px solid rgba(99, 102, 241, 0.3) !important;
-}
-
-.btn-action-view:hover {
-  background-color: #6366f1 !important;
-  color: white !important;
-  border-color: #6366f1 !important;
-}
-
-.btn-action-edit {
-  background-color: rgba(245, 158, 11, 0.15) !important;
-  color: #f59e0b !important;
-  border: 1px solid rgba(245, 158, 11, 0.3) !important;
-}
-
-.btn-action-edit:hover {
-  background-color: #f59e0b !important;
-  color: white !important;
-  border-color: #f59e0b !important;
-}
-
-.btn-action-delete {
-  background-color: rgba(244, 63, 94, 0.15) !important;
-  color: #f43f5e !important;
-  border: 1px solid rgba(244, 63, 94, 0.3) !important;
-}
-
-.btn-action-delete:hover {
-  background-color: #f43f5e !important;
-  color: white !important;
-  border-color: #f43f5e !important;
-}
-
-.btn-action-validate {
-  background-color: rgba(16, 185, 129, 0.15) !important;
-  color: #10b981 !important;
-  border: 1px solid rgba(16, 185, 129, 0.3) !important;
-}
-
-.btn-action-validate:hover {
-  background-color: #10b981 !important;
-  color: white !important;
-  border-color: #10b981 !important;
-}
-
-/* Base class for all action buttons to inherit transitions and effects */
-.btn-action-view, .btn-action-edit, .btn-action-delete, .btn-action-validate {
+  background: var(--lasso-bg) !important;
+  color: var(--lasso-text-muted) !important;
+  border: 1px solid var(--lasso-border) !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border-radius: 10px !important;
-  padding: 0.5rem 1rem !important;
+  border-radius: 12px !important;
+  padding: 0.6rem 1.25rem !important;
   font-weight: 600 !important;
-  font-size: 0.82rem !important;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-  border: 1px solid transparent !important;
-}
-
-.btn-action-view:hover, .btn-action-edit:hover, .btn-action-delete:hover, .btn-action-validate:hover {
-  transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  font-size: 0.875rem !important;
+  transition: var(--lasso-transition) !important;
 }

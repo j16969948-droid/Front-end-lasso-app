@@ -64,18 +64,18 @@ const DataTable = ({
     }
 
     return (
-        <div>
-            <CCard className="premium-card mb-4">
-                <div className="border-bottom p-4">
-                    <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div className="fade-up">
+            <CCard className="premium-card premium-card-static mb-4 border-0">
+                <div className="p-md-4 border-bottom">
+                    <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-4">
                         <div>
-                            <div className="fs-4 fw-bold">{title}</div>
-                            {subtitle && <div className="text-secondary small">{subtitle}</div>}
+                            <h2 className="section-title mb-1">{title}</h2>
+                            {subtitle && <p className="section-subtitle mb-0">{subtitle}</p>}
                         </div>
                         <div className="d-flex flex-wrap gap-2">
                             {headerBadges}
                             {onAddItem && (
-                                <CButton color="primary" className="btn-premium btn-premium-primary" onClick={onAddItem}>
+                                <CButton className="btn-lasso btn-lasso-primary" onClick={onAddItem}>
                                     {addItemLabel}
                                 </CButton>
                             )}
@@ -83,41 +83,36 @@ const DataTable = ({
                     </div>
                 </div>
 
-                <CCardBody>
-                    <div className="p-3 p-md-4 mb-4 rounded-3 bg-body-tertiary border-0">
-                        <CRow className="g-3 align-items-end mb-4">
-                            <CCol md={10}>
-                                <CFormLabel className="fw-semibold small text-uppercase text-secondary">Buscar</CFormLabel>
-                                <CFormInput 
-                                    className="premium-input"
-                                    placeholder={searchPlaceholder} 
-                                    value={busqueda} 
-                                    onChange={(e) => cambiarBusqueda(e.target.value)} 
+                <CCardBody className="p-md-4">
+                    <div className="p-4 mb-5 rounded-4 bg-body-tertiary border-0 shadow-sm">
+                        <CRow className="g-4 align-items-end">
+                            <CCol md={9}>
+                                <CFormLabel className="fw-bold small text-uppercase text-muted mb-2 ps-1">Buscador</CFormLabel>
+                                <CFormInput
+                                    className="lasso-input"
+                                    placeholder={searchPlaceholder}
+                                    value={busqueda}
+                                    onChange={(e) => cambiarBusqueda(e.target.value)}
                                 />
                             </CCol>
-                            <CCol md={2}>
-                                <CButton color="secondary" className="w-100 btn-premium btn-premium-secondary" onClick={handleLimpiar}>Limpiar</CButton>
+                            <CCol md={3}>
+                                <CButton className="w-100 btn-lasso btn-lasso-soft-primary" onClick={handleLimpiar}>Limpiar</CButton>
                             </CCol>
                         </CRow>
 
                         {filterControls && (
-                            <div>
-                                <hr className="my-4 text-secondary opacity-25" />
-                                <CRow>
-                                    <CCol md={12}>
-                                        {filterControls}
-                                    </CCol>
-                                </CRow>
+                            <div className="mt-4 pt-4 border-top">
+                                {filterControls}
                             </div>
                         )}
                     </div>
 
-                    <div className="table-responsive table-premium-container">
-                        <CTable align="middle" className="mb-0 table-premium">
+                    <div className="table-lasso-container shadow-sm">
+                        <CTable align="middle" className="mb-0 table-lasso" hover responsive>
                             <CTableHead>
                                 <CTableRow>
                                     {columns.map((col, idx) => (
-                                        <CTableHeaderCell key={idx} className={`${col.className || ''} text-nowrap border-0`}>{col.header}</CTableHeaderCell>
+                                        <CTableHeaderCell key={idx} className={`${col.className || ''} text-nowrap`}>{col.header}</CTableHeaderCell>
                                     ))}
                                 </CTableRow>
                             </CTableHead>
@@ -126,7 +121,7 @@ const DataTable = ({
                                     datosPaginados.map((item, rowIdx) => (
                                         <CTableRow key={item.id || rowIdx}>
                                             {columns.map((col, colIdx) => (
-                                                <CTableDataCell key={colIdx} className={`${col.className || ''} border-0`}>
+                                                <CTableDataCell key={colIdx} className={col.className || ''}>
                                                     {col.renderFunc ? col.renderFunc(item) : (item[col.key] || '-')}
                                                 </CTableDataCell>
                                             ))}
@@ -135,9 +130,9 @@ const DataTable = ({
                                 ) : (
                                     <CTableRow>
                                         <CTableDataCell colSpan={columns.length} className="text-center py-5">
-                                            <div className="fw-semibold fs-5 mb-1">No se encontraron registros</div>
-                                            <div className="text-secondary mb-3">Ajusta los filtros para ver más resultados</div>
-                                            <CButton color="primary" variant="outline" className="rounded-pill" onClick={limpiarBusqueda}>Limpiar búsqueda</CButton>
+                                            <div className="fw-bold fs-5 mb-2">No se encontraron resultados</div>
+                                            <p className="text-muted mb-4 small">Intenta ajustar los criterios de búsqueda o filtros.</p>
+                                            <CButton color="primary" variant="outline" className="rounded-pill px-4" onClick={limpiarBusqueda}>Restablecer buscador</CButton>
                                         </CTableDataCell>
                                     </CTableRow>
                                 )}
@@ -145,13 +140,13 @@ const DataTable = ({
                         </CTable>
                     </div>
 
-                    <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mt-4">
-                        <div className="text-secondary small">
+                    <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-4 mt-5">
+                        <div className="text-muted small fw-medium">
                             Mostrando <strong>{datosFiltrados.length === 0 ? 0 : (paginaActual - 1) * itemsPerPage + 1}</strong> - <strong>{Math.min(paginaActual * itemsPerPage, datosFiltrados.length)}</strong> de <strong>{datosFiltrados.length}</strong> registros
                         </div>
-                        <Pagination 
-                            paginaActual={paginaActual} 
-                            totalPaginas={totalPaginas} 
+                        <Pagination
+                            paginaActual={paginaActual}
+                            totalPaginas={totalPaginas}
                             paginasVisibles={paginasVisibles}
                             onPaginaAnterior={() => setPaginaActual(prev => Math.max(1, prev - 1))}
                             onPaginaSiguiente={() => setPaginaActual(prev => Math.min(totalPaginas, prev + 1))}

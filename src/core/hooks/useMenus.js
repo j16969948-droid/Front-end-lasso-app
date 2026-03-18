@@ -58,13 +58,13 @@ export const useMenusUser = () => {
                 component: CNavGroup,
                 name: item.nombre,
                 to: item.url,
-                icon: <CIcon icon={getIcon(item.nombre)} customClassName="nav-icon" />,
+                icon: <CIcon icon={getIcon(item.nombre)} customClassName="lasso-sidebar-icon" />,
                 items: (item.submenus || []).map((item2) => {
                     return {
                         component: CNavItem,
                         name: item2.nombre,
                         to: item2.url,
-                        icon: <CIcon icon={getIcon(item2.nombre)} customClassName="nav-icon" />,
+                        icon: <CIcon icon={getIcon(item2.nombre)} customClassName="lasso-sidebar-icon" />,
                     }
                 })
             }

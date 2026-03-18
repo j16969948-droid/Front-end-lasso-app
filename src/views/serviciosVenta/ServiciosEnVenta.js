@@ -1,10 +1,9 @@
-import React, { useMemo, useState, useEffect } from 'react'
+import React, { useMemo, useState } from 'react'
 import {
     CFormInput,
     CRow,
     CCol,
     CButton,
-    CBadge,
     CModal,
     CModalHeader,
     CModalTitle,
@@ -39,13 +38,12 @@ const ServiciosEnVenta = () => {
     const servicios = useMemo(() => Array.isArray(serviciosData) ? serviciosData : [], [serviciosData])
 
     const searchFunction = (servicio, termino) => {
+        const t = (termino || '').toLowerCase()
         return (
-            String(servicio?.id || '').toLowerCase().includes(termino) ||
-            String(servicio?.nombre || '').toLowerCase().includes(termino) ||
-            String(servicio?.slug || '').toLowerCase().includes(termino) ||
-            String(servicio?.estado || '').toLowerCase().includes(termino) ||
-            String(servicio?.proveedor || '').toLowerCase().includes(termino) ||
-            String(servicio?.telefono_proveedor || '').toLowerCase().includes(termino)
+            String(servicio?.id || '').toLowerCase().includes(t) ||
+            String(servicio?.nombre || '').toLowerCase().includes(t) ||
+            String(servicio?.slug || '').toLowerCase().includes(t) ||
+            String(servicio?.proveedor || '').toLowerCase().includes(t)
         )
     }
 
@@ -59,16 +57,15 @@ const ServiciosEnVenta = () => {
     const validarFormulario = () => {
         const camposObligatorios = [
             { field: 'nombre', label: 'Nombre' },
-            { field: 'slug', label: 'Slug' },
-            { field: 'precio_usuario', label: 'Precio usuario' },
-            { field: 'precio_revendedor', label: 'Precio revendedor' },
-            { field: 'imagen', label: 'Imagen' },
+            { field: 'slug', label: 'Enlace' },
+            { field: 'precio_usuario', label: 'Precio Cliente' },
+            { field: 'precio_revendedor', label: 'Precio Revendedor' },
         ]
 
         const faltantes = camposObligatorios.filter(item => !formulario[item.field])
 
         if (faltantes.length > 0) {
-            alert(`Por favor, completa los siguientes campos obligatorios: ${faltantes.map(f => f.label).join(', ')}`)
+            alert(`Por favor, completa: ${faltantes.map(f => f.label).join(', ')}`)
             return false
         }
         return true
@@ -105,68 +102,81 @@ const ServiciosEnVenta = () => {
     const handleCrearServicio = () => {
         if (!validarFormulario()) return
         createServicio.mutate(formulario, {
-            onSuccess: () => {
-                cerrarModalCrear()
-            }
+            onSuccess: () => cerrarModalCrear()
         })
     }
 
     const handleEditarServicio = () => {
-        if (!servicioSeleccionado) return
-        if (!validarFormulario()) return
+        if (!servicioSeleccionado || !validarFormulario()) return
         updateServicio.mutate({ id: servicioSeleccionado.id, data: formulario }, {
-            onSuccess: () => {
-                cerrarModalEditar()
-            }
+            onSuccess: () => cerrarModalEditar()
         })
     }
 
     const handleEliminarServicio = () => {
         if (!servicioSeleccionado) return
         deleteServicio.mutate(servicioSeleccionado.id, {
-            onSuccess: () => {
-                cerrarModalEliminar()
-            }
+            onSuccess: () => cerrarModalEliminar()
         })
     }
 
     const columns = [
-        { header: 'ID', key: 'id', className: 'fw-semibold' },
-        { header: 'Nombre', key: 'nombre', renderFunc: (s) => <div className="fw-semibold">{s.nombre || '-'}</div> },
-        { header: 'Slug', key: 'slug' },
-        { header: 'Precio usuario', key: 'precio_usuario', className: 'fw-semibold', renderFunc: (s) => formatearMonto(s.precio_usuario) },
-        { header: 'Precio revendedor', key: 'precio_revendedor', className: 'fw-semibold', renderFunc: (s) => formatearMonto(s.precio_revendedor) },
-        { 
-            header: 'Estado', 
-            key: 'estado', 
+        { header: 'ID', key: 'id', renderFunc: (s) => <span className="text-muted fw-bold">#{s.id}</span> },
+        {
+            header: 'Servicio',
+            key: 'nombre',
             renderFunc: (s) => (
-                <CBadge color={Number(s.estado) === 1 ? 'success' : 'danger'} className="rounded-pill px-3 py-2 fw-semibold">
-                    {Number(s.estado) === 1 ? 'Disponible' : 'No disponible'}
-                </CBadge>
-            ) 
+                <div className="d-flex align-items-center gap-3">
+                    {s.imagen && <img src={s.imagen} alt="" className="rounded-3 shadow-sm" style={{ width: '40px', height: '40px', objectFit: 'cover' }} />}
+                    <div>
+                        <div className="fw-bold">{s.nombre}</div>
+                        <div className="text-muted x-small">{s.slug}</div>
+                    </div>
+                </div>
+            )
         },
-        { 
-            header: 'Imagen', 
-            key: 'imagen', 
-            renderFunc: (s) => s.imagen ? <img src={s.imagen} alt={s.nombre} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '8px' }} /> : '-' 
+        {
+            header: 'Precios',
+            key: 'precios',
+            renderFunc: (s) => (
+                <div>
+                    <div className="fw-bold text-primary">{formatearMonto(s.precio_usuario)} <small className="text-muted fw-normal">(Cli)</small></div>
+                    <div className="fw-semibold text-info small">{formatearMonto(s.precio_revendedor)} <small className="text-muted fw-normal">(Rev)</small></div>
+                </div>
+            )
         },
-        { header: 'Proveedor', key: 'proveedor' },
-        { header: 'Teléfono', key: 'telefono_proveedor' },
-        { 
-            header: 'Acciones', 
-            key: 'acciones', 
+        {
+            header: 'Estado',
+            key: 'estado',
+            renderFunc: (s) => (
+                <span className={`badge-lasso badge-lasso-${Number(s.estado) === 1 ? 'success' : 'danger'} text-uppercase small`}>
+                    {Number(s.estado) === 1 ? 'Activo' : 'Inactivo'}
+                </span>
+            )
+        },
+        {
+            header: 'Proveedor',
+            key: 'proveedor',
+            renderFunc: (s) => (
+                <div>
+                    <div className="fw-medium small">{s.proveedor || 'N/A'}</div>
+                    <div className="text-muted x-small">{s.telefono_proveedor}</div>
+                </div>
+            )
+        },
+        {
+            header: 'Acciones',
+            key: 'acciones',
             renderFunc: (s) => (
                 <div className="d-flex gap-2">
-                    <CButton className="btn-premium btn-premium-warning" onClick={() => abrirModalEditar(s)}>
-                        <CIcon icon={cilPencil} size="sm" className="me-1" />
-                        Editar
+                    <CButton className="btn-lasso btn-lasso-soft-warning" onClick={() => abrirModalEditar(s)} title="Editar">
+                        <CIcon icon={cilPencil} size="sm" />
                     </CButton>
-                    <CButton className="btn-premium btn-premium-danger" onClick={() => abrirModalEliminar(s)}>
-                        <CIcon icon={cilTrash} size="sm" className="me-1" />
-                        Eliminar
+                    <CButton className="btn-lasso btn-lasso-soft-danger" onClick={() => abrirModalEliminar(s)} title="Eliminar">
+                        <CIcon icon={cilTrash} size="sm" />
                     </CButton>
                 </div>
-            ) 
+            )
         },
     ]
 
@@ -174,86 +184,130 @@ const ServiciosEnVenta = () => {
     if (error) return <ErrorState message="No se pudieron cargar los servicios" onRetry={() => window.location.reload()} />
 
     return (
-        <>
-            <DataTable 
-                title="Servicios en Venta"
-                subtitle="Gestiona, crea, edita y elimina los servicios disponibles"
+        <div className="fade-up">
+            <DataTable
+                title="Catálogo de Servicios"
+                subtitle="Administra la oferta de servicios, ajusta precios y gestiona la disponibilidad en tiempo real."
                 data={servicios}
                 columns={columns}
                 searchFunction={searchFunction}
                 onAddItem={abrirModalCrear}
-                addItemLabel="+ Agregar servicio"
-                searchPlaceholder="ID, nombre, slug, estado, proveedor o teléfono"
+                addItemLabel="Nuevo Servicio"
+                searchPlaceholder="Buscar por nombre, slug o proveedor..."
             />
 
-            <CModal visible={modalCrearVisible} onClose={cerrarModalCrear} alignment="center" size="lg" className="premium-modal">
-                <CModalHeader onClose={cerrarModalCrear} className="border-0 pb-0">
-                    <CModalTitle className="fw-bold fs-4">Agregar Nuevo Servicio</CModalTitle>
+            {/* Modal Crear */}
+            <CModal visible={modalCrearVisible} onClose={cerrarModalCrear} alignment="center" size="lg" className="lasso-modal">
+                <CModalHeader className="border-0 pb-0">
+                    <CModalTitle className="section-title h4">Agregar Servicio</CModalTitle>
                 </CModalHeader>
                 <CModalBody className="p-4">
-                    <CRow className="g-3">
-                        <CCol md={6}><CFormLabel>Nombre <span className="text-danger">*</span></CFormLabel><CFormInput name="nombre" value={formulario.nombre} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Slug <span className="text-danger">*</span></CFormLabel><CFormInput name="slug" value={formulario.slug} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Precio usuario <span className="text-danger">*</span></CFormLabel><CFormInput name="precio_usuario" type="number" value={formulario.precio_usuario} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Precio revendedor <span className="text-danger">*</span></CFormLabel><CFormInput name="precio_revendedor" type="number" value={formulario.precio_revendedor} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Imagen <span className="text-danger">*</span></CFormLabel><CFormInput name="imagen" value={formulario.imagen} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Proveedor</CFormLabel><CFormInput name="proveedor" value={formulario.proveedor} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Teléfono proveedor</CFormLabel><CFormInput name="telefono_proveedor" value={formulario.telefono_proveedor} onChange={handleChangeFormulario} /></CCol>
+                    <CRow className="g-4">
+                        <CCol md={6}>
+                            <CFormLabel className="lasso-label">Nombre del Servicio</CFormLabel>
+                            <CFormInput name="nombre" value={formulario.nombre} onChange={handleChangeFormulario} className="lasso-input" placeholder="Ej: Netflix 1 Perfil" />
+                        </CCol>
+                        <CCol md={6}>
+                            <CFormLabel className="lasso-label">Slug / Enlace</CFormLabel>
+                            <CFormInput name="slug" value={formulario.slug} onChange={handleChangeFormulario} className="lasso-input" placeholder="ej-netflix-1" />
+                        </CCol>
+                        <CCol md={6}>
+                            <CFormLabel className="lasso-label">Precio Cliente ($)</CFormLabel>
+                            <CFormInput name="precio_usuario" type="number" value={formulario.precio_usuario} onChange={handleChangeFormulario} className="lasso-input" />
+                        </CCol>
+                        <CCol md={6}>
+                            <CFormLabel className="lasso-label">Precio Revendedor ($)</CFormLabel>
+                            <CFormInput name="precio_revendedor" type="number" value={formulario.precio_revendedor} onChange={handleChangeFormulario} className="lasso-input" />
+                        </CCol>
+                        <CCol md={12}>
+                            <CFormLabel className="lasso-label">URL de la Imagen</CFormLabel>
+                            <CFormInput name="imagen" value={formulario.imagen} onChange={handleChangeFormulario} className="lasso-input" placeholder="https://..." />
+                        </CCol>
+                        <CCol md={6}>
+                            <CFormLabel className="lasso-label">Nombre Proveedor</CFormLabel>
+                            <CFormInput name="proveedor" value={formulario.proveedor} onChange={handleChangeFormulario} className="lasso-input" />
+                        </CCol>
+                        <CCol md={6}>
+                            <CFormLabel className="lasso-label">WhatsApp Proveedor</CFormLabel>
+                            <CFormInput name="telefono_proveedor" value={formulario.telefono_proveedor} onChange={handleChangeFormulario} className="lasso-input" />
+                        </CCol>
                     </CRow>
                 </CModalBody>
-                <CModalFooter className="border-0 pt-0 gap-2">
-                    <CButton color="secondary" onClick={cerrarModalCrear} className="btn-premium btn-premium-secondary">Cancelar</CButton>
-                    <CButton color="primary" onClick={handleCrearServicio} disabled={createServicio.isPending} className="btn-premium btn-premium-primary">
-                        {createServicio.isPending ? 'Guardando...' : 'Guardar Servicio'}
+                <CModalFooter className="border-0 pt-0 gap-3">
+                    <CButton onClick={cerrarModalCrear} className="btn-lasso btn-lasso-soft-secondary py-2 px-4 border-0">Cancelar</CButton>
+                    <CButton onClick={handleCrearServicio} disabled={createServicio.isPending} className="btn-lasso btn-lasso-primary py-2 px-4 shadow-sm">
+                        {createServicio.isPending ? 'Procesando...' : 'Crear Servicio'}
                     </CButton>
                 </CModalFooter>
             </CModal>
 
-            <CModal visible={modalEditarVisible} onClose={cerrarModalEditar} alignment="center" size="lg" className="premium-modal">
-                <CModalHeader onClose={cerrarModalEditar} className="border-0 pb-0">
-                    <CModalTitle className="fw-bold fs-4">Editar Servicio {servicioSeleccionado ? `- ID ${servicioSeleccionado.id}` : ''}</CModalTitle>
+            {/* Modal Editar */}
+            <CModal visible={modalEditarVisible} onClose={cerrarModalEditar} alignment="center" size="lg" className="lasso-modal">
+                <CModalHeader className="border-0 pb-0">
+                    <CModalTitle className="section-title h4">Editar: {servicioSeleccionado?.nombre}</CModalTitle>
                 </CModalHeader>
                 <CModalBody className="p-4">
-                    <CRow className="g-3">
-                        <CCol md={6}><CFormLabel>Nombre <span className="text-danger">*</span></CFormLabel><CFormInput name="nombre" value={formulario.nombre} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Slug <span className="text-danger">*</span></CFormLabel><CFormInput name="slug" value={formulario.slug} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Precio usuario <span className="text-danger">*</span></CFormLabel><CFormInput name="precio_usuario" type="number" value={formulario.precio_usuario} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Precio revendedor <span className="text-danger">*</span></CFormLabel><CFormInput name="precio_revendedor" type="number" value={formulario.precio_revendedor} onChange={handleChangeFormulario} /></CCol>
+                    <CRow className="g-4">
                         <CCol md={6}>
-                            <CFormLabel>Estado <span className="text-danger">*</span></CFormLabel>
-                            <CFormSelect name="estado" value={formulario.estado} onChange={handleChangeFormulario}>
-                                <option value={1}>Disponible</option>
-                                <option value={0}>No disponible</option>
+                            <CFormLabel className="lasso-label">Nombre</CFormLabel>
+                            <CFormInput name="nombre" value={formulario.nombre} onChange={handleChangeFormulario} className="lasso-input" />
+                        </CCol>
+                        <CCol md={6}>
+                            <CFormLabel className="lasso-label">Slug</CFormLabel>
+                            <CFormInput name="slug" value={formulario.slug} onChange={handleChangeFormulario} className="lasso-input" />
+                        </CCol>
+                        <CCol md={4}>
+                            <CFormLabel className="lasso-label">Precio Cliente</CFormLabel>
+                            <CFormInput name="precio_usuario" type="number" value={formulario.precio_usuario} onChange={handleChangeFormulario} className="lasso-input" />
+                        </CCol>
+                        <CCol md={4}>
+                            <CFormLabel className="lasso-label">Precio Revendedor</CFormLabel>
+                            <CFormInput name="precio_revendedor" type="number" value={formulario.precio_revendedor} onChange={handleChangeFormulario} className="lasso-input" />
+                        </CCol>
+                        <CCol md={4}>
+                            <CFormLabel className="lasso-label">Estado</CFormLabel>
+                            <CFormSelect name="estado" value={formulario.estado} onChange={handleChangeFormulario} className="lasso-input">
+                                <option value={1}>Activo / Disponible</option>
+                                <option value={0}>Inactivo / Pausado</option>
                             </CFormSelect>
                         </CCol>
-                        <CCol md={6}><CFormLabel>Imagen <span className="text-danger">*</span></CFormLabel><CFormInput name="imagen" value={formulario.imagen} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Proveedor</CFormLabel><CFormInput name="proveedor" value={formulario.proveedor} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Teléfono proveedor</CFormLabel><CFormInput name="telefono_proveedor" value={formulario.telefono_proveedor} onChange={handleChangeFormulario} /></CCol>
+                        <CCol md={12}>
+                            <CFormLabel className="lasso-label">URL de Imagen</CFormLabel>
+                            <CFormInput name="imagen" value={formulario.imagen} onChange={handleChangeFormulario} className="lasso-input" />
+                        </CCol>
+                        <CCol md={6}>
+                            <CFormLabel className="lasso-label">Proveedor</CFormLabel>
+                            <CFormInput name="proveedor" value={formulario.proveedor} onChange={handleChangeFormulario} className="lasso-input" />
+                        </CCol>
+                        <CCol md={6}>
+                            <CFormLabel className="lasso-label">Teléfono</CFormLabel>
+                            <CFormInput name="telefono_proveedor" value={formulario.telefono_proveedor} onChange={handleChangeFormulario} className="lasso-input" />
+                        </CCol>
                     </CRow>
                 </CModalBody>
-                <CModalFooter className="border-0 pt-0 gap-2">
-                    <CButton color="secondary" onClick={cerrarModalEditar} className="btn-premium btn-premium-secondary">Cancelar</CButton>
-                    <CButton color="primary" onClick={handleEditarServicio} disabled={updateServicio.isPending} className="btn-premium btn-premium-primary">
-                        {updateServicio.isPending ? 'Actualizando...' : 'Actualizar'}
+                <CModalFooter className="border-0 pt-0 gap-3">
+                    <CButton onClick={cerrarModalEditar} className="btn-lasso btn-lasso-soft-secondary py-2 px-4 border-0">Cerrar</CButton>
+                    <CButton onClick={handleEditarServicio} disabled={updateServicio.isPending} className="btn-lasso btn-lasso-primary py-2 px-4 shadow-sm">
+                        {updateServicio.isPending ? 'Actualizando...' : 'Guardar Cambios'}
                     </CButton>
                 </CModalFooter>
             </CModal>
 
-            <CModal visible={modalEliminarVisible} onClose={cerrarModalEliminar} alignment="center">
-                <CModalHeader onClose={cerrarModalEliminar}><CModalTitle>Eliminar servicio</CModalTitle></CModalHeader>
-                <CModalBody>
-                    {servicioSeleccionado ? (
-                        <div>¿Seguro que deseas eliminar el servicio <strong>{servicioSeleccionado.nombre || `ID ${servicioSeleccionado.id}`}</strong>?</div>
-                    ) : (
-                        <div>No hay servicio seleccionado.</div>
-                    )}
+            {/* Modal Eliminar */}
+            <CModal visible={modalEliminarVisible} onClose={cerrarModalEliminar} alignment="center" className="lasso-modal">
+                <CModalHeader className="border-0 pb-0">
+                    <CModalTitle className="text-danger fw-bold">⚠️ ELIMINAR SERVICIO</CModalTitle>
+                </CModalHeader>
+                <CModalBody className="p-4 text-center">
+                    <p className="fs-5">¿Estás seguro de que deseas eliminar permanentemente el servicio <br /><strong>{servicioSeleccionado?.nombre}</strong>?</p>
+                    <p className="text-muted small">Esta acción no se puede deshacer y afectará al catálogo público.</p>
                 </CModalBody>
-                <CModalFooter className="border-0 pt-0 gap-2">
-                    <CButton color="secondary" onClick={cerrarModalEliminar} className="btn-premium btn-premium-secondary">Cancelar</CButton>
-                    <CButton color="danger" onClick={handleEliminarServicio} className="btn-premium btn-premium-danger">Eliminar</CButton>
+                <CModalFooter className="border-0 pt-0 justify-content-center gap-3">
+                    <CButton onClick={cerrarModalEliminar} className="btn-lasso btn-lasso-soft-secondary">No, Mantener</CButton>
+                    <CButton onClick={handleEliminarServicio} className="btn-lasso btn-lasso-danger shadow-sm">Sí, Eliminar</CButton>
                 </CModalFooter>
             </CModal>
-        </>
+        </div>
     )
 }
 

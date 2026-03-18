@@ -56,22 +56,17 @@ const PagosEntrantes = () => {
         return [...new Set(data.map((item) => item?.medio_pago).filter(Boolean))]
     }, [data])
 
-    const filterFunction = null // Filtering handled by backend
-
     const searchFunction = useMemo(() => (pago, termino) => {
+        const t = (termino || '').toLowerCase()
         return (
-            String(pago?.cliente_id || '').toLowerCase().includes(termino) ||
-            String(pago?.monto_pagado || '').toLowerCase().includes(termino) ||
-            String(pago?.referencia_pago || '').toLowerCase().includes(termino) ||
-            String(pago?.combo_adquirido || '').toLowerCase().includes(termino) ||
-            String(pago?.medio_pago || '').toLowerCase().includes(termino) ||
-            String(pago?.user_id || '').toLowerCase().includes(termino)
+            String(pago?.cliente_id || '').toLowerCase().includes(t) ||
+            String(pago?.monto_pagado || '').toLowerCase().includes(t) ||
+            String(pago?.referencia_pago || '').toLowerCase().includes(t) ||
+            String(pago?.combo_adquirido || '').toLowerCase().includes(t) ||
+            String(pago?.medio_pago || '').toLowerCase().includes(t) ||
+            String(pago?.user_id || '').toLowerCase().includes(t)
         )
     }, [])
-
-    const totalMontoFiltrado = useMemo(() => {
-        return statistics?.monto_total_aprobados || 0
-    }, [statistics])
 
     const handleVerComprobante = (pago) => {
         if (!pago?.comprobante_url) return
@@ -85,128 +80,96 @@ const PagosEntrantes = () => {
         setImagenSeleccionada('')
         setPagoSeleccionado(null)
     }
+
     const handleValidarManual = (pago) => {
         if (window.confirm(`¿Estás seguro de validar el pago #${pago.id} manualmente?`)) {
             validarManual(pago.id, {
-                onSuccess: (data) => {
-                    console.log(data.mensaje)
-                },
-                onError: (err) => {
-                    alert('Error al validar el pago: ' + (err.response?.data?.error || err.message))
-                }
+                onSuccess: (data) => console.log(data.mensaje),
+                onError: (err) => alert('Error al validar el pago: ' + (err.response?.data?.error || err.message))
             })
         }
     }
+
+    const StatCard = ({ title, value, text, icon, color }) => (
+        <CCol sm={6} lg={3}>
+            <div className="premium-card p-4 h-100 position-relative border-0 shadow-lg">
+                <div className={`position-absolute top-0 end-0 p-3 opacity-25 text-${color}`}>
+                    <CIcon icon={icon} size="xl" />
+                </div>
+                <div className="section-subtitle text-uppercase fw-bold mb-1" style={{ fontSize: '0.65rem', letterSpacing: '0.05em' }}>{title}</div>
+                <div className="section-title h2 mb-2">{value}</div>
+                <div className="text-muted small">{text}</div>
+            </div>
+        </CCol>
+    )
+
     const columns = [
-        { header: 'ID', key: 'id', className: 'fw-semibold' },
+        { header: 'ID', key: 'id', renderFunc: (p) => <span className="text-muted fw-bold">#{p.id}</span> },
         {
-            header: 'Fecha',
-            key: 'fecha_comprobante',
-            renderFunc: (pago) => {
-                const fecha = pago.fecha_comprobante || pago.fecha
-                if (!fecha) return '-'
-                // Extract YYYY-MM-DD using regex to be safe
-                const match = String(fecha).match(/(\d{4})[-/](\d{2})[-/](\d{2})/)
-                if (match) {
-                    return `${match[1]}-${match[2]}-${match[3]}`
-                }
-                return String(fecha).split(/[ T]/)[0].replace(/\//g, '-')
+            header: 'Fecha / Hora',
+            key: 'fecha',
+            renderFunc: (p) => {
+                const fecha = p.fecha_comprobante || p.fecha || '-'
+                return (
+                    <div>
+                        <div className="fw-medium">{String(fecha).split(/[ T]/)[0]}</div>
+                        <div className="text-muted x-small">{p.hora_comprobante || '-'}</div>
+                    </div>
+                )
             }
-        },
-        {
-            header: 'Hora',
-            key: 'hora_comprobante',
-            renderFunc: (pago) => pago.hora_comprobante || '-'
         },
         {
             header: 'Cliente',
             key: 'cliente',
-            renderFunc: (pago) => <div className="fw-semibold">{pago.user_id || '-'}</div>
+            renderFunc: (p) => <span className="fw-bold">{p.user_id || '-'}</span>
         },
         {
             header: 'Combo',
             key: 'combo',
-            renderFunc: (pago) => <div className="fw-semibold">{pago.combo_adquirido || '-'}</div>
+            renderFunc: (p) => <span className="text-muted small">{p.combo_adquirido || '-'}</span>
         },
         {
             header: 'Monto',
             key: 'monto',
-            className: 'fw-semibold',
-            renderFunc: (pago) => formatearMonto(pago.monto_pagado)
+            renderFunc: (p) => <span className="fw-bold text-success">{formatearMonto(p.monto_pagado)}</span>
         },
         {
             header: 'Medio',
             key: 'medio',
-            renderFunc: (pago) => {
-                const medio = String(pago.medio_pago || '').toLowerCase()
-                let estiloExtra = {}
-
-                if (medio.includes('bre b') || medio.includes('bre-b')) {
-                    estiloExtra = { backgroundColor: '#E1306C', color: 'white' }
-                } else if (medio.includes('nequi')) {
-                    estiloExtra = { backgroundColor: '#733190', color: 'white' }
-                }
-
+            renderFunc: (p) => {
+                const medio = String(p.medio_pago || '').toLowerCase()
+                let type = 'info'
+                if (medio === 'nequi') type = 'purple'
                 return (
-                    <CBadge
-                        className="rounded-pill px-3 py-2 fw-semibold"
-                        style={{
-                            ...estiloExtra,
-                            border: 'none',
-                            ...(Object.keys(estiloExtra).length === 0 ? { backgroundColor: '#6c757d', color: 'white' } : {})
-                        }}
-                    >
-                        {pago.medio_pago || '-'}
-                    </CBadge>
+                    <span className={`badge-lasso badge-lasso-${type}`}>
+                        {p.medio_pago || '-'}
+                    </span>
                 )
             }
         },
-        { header: 'Referencia', key: 'referencia_pago', className: 'text-break' },
+        { header: 'Referencia', key: 'referencia_pago', className: 'x-small text-muted' },
         {
             header: 'Estado',
             key: 'estado',
-            renderFunc: (pago) => {
-                const estado = String(pago.estado || '').toLowerCase()
-                let color = 'secondary'
-
-                if (estado === 'aprobado') {
-                    color = 'success'
-                } else if (estado === 'pendiente') {
-                    color = 'warning'
-                } else if (estado === 'repetido') {
-                    color = 'info'
-                } else if (estado === 'sin match') {
-                    color = 'danger'
-                } else if (estado === 'pago ya reportado') {
-                    color = 'secondary'
-                }
-
-                return (
-                    <CBadge color={color} className="rounded-pill px-3 py-2 fw-semibold">
-                        {pago.estado ? pago.estado : 'Sin definir'}
-                    </CBadge>
-                )
+            renderFunc: (p) => {
+                const e = String(p.estado || '').toLowerCase()
+                let type = 'secondary'
+                if (e === 'aprobado') type = 'success'
+                if (e === 'pendiente') type = 'warning'
+                if (e === 'sin match') type = 'danger'
+                return <span className={`badge-lasso badge-lasso-${type}`}>{p.estado || 'N/A'}</span>
             }
         },
         {
             header: 'Acciones',
             key: 'acciones',
-            renderFunc: (pago) => (
+            renderFunc: (p) => (
                 <div className="d-flex gap-2">
-                    <CButton
-                        className="btn-premium btn-premium-primary"
-                        onClick={() => handleVerComprobante(pago)}
-                        disabled={!pago?.comprobante_url}
-                    >
-                        <CIcon icon={cilExternalLink} size="sm" className="me-1" />
-                        Ver
+                    <CButton className="btn-lasso btn-lasso-soft-primary" onClick={() => handleVerComprobante(p)} disabled={!p?.comprobante_url} title="Ver Comprobante">
+                        <CIcon icon={cilExternalLink} size="sm" />
                     </CButton>
-                    <CButton
-                        className="btn-premium btn-premium-success"
-                        onClick={() => handleValidarManual(pago)}
-                    >
-                        <CIcon icon={cilCheckCircle} size="sm" className="me-1" />
-                        Validar
+                    <CButton className="btn-lasso btn-lasso-success" onClick={() => handleValidarManual(p)} title="Validar Manualmente">
+                        <CIcon icon={cilCheckCircle} size="sm" />
                     </CButton>
                 </div>
             )
@@ -216,25 +179,19 @@ const PagosEntrantes = () => {
     const filterControls = (
         <CRow className="g-3">
             <CCol md={4}>
-                <CFormLabel className="fw-semibold small text-uppercase text-secondary">Fecha</CFormLabel>
-                <CFormInput
-                    type="date"
-                    className="premium-input"
-                    size="sm"
-                    value={filtroFecha}
-                    onChange={(e) => setFiltroFecha(e.target.value)}
-                />
+                <CFormLabel className="lasso-label">Filtrar por Fecha</CFormLabel>
+                <CFormInput type="date" className="lasso-input" value={filtroFecha} onChange={(e) => setFiltroFecha(e.target.value)} />
             </CCol>
             <CCol md={4}>
-                <CFormLabel className="fw-semibold small text-uppercase text-secondary">Estado</CFormLabel>
-                <CFormSelect className="premium-input" size="sm" value={filtroEstadoPago} onChange={(e) => setFiltroEstadoPago(e.target.value)}>
+                <CFormLabel className="lasso-label">Estado de Pago</CFormLabel>
+                <CFormSelect className="lasso-input" value={filtroEstadoPago} onChange={(e) => setFiltroEstadoPago(e.target.value)}>
                     <option value="">Todos los estados</option>
                     {opcionesEstadoPago.map((estado) => <option key={estado} value={estado}>{estado}</option>)}
                 </CFormSelect>
             </CCol>
             <CCol md={4}>
-                <CFormLabel className="fw-semibold small text-uppercase text-secondary">Medio de Pago</CFormLabel>
-                <CFormSelect className="premium-input" size="sm" value={filtroMedioPago} onChange={(e) => setFiltroMedioPago(e.target.value)}>
+                <CFormLabel className="lasso-label">Medio de Pago</CFormLabel>
+                <CFormSelect className="lasso-input" value={filtroMedioPago} onChange={(e) => setFiltroMedioPago(e.target.value)}>
                     <option value="">Todos los medios</option>
                     {opcionesMedioPago.map((medio) => <option key={medio} value={medio}>{medio}</option>)}
                 </CFormSelect>
@@ -246,132 +203,59 @@ const PagosEntrantes = () => {
     if (error) return <ErrorState message="No se pudieron cargar los pagos entrantes" onRetry={() => window.location.reload()} />
 
     return (
-        <>
+        <div className="fade-up">
             {statistics && (
-                <CRow className="mb-4 p-2">
-                    <CCol sm={6} lg={3}>
-                        <CWidgetStatsC
-                            className="mb-3 premium-card h-100 shadow-sm border-0 border-start border-4 border-primary"
-                            icon={<CIcon icon={cilCheckCircle} height={36} className="text-primary" />}
-                            progress={{ color: 'primary', value: 100 }}
-                            text="Total Pagos Hoy"
-                            title="Pagos del Día"
-                            value={statistics.total_pagos_dia || 0}
-                        />
-                    </CCol>
-                    <CCol sm={6} lg={3}>
-                        <CWidgetStatsC
-                            className="mb-3 premium-card h-100 shadow-sm border-0 border-start border-4 border-success"
-                            icon={<CIcon icon={cilCheckCircle} height={36} className="text-success" />}
-                            progress={{ color: 'success', value: 100 }}
-                            text="Pagos validados satisfactoriamente"
-                            title="Aprobados"
-                            value={statistics.total_aprobados || 0}
-                        />
-                    </CCol>
-                    <CCol sm={6} lg={3}>
-                        <CWidgetStatsC
-                            className="mb-3 premium-card h-100 shadow-sm border-0 border-start border-4 border-warning"
-                            icon={<CIcon icon={cilCheckCircle} height={36} className="text-warning" />}
-                            progress={{ color: 'warning', value: 100 }}
-                            text="Pagos que requieren revisión"
-                            title="Pendientes"
-                            value={statistics.total_pendientes || 0}
-                        />
-                    </CCol>
-                    <CCol sm={6} lg={3}>
-                        <CWidgetStatsC
-                            className="mb-3 premium-card h-100 shadow-sm border-0 border-start border-4 border-info"
-                            icon={<CIcon icon={cilCheckCircle} height={36} className="text-info" />}
-                            progress={{ color: 'info', value: 100 }}
-                            text="Monto total de pagos aprobados"
-                            title="Monto Aprobado"
-                            value={formatearMonto(statistics.monto_total_aprobados || 0)}
-                        />
-                    </CCol>
+                <CRow className="g-4 mb-4">
+                    <StatCard title="Pagos del Día" value={statistics.total_pagos_dia || 0} text="Comprobantes recibidos hoy" icon={cilCheckCircle} color="primary" />
+                    <StatCard title="Aprobados" value={statistics.total_aprobados || 0} text="Validados satisfactoriamente" icon={cilCheckCircle} color="success" />
+                    <StatCard title="Pendientes" value={statistics.total_pendientes || 0} text="Requieren revisión manual" icon={cilCheckCircle} color="warning" />
+                    <StatCard title="Monto Aprobado" value={formatearMonto(statistics.monto_total_aprobados || 0)} text="Recaudación total aprobada" icon={cilCheckCircle} color="info" />
                 </CRow>
             )}
 
             <DataTable
                 title="Pagos Entrantes"
-                subtitle="Gestiona, filtra y revisa el estado de los pagos recibidos"
+                subtitle="Cruce de datos y validación de comprobantes recibidos."
                 data={data}
                 columns={columns}
                 searchFunction={searchFunction}
-                filterFunction={filterFunction}
                 filterControls={filterControls}
-                onClear={() => {
-                    setFiltroEstadoPago('')
-                    setFiltroMedioPago('')
-                    setFiltroFecha('')
-                }}
-                searchPlaceholder="Cliente, referencia, servicio o medio"
+                onClear={() => { setFiltroEstadoPago(''); setFiltroMedioPago(''); setFiltroFecha(''); }}
+                searchPlaceholder="Cliente, referencia, combo..."
                 itemsPerPage={50}
             />
 
-            <CModal visible={modalVisible} onClose={cerrarModal} size="xl" alignment="center" className="premium-modal">
-                <CModalHeader onClose={cerrarModal} className="border-0 pb-0">
-                    <div>
-                        <CModalTitle className="fw-bold fs-5">Detalle del pago</CModalTitle>
-                        <p className="text-secondary small mb-0">Información asociada al comprobante seleccionado.</p>
-                    </div>
+            <CModal visible={modalVisible} onClose={cerrarModal} size="xl" alignment="center" className="lasso-modal">
+                <CModalHeader className="border-0 pb-0">
+                    <CModalTitle className="section-title h4">Detalle del Pago</CModalTitle>
                 </CModalHeader>
-
                 <CModalBody className="p-4">
-                    <CRow className="g-3">
-                        {/* Imagen del comprobante */}
+                    <CRow className="g-4">
                         <CCol md={5}>
-                            <div className="h-100 d-flex align-items-center justify-content-center rounded-4 overflow-hidden"
-                                style={{ background: '#f0f0f0', minHeight: '320px' }}>
+                            <div className="premium-card p-2 bg-light d-flex align-items-center justify-content-center overflow-hidden" style={{ minHeight: '400px' }}>
                                 {imagenSeleccionada ? (
-                                    <img
-                                        src={imagenSeleccionada}
-                                        alt="Comprobante"
-                                        style={{ width: '100%', height: '100%', objectFit: 'contain', maxHeight: '480px' }}
-                                    />
+                                    <img src={imagenSeleccionada} alt="Comprobante" style={{ width: '100%', maxHeight: '500px', objectFit: 'contain' }} className="rounded-3 shadow-sm" />
                                 ) : (
-                                    <div className="text-center text-secondary py-5">
-                                        <div className="fs-6 fw-semibold mb-1">Sin imagen</div>
-                                        <div className="small">No hay comprobante disponible</div>
-                                    </div>
+                                    <div className="text-muted">Sin comprobante</div>
                                 )}
                             </div>
                         </CCol>
-
-                        {/* Campos de detalle */}
                         <CCol md={7}>
-                            <CRow className="g-2">
+                            <CRow className="g-3">
                                 {[
-                                    { label: 'ID', value: pagoSeleccionado?.id },
-                                    { label: 'CLIENTE', value: pagoSeleccionado?.cliente_id },
-                                    { label: 'COMBO', value: pagoSeleccionado?.combo_adquirido, full: true },
-                                    { label: 'MONTO', value: formatearMonto(pagoSeleccionado?.monto_pagado) },
-                                    { label: 'ESTADO', value: pagoSeleccionado?.estado },
-                                    {
-                                        label: 'FECHA', value: (() => {
-                                            const f = pagoSeleccionado?.fecha_comprobante || pagoSeleccionado?.fecha
-                                            if (!f) return '-'
-                                            const m = String(f).match(/(\d{4})[-/](\d{2})[-/](\d{2})/)
-                                            return m ? `${m[1]}-${m[2]}-${m[3]}` : String(f).split(/[ T]/)[0]
-                                        })()
-                                    },
-                                    { label: 'HORA', value: pagoSeleccionado?.hora_comprobante },
-                                    { label: 'MEDIO', value: pagoSeleccionado?.medio_pago },
-                                    { label: 'RED', value: pagoSeleccionado?.medio_pago },
-                                    { label: 'REFERENCIA', value: pagoSeleccionado?.referencia_pago, full: true },
-                                    { label: 'PAGO EMAIL ID', value: pagoSeleccionado?.pago_email_id, full: true },
-                                    { label: 'DIFERENCIA', value: pagoSeleccionado?.diferencia_minutos != null ? `${pagoSeleccionado.diferencia_minutos} min` : '-', full: true },
-                                ].map(({ label, value, full }) => (
-                                    <CCol key={label} xs={full ? 12 : 6}>
-                                        <div className="rounded-3 p-3"
-                                            style={{ background: 'var(--cui-tertiary-bg, #f8f9fa)', height: '100%' }}>
-                                            <div className="fw-semibold text-secondary"
-                                                style={{ fontSize: '0.65rem', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                                                {label}
-                                            </div>
-                                            <div className="fw-semibold mt-1" style={{ fontSize: '0.9rem' }}>
-                                                {value || '-'}
-                                            </div>
+                                    { label: 'ID Transacción', value: pagoSeleccionado?.id },
+                                    { label: 'Cliente', value: pagoSeleccionado?.user_id },
+                                    { label: 'Monto', value: formatearMonto(pagoSeleccionado?.monto_pagado) },
+                                    { label: 'Medio', value: pagoSeleccionado?.medio_pago },
+                                    { label: 'Fecha/Hora', value: `${pagoSeleccionado?.fecha_comprobante} ${pagoSeleccionado?.hora_comprobante}` },
+                                    { label: 'Referencia', value: pagoSeleccionado?.referencia_pago, full: true },
+                                    { label: 'Combo', value: pagoSeleccionado?.combo_adquirido, full: true },
+                                    { label: 'Email Match ID', value: pagoSeleccionado?.pago_email_id, full: true },
+                                ].map((item, idx) => (
+                                    <CCol key={idx} md={item.full ? 12 : 6}>
+                                        <div className="p-3 bg-light rounded-3 border border-light-subtle">
+                                            <div className="lasso-label mb-1" style={{ fontSize: '0.7rem' }}>{item.label}</div>
+                                            <div className="fw-bold text-dark">{item.value || '-'}</div>
                                         </div>
                                     </CCol>
                                 ))}
@@ -379,24 +263,16 @@ const PagosEntrantes = () => {
                         </CCol>
                     </CRow>
                 </CModalBody>
-
-                <CModalFooter className="border-0 pt-0 gap-2">
+                <CModalFooter className="border-0 mt-2 gap-3">
+                    <CButton onClick={cerrarModal} className="btn-lasso btn-lasso-soft-secondary py-2 px-4 border-0">Cerrar</CButton>
                     {imagenSeleccionada && (
-                        <CButton
-                            color="dark"
-                            className="btn-premium btn-premium-primary"
-                            onClick={() => window.open(imagenSeleccionada, '_blank')}
-                        >
-                            <CIcon icon={cilExternalLink} size="sm" className="me-1" />
-                            Abrir imagen
+                        <CButton onClick={() => window.open(imagenSeleccionada, '_blank')} className="btn-lasso btn-lasso-primary py-2 px-4 shadow-sm">
+                            <CIcon icon={cilExternalLink} className="me-2" /> Abrir Imagen
                         </CButton>
                     )}
-                    <CButton color="secondary" onClick={cerrarModal} className="btn-premium btn-premium-secondary">
-                        Cerrar
-                    </CButton>
                 </CModalFooter>
             </CModal>
-        </>
+        </div>
     )
 }
 

@@ -1,22 +1,20 @@
 import React from 'react'
 import classNames from 'classnames'
 import {
-  CAvatar,
-  CCard,
-  CCardBody,
-  CCol,
-  CRow,
-  CTable,
-  CTableBody,
-  CTableDataCell,
-  CTableHead,
-  CTableHeaderCell,
-  CTableRow,
-  CSpinner,
+    CAvatar,
+    CCard,
+    CCardBody,
+    CCol,
+    CRow,
+    CTable,
+    CTableBody,
+    CTableDataCell,
+    CTableRow,
+    CSpinner,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import {
-  cilPeople,
+    cilPeople, cilArrowRight
 } from '@coreui/icons'
 
 import { usePagosTotales } from '../../core/hooks/usePagosTotales'
@@ -30,128 +28,119 @@ import MainChart from './MainChart'
 import './dashboard.css'
 
 const Dashboard = () => {
-  const { data: pagosTotales, isLoading: loadingTotales } = usePagosTotales()
-  const { data: pagosEntrantes, isLoading: loadingEntrantes } = usePagosEntrantes()
-  const { data: inventario, isLoading: loadingInventario } = useInventario()
-  const { data: servicios, isLoading: loadingServicios } = useServicios()
+    const { data: pagosTotales, isLoading: loadingTotales } = usePagosTotales()
+    const { data: pagosEntrantes, isLoading: loadingEntrantes } = usePagosEntrantes()
+    const { data: inventario, isLoading: loadingInventario } = useInventario()
+    const { data: servicios, isLoading: loadingServicios } = useServicios()
 
-  const isLoading = loadingTotales || loadingEntrantes || loadingInventario || loadingServicios
+    const isLoading = loadingTotales || loadingEntrantes || loadingInventario || loadingServicios
 
-  if (isLoading) {
+    if (isLoading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center" style={{ height: '70vh' }}>
+                <CSpinner color="primary" variant="grow" />
+            </div>
+        )
+    }
+
+    const getArrayData = (data) => (Array.isArray(data) ? data : data?.data || [])
+
+    const pagosTotalesList = getArrayData(pagosTotales)
+    const pagosEntrantesList = getArrayData(pagosEntrantes)
+    const inventarioList = getArrayData(inventario)
+    const serviciosList = getArrayData(servicios)
+
+    const totalRevenue = pagosTotalesList.reduce((acc, curr) => acc + (parseFloat(curr.monto) || 0), 0)
+    const pendingPayments = pagosEntrantesList.filter((p) => p.estado === 'pendiente').length
+    const totalInventory = inventarioList.length
+    const totalServices = serviciosList.length
+
+    const widgetData = {
+        revenue: totalRevenue,
+        pending: pendingPayments,
+        inventory: totalInventory,
+        services: totalServices
+    }
+
+    const recentPayments = pagosEntrantesList.slice(0, 8)
+
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: '70vh' }}>
-        <CSpinner color="primary" />
-      </div>
+        <div className="fade-up">
+            <div className="p-4">
+                <h1 className="section-title">Panel de Control</h1>
+                <p className="section-subtitle">Bienvenido al administrador de Lasso. Aquí tienes un resumen general de tu negocio.</p>
+            </div>
+
+            <WidgetsDropdown className="mb-5" data={widgetData} />
+
+            <CRow className="g-4 mb-5">
+                <CCol lg={8}>
+                    <CCard className="premium-card h-100 border-0 shadow-sm">
+                        <CCardBody className="p-4 p-md-5">
+                            <div className="d-flex justify-content-between align-items-start mb-4">
+                                <div>
+                                    <h4 className="fw-bold mb-1">Flujo de Ingresos</h4>
+                                    <div className="text-muted small">Análisis detallado de ventas mensuales</div>
+                                </div>
+                            </div>
+                            <div style={{ height: '350px', marginTop: '20px' }}>
+                                <MainChart />
+                            </div>
+                        </CCardBody>
+                    </CCard>
+                </CCol>
+
+                <CCol lg={4}>
+                    <CCard className="premium-card h-100 border-0 shadow-sm">
+                        <CCardBody className="p-4 p-md-5">
+                            <h4 className="fw-bold mb-4">Actividad Reciente</h4>
+                            <div className="table-lasso-container">
+                                <CTable align="middle" className="mb-0 table-lasso" responsive>
+                                    <CTableBody>
+                                        {recentPayments?.map((pago, index) => (
+                                            <CTableRow key={`${pago.id || 'pago'}-${index}`}>
+                                                <CTableDataCell className="ps-0 py-3">
+                                                    <div className="d-flex align-items-center gap-3">
+                                                        <CAvatar
+                                                            size="md"
+                                                            className={`bg-opacity-10 text-${pago.estado === 'validado' ? 'success' : 'warning'} bg-${pago.estado === 'validado' ? 'success' : 'warning'}`}
+                                                        >
+                                                            {pago.cliente?.charAt(0) || 'C'}
+                                                        </CAvatar>
+                                                        <div>
+                                                            <div className="fw-bold small">{pago.cliente_id || 'Usuario'}</div>
+                                                            <div className="text-muted x-small">ID: {pago.id}</div>
+                                                        </div>
+                                                    </div>
+                                                </CTableDataCell>
+                                                <CTableDataCell className="text-end pe-0 py-3">
+                                                    <div className="fw-bold text-primary small">{formatearMonto(pago.monto_pagado)}</div>
+                                                    <span className={`badge-lasso badge-lasso-${pago.estado === 'validado' ? 'success' : 'warning'} x-small mt-1`}>
+                                                        {pago.estado}
+                                                    </span>
+                                                </CTableDataCell>
+                                            </CTableRow>
+                                        ))}
+                                        {recentPayments.length === 0 && (
+                                            <CTableRow>
+                                                <CTableDataCell colSpan="2" className="text-center py-5 text-muted small">
+                                                    No hay actividad reciente.
+                                                </CTableDataCell>
+                                            </CTableRow>
+                                        )}
+                                    </CTableBody>
+                                </CTable>
+                            </div>
+                            <div className="mt-4 pt-4 border-top text-center text-muted x-small fw-bold text-uppercase" style={{ cursor: 'pointer', letterSpacing: '0.1em' }}>
+                                Ver todos los pagos <CIcon icon={cilArrowRight} className="ms-1" size="sm" />
+                            </div>
+                        </CCardBody>
+                    </CCard>
+                </CCol>
+            </CRow>
+        </div>
     )
-  }
-
-  // Cálculos para los widgets
-  const getArrayData = (data) => (Array.isArray(data) ? data : data?.data || [])
-
-  const pagosTotalesList = getArrayData(pagosTotales)
-  const pagosEntrantesList = getArrayData(pagosEntrantes)
-  const inventarioList = getArrayData(inventario)
-  const serviciosList = getArrayData(servicios)
-
-  const totalRevenue = pagosTotalesList.reduce((acc, curr) => acc + (parseFloat(curr.monto) || 0), 0)
-  const pendingPayments = pagosEntrantesList.filter((p) => p.estado === 'pendiente').length
-  const totalInventory = inventarioList.length
-  const totalServices = serviciosList.length
-
-  // Datos para los widgets (pasados por props para simplificar)
-  const widgetData = {
-    revenue: totalRevenue,
-    pending: pendingPayments,
-    inventory: totalInventory,
-    services: totalServices
-  }
-
-  // Pagos recientes
-  const recentPayments = pagosEntrantesList.slice(0, 5)
-
-  return (
-    <>
-      <WidgetsDropdown className="mb-4" data={widgetData} />
-
-      <CCard className="mb-4 dashboard-card">
-        <CCardBody>
-          <CRow>
-            <CCol sm={5}>
-              <h4 id="traffic" className="card-title mb-0">
-                Resumen de Actividad
-              </h4>
-              <div className="small text-body-secondary">Histórico de ventas y movimientos</div>
-            </CCol>
-          </CRow>
-          <MainChart />
-        </CCardBody>
-      </CCard>
-
-      <CRow>
-        <CCol xs>
-          <CCard className="mb-4 dashboard-card">
-            <CCardBody>
-              <div className="d-flex justify-content-between align-items-center mb-4">
-                <h4 className="card-title mb-0">Pagos Recientes</h4>
-              </div>
-              <div className="table-responsive table-premium-container">
-                <CTable align="middle" className="mb-0 table-premium">
-                  <CTableHead className="text-nowrap">
-                    <CTableRow>
-                      <CTableHeaderCell className="bg-body-tertiary text-center">
-                        <CIcon icon={cilPeople} />
-                      </CTableHeaderCell>
-                      <CTableHeaderCell className="bg-body-tertiary">Cliente</CTableHeaderCell>
-                      <CTableHeaderCell className="bg-body-tertiary text-center">Estado</CTableHeaderCell>
-                      <CTableHeaderCell className="bg-body-tertiary">Monto</CTableHeaderCell>
-                      <CTableHeaderCell className="bg-body-tertiary">Fecha</CTableHeaderCell>
-                    </CTableRow>
-                  </CTableHead>
-                  <CTableBody>
-                    {recentPayments?.map((pago, index) => (
-                      <CTableRow key={`${pago.id || 'pago'}-${index}`}>
-                        <CTableDataCell className="text-center">
-                          <CAvatar size="md" color={pago.estado === 'validado' ? 'success' : 'warning'} textColor="white">
-                            {pago.cliente?.charAt(0) || 'C'}
-                          </CAvatar>
-                        </CTableDataCell>
-                        <CTableDataCell>
-                          <div className="fw-bold">{pago.cliente_id || 'Desconocido'}</div>
-                          <div className="small text-body-secondary">ID: {pago.id}</div>
-                        </CTableDataCell>
-                        <CTableDataCell className="text-center">
-                          <span className={`badge ${pago.estado === 'validado' ? 'bg-success' :
-                            pago.estado === 'pendiente' ? 'bg-warning' :
-                              'bg-danger'
-                            }`}>
-                            {pago.estado}
-                          </span>
-                        </CTableDataCell>
-                        <CTableDataCell>
-                          <div className="fw-semibold text-primary">{formatearMonto(pago.monto_pagado)}</div>
-                        </CTableDataCell>
-                        <CTableDataCell>
-                          <div className="small text-body-secondary">{pago.fecha}</div>
-                          <div className="fw-semibold">{pago.hora}</div>
-                        </CTableDataCell>
-                      </CTableRow>
-                    ))}
-                    {recentPayments.length === 0 && (
-                      <CTableRow>
-                        <CTableDataCell colSpan="5" className="text-center py-4 text-muted">
-                          No hay pagos recientes registrados.
-                        </CTableDataCell>
-                      </CTableRow>
-                    )}
-                  </CTableBody>
-                </CTable>
-              </div>
-            </CCardBody>
-          </CCard>
-        </CCol>
-      </CRow>
-    </>
-  )
 }
+
 
 export default Dashboard

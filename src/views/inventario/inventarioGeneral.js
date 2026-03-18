@@ -136,23 +136,26 @@ const InventarioGeneral = () => {
     }
 
     const columns = [
-        { header: 'ID', key: 'id', className: 'fw-semibold' },
-        { header: 'Servicio', key: 'servicio_nombre', renderFunc: (row) => row.servicio?.nombre || 'N/A' },
-        { header: 'Fecha compra', key: 'fecha_compra', renderFunc: (row) => formatearFecha(row.fecha_compra) },
+        { header: 'ID', key: 'id', className: 'fw-bold text-primary' },
+        { header: 'Servicio', key: 'servicio_nombre', renderFunc: (row) => (
+            <div className="d-flex align-items-center gap-2">
+                {row.servicio?.imagen && <img src={row.servicio.imagen} alt="" style={{ width: 24, height: 24, borderRadius: '50%' }} />}
+                <span className="fw-semibold">{row.servicio?.nombre || 'N/A'}</span>
+            </div>
+        )},
+        { header: 'Fecha compra', key: 'fecha_compra', renderFunc: (row) => <span className="text-muted">{formatearFecha(row.fecha_compra)}</span> },
         { header: 'Correo', key: 'correo', className: 'fw-semibold' },
         { header: 'Clave', key: 'clave' },
-        { header: 'Perfil', key: 'perfil' },
-        { header: 'PIN', key: 'pin' },
-        { header: 'Vencimiento', key: 'fecha_vencimiento', renderFunc: (row) => formatearFecha(row.fecha_vencimiento) },
-        { header: 'Teléfono', key: 'telefono_asignado' },
-        { header: 'Cliente ID', key: 'cliente_id_asignado' },
+        { header: 'Perfil', key: 'perfil', className: 'text-center' },
+        { header: 'PIN', key: 'pin', className: 'text-center' },
+        { header: 'Vencimiento', key: 'fecha_vencimiento', renderFunc: (row) => <span className="fw-medium">{formatearFecha(row.fecha_vencimiento)}</span> },
         {
             header: 'Estado',
             key: 'estado',
             renderFunc: (row) => (
-                <CBadge color={getBadgeColorEstado(row.estado)} className="rounded-pill px-3 py-2 fw-semibold">
+                <span className={`badge-lasso badge-lasso-${getBadgeColorEstado(row.estado)}`}>
                     {row.estado || '-'}
-                </CBadge>
+                </span>
             )
         },
         {
@@ -160,13 +163,11 @@ const InventarioGeneral = () => {
             key: 'acciones',
             renderFunc: (row) => (
                 <div className="d-flex gap-2">
-                    <CButton className="btn-premium btn-premium-warning" onClick={() => abrirModalEditar(row)}>
-                        <CIcon icon={cilPencil} size="sm" className="me-1" />
-                        Editar
+                    <CButton className="btn-lasso btn-lasso-soft-primary" onClick={() => abrirModalEditar(row)} title="Editar">
+                        <CIcon icon={cilPencil} size="sm" />
                     </CButton>
-                    <CButton className="btn-premium btn-premium-danger" onClick={() => abrirModalEliminar(row)}>
-                        <CIcon icon={cilTrash} size="sm" className="me-1" />
-                        Eliminar
+                    <CButton className="btn-lasso btn-lasso-soft-danger" onClick={() => abrirModalEliminar(row)} title="Eliminar">
+                        <CIcon icon={cilTrash} size="sm" />
                     </CButton>
                 </div>
             )
@@ -191,21 +192,17 @@ const InventarioGeneral = () => {
     }, [cuentasDisponiblesPorServicio])
 
     const filterControls = (
-        <div className="text-center">
-            <CFormLabel className="fw-bold small text-uppercase text-secondary d-block mb-3" style={{ letterSpacing: '0.15em' }}>
-                Filtrar por Servicio
-            </CFormLabel>
+        <div className="text-center fade-up">
+            <h6 className="fw-bold small text-uppercase text-muted mb-4" style={{ letterSpacing: '0.1em' }}>
+                Filtrar por Categoría
+            </h6>
             <div className="d-flex flex-wrap justify-content-center gap-3">
                 <CButton 
-                    color={!filtroServicio ? 'dark' : 'light'} 
-                    variant={!filtroServicio ? 'solid' : 'outline'}
-                    shape="rounded-pill"
                     onClick={() => setFiltroServicio('')}
-                    className={`d-flex align-items-center justify-content-center gap-2 px-4 py-2 border shadow-sm transition-all ${!filtroServicio ? 'btn-premium-active' : 'btn-premium-inactive'}`}
-                    style={{ minWidth: '120px' }}
+                    className={`btn-lasso ${!filtroServicio ? 'btn-lasso-primary' : 'btn-lasso-soft-primary'} px-4`}
                 >
-                    <span className="fw-bold fs-6">Todos</span>
-                    <span className={`badge rounded-pill text-dark d-flex align-items-center justify-content-center ${!filtroServicio ? 'bg-white' : 'bg-secondary text-white'}`} style={{ width: '24px', height: '24px', fontSize: '12px' }}>
+                    <span>Todos</span>
+                    <span className="badge bg-white text-primary ms-2 rounded-pill px-2">
                         {totalDisponibles}
                     </span>
                 </CButton>
@@ -216,51 +213,20 @@ const InventarioGeneral = () => {
                     return (
                         <CButton 
                             key={serv.id}
-                            color={isActive ? 'dark' : 'light'} 
-                            variant={isActive ? 'solid' : 'outline'}
-                            shape="rounded-pill"
                             onClick={() => setFiltroServicio(serv.id)}
-                            className={`d-flex align-items-center gap-2 px-3 py-2 border shadow-sm transition-all ${isActive ? 'btn-premium-active' : 'btn-premium-inactive'}`}
-                            style={{ minWidth: '160px' }}
+                            className={`btn-lasso ${isActive ? 'btn-lasso-primary' : 'btn-lasso-soft-primary'} px-3`}
                         >
                             {serv.imagen && (
-                                <img src={serv.imagen} alt={serv.nombre} style={{ height: '20px', width: '20px', objectFit: 'cover', borderRadius: '50%' }} />
+                                <img src={serv.imagen} alt="" style={{ height: '18px', width: '18px', objectFit: 'cover', borderRadius: '50%' }} />
                             )}
-                            <span className="fw-bold small">{serv.nombre}</span>
-                            <span className={`badge rounded-pill d-flex align-items-center justify-content-center ms-auto ${isActive ? 'bg-white text-dark' : 'bg-secondary text-white'}`} style={{ width: '24px', height: '24px', fontSize: '12px' }}>
+                            <span>{serv.nombre}</span>
+                            <span className={`badge ${isActive ? 'bg-white text-primary' : 'bg-primary text-white'} ms-2 rounded-pill px-2`}>
                                 {count}
                             </span>
                         </CButton>
                     )
                 })}
             </div>
-            
-            <style>{`
-                .btn-premium-active {
-                    background-color: var(--cui-body-color) !important;
-                    color: var(--cui-body-bg) !important;
-                    border-color: var(--cui-body-color) !important;
-                    transform: translateY(-2px);
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-                }
-                .btn-premium-inactive {
-                    background: var(--cui-body-bg) !important;
-                    color: var(--cui-body-color) !important;
-                    border-color: var(--cui-border-color) !important;
-                }
-                .btn-premium-inactive:hover {
-                    background: var(--cui-tertiary-bg) !important;
-                    transform: translateY(-1px);
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
-                }
-                .transition-all {
-                    transition: all 0.2s ease-in-out;
-                }
-                html[data-coreui-theme='dark'] .btn-premium-inactive {
-                    background: var(--cui-dark) !important;
-                    border-color: rgba(255,255,255,0.1) !important;
-                }
-            `}</style>
         </div>
     )
 
@@ -270,78 +236,108 @@ const InventarioGeneral = () => {
         { label: 'Vencido', value: 'vencido' },
     ]
 
-    if (isLoadingInv || isLoadingServ) return <LoadingState message="Cargando datos..." />
-    if (errorInv) return <ErrorState message="No se pudo cargar el inventario" onRetry={() => window.location.reload()} />
+    if (isLoadingInv || isLoadingServ) return <LoadingState message="Cargando base de datos..." />
+    if (errorInv) return <ErrorState message="Error al conectar con el servidor de inventario" onRetry={() => window.location.reload()} />
 
     return (
         <>
             <DataTable
-                title="Inventario"
-                subtitle="Gestiona, crea, edita y elimina registros del inventario"
+                title="Inventario General"
+                subtitle="Panel administrativo para la gestión de cuentas y membresías activas."
                 data={Array.isArray(inventarioData) ? inventarioData : []}
                 columns={columns}
                 searchFunction={searchFunction}
                 filterFunction={filterFunction}
                 filterControls={filterControls}
                 onClear={() => setFiltroServicio('')}
-                searchPlaceholder="ID, servicio, correo, perfil, pin, teléfono, estado..."
+                searchPlaceholder="Buscar por ID, correo, perfil, pin o estado..."
+                onAddItem={() => { setRegistroSeleccionado(null); resetFormulario(); setModalEditarVisible(true); }}
+                addItemLabel="Registrar Nuevo"
             />
 
-
-
-            <CModal visible={modalEditarVisible} onClose={cerrarModalEditar} alignment="center" size="xl" className="premium-modal">
-                <CModalHeader onClose={cerrarModalEditar} className="border-0 pb-0">
-                    <CModalTitle className="fw-bold fs-4">Editar Registro {registroSeleccionado ? `- ID ${registroSeleccionado.id}` : ''}</CModalTitle>
+            <CModal visible={modalEditarVisible} onClose={cerrarModalEditar} alignment="center" size="lg" className="lasso-modal">
+                <CModalHeader onClose={cerrarModalEditar}>
+                    <CModalTitle className="fw-bold">
+                        {registroSeleccionado ? `Editar Registro #${registroSeleccionado.id}` : 'Nuevo Registro de Inventario'}
+                    </CModalTitle>
                 </CModalHeader>
-                <CModalBody className="p-4">
-                    <CRow className="g-3">
+                <CModalBody>
+                    <CRow className="g-4">
                         <CCol md={6}>
-                            <CFormLabel>Servicio <span className="text-danger">*</span></CFormLabel>
-                            <CFormSelect name="servicio_id" value={formulario.servicio_id} onChange={handleChangeFormulario}>
-                                <option value="">Selecciona un servicio</option>
+                            <CFormLabel className="fw-semibold small">Servicio Asociado *</CFormLabel>
+                            <CFormSelect className="lasso-input" name="servicio_id" value={formulario.servicio_id} onChange={handleChangeFormulario}>
+                                <option value="">Selecciona plataforma</option>
                                 {Array.isArray(serviciosData) && serviciosData.map(serv => (
                                     <option key={serv.id} value={serv.id}>{serv.nombre}</option>
                                 ))}
                             </CFormSelect>
                         </CCol>
-                        <CCol md={6}><CFormLabel>Fecha compra <span className="text-danger">*</span></CFormLabel><CFormInput name="fecha_compra" type="date" value={formulario.fecha_compra} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Correo <span className="text-danger">*</span></CFormLabel><CFormInput name="correo" value={formulario.correo} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Clave <span className="text-danger">*</span></CFormLabel><CFormInput name="clave" value={formulario.clave} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={4}><CFormLabel>Perfil <span className="text-danger">*</span></CFormLabel><CFormInput name="perfil" value={formulario.perfil} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={4}><CFormLabel>PIN <span className="text-danger">*</span></CFormLabel><CFormInput name="pin" value={formulario.pin} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={4}><CFormLabel>Fecha vencimiento <span className="text-danger">*</span></CFormLabel><CFormInput name="fecha_vencimiento" type="date" value={formulario.fecha_vencimiento} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={4}><CFormLabel>Teléfono asignado</CFormLabel><CFormInput name="telefono_asignado" value={formulario.telefono_asignado} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={4}><CFormLabel>Cliente ID asignado</CFormLabel><CFormInput name="cliente_id_asignado" value={formulario.cliente_id_asignado} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={4}>
-                            <CFormLabel>Estado <span className="text-danger">*</span></CFormLabel>
-                            <CFormSelect name="estado" value={formulario.estado} onChange={handleChangeFormulario}>
-                                <option value="">Selecciona un estado</option>
+                        <CCol md={6}>
+                            <CFormLabel className="fw-semibold small">Estado de Cuenta *</CFormLabel>
+                            <CFormSelect className="lasso-input" name="estado" value={formulario.estado} onChange={handleChangeFormulario}>
                                 {opcionesEstado.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                             </CFormSelect>
                         </CCol>
+                        
+                        <CCol md={12}><hr className="my-2 opacity-10" /></CCol>
+
+                        <CCol md={6}>
+                            <CFormLabel className="fw-semibold small">Correo Electrónico *</CFormLabel>
+                            <CFormInput className="lasso-input" name="correo" placeholder="ejemplo@correo.com" value={formulario.correo} onChange={handleChangeFormulario} />
+                        </CCol>
+                        <CCol md={6}>
+                            <CFormLabel className="fw-semibold small">Contraseña *</CFormLabel>
+                            <CFormInput className="lasso-input" name="clave" type="text" value={formulario.clave} onChange={handleChangeFormulario} />
+                        </CCol>
+
+                        <CCol md={4}>
+                            <CFormLabel className="fw-semibold small">Perfil *</CFormLabel>
+                            <CFormInput className="lasso-input" name="perfil" placeholder="Nombre de perfil" value={formulario.perfil} onChange={handleChangeFormulario} />
+                        </CCol>
+                        <CCol md={4}>
+                            <CFormLabel className="fw-semibold small">PIN Acceso *</CFormLabel>
+                            <CFormInput className="lasso-input" name="pin" maxLength={4} value={formulario.pin} onChange={handleChangeFormulario} />
+                        </CCol>
+                        <CCol md={4}>
+                            <CFormLabel className="fw-semibold small">Teléfono</CFormLabel>
+                            <CFormInput className="lasso-input" name="telefono_asignado" value={formulario.telefono_asignado} onChange={handleChangeFormulario} />
+                        </CCol>
+
+                        <CCol md={12}><hr className="my-2 opacity-10" /></CCol>
+
+                        <CCol md={6}>
+                            <CFormLabel className="fw-semibold small">Fecha de Compra *</CFormLabel>
+                            <CFormInput className="lasso-input" name="fecha_compra" type="date" value={formulario.fecha_compra} onChange={handleChangeFormulario} />
+                        </CCol>
+                        <CCol md={6}>
+                            <CFormLabel className="fw-semibold small">Fecha de Vencimiento *</CFormLabel>
+                            <CFormInput className="lasso-input" name="fecha_vencimiento" type="date" value={formulario.fecha_vencimiento} onChange={handleChangeFormulario} />
+                        </CCol>
                     </CRow>
                 </CModalBody>
-                <CModalFooter className="border-0 pt-0 gap-2">
-                    <CButton color="secondary" onClick={cerrarModalEditar} className="btn-premium btn-premium-secondary">Cancelar</CButton>
-                    <CButton color="primary" onClick={handleEditarRegistro} disabled={updateMutation.isPending} className="btn-premium btn-premium-primary">
-                        {updateMutation.isPending ? 'Actualizando...' : 'Actualizar'}
+                <CModalFooter>
+                    <CButton className="btn-lasso btn-lasso-soft-primary border-0" onClick={cerrarModalEditar}>Descartar</CButton>
+                    <CButton className="btn-lasso btn-lasso-primary" onClick={handleEditarRegistro} disabled={updateMutation.isPending}>
+                        {updateMutation.isPending ? 'Procesando...' : (registroSeleccionado ? 'Guardar Cambios' : 'Crear Registro')}
                     </CButton>
                 </CModalFooter>
             </CModal>
 
-            <CModal visible={modalEliminarVisible} onClose={cerrarModalEliminar} alignment="center">
-                <CModalHeader onClose={cerrarModalEliminar}><CModalTitle>Eliminar registro</CModalTitle></CModalHeader>
-                <CModalBody>
-                    {registroSeleccionado ? (
-                        <div>¿Seguro que deseas eliminar el registro <strong>{registroSeleccionado.correo || `ID ${registroSeleccionado.id}`}</strong>?</div>
-                    ) : (
-                        <div>No hay registro seleccionado.</div>
-                    )}
+            <CModal visible={modalEliminarVisible} onClose={cerrarModalEliminar} alignment="center" className="lasso-modal">
+                <CModalHeader onClose={cerrarModalEliminar}>
+                    <CModalTitle className="fw-bold text-danger">Confirmar Eliminación</CModalTitle>
+                </CModalHeader>
+                <CModalBody className="p-4 text-center">
+                    <div className="mb-4">
+                        <CIcon icon={cilTrash} size="3xl" className="text-danger opacity-50" />
+                    </div>
+                    <h6>¿Estás seguro de eliminar este registro?</h6>
+                    <p className="text-muted small">Esta acción no se puede deshacer y el registro de <strong>{registroSeleccionado?.correo}</strong> será borrado permanentemente.</p>
                 </CModalBody>
-                <CModalFooter className="border-0 pt-0 gap-2">
-                    <CButton color="secondary" onClick={cerrarModalEliminar} className="btn-premium btn-premium-secondary">Cancelar</CButton>
-                    <CButton color="danger" onClick={handleEliminarRegistro} disabled={deleteMutation.isPending} className="btn-premium btn-premium-danger">
-                        {deleteMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+                <CModalFooter className="justify-content-center">
+                    <CButton className="btn-lasso btn-lasso-soft-primary border-0 px-4" onClick={cerrarModalEliminar}>No, cancelar</CButton>
+                    <CButton className="btn-lasso btn-lasso-primary px-4" style={{ background: 'var(--lasso-danger)' }} onClick={handleEliminarRegistro} disabled={deleteMutation.isPending}>
+                        {deleteMutation.isPending ? 'Eliminando...' : 'Sí, eliminar'}
                     </CButton>
                 </CModalFooter>
             </CModal>

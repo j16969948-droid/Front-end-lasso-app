@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import {
     CFormInput,
     CRow,
@@ -173,36 +173,94 @@ const InventarioGeneral = () => {
         },
     ]
 
+    // Cálculos para contadores de disponibles
+    const cuentasDisponiblesPorServicio = useMemo(() => {
+        const counts = {}
+        if (Array.isArray(inventarioData)) {
+            inventarioData.forEach(item => {
+                if (item.estado === 'disponible') {
+                    counts[item.servicio_id] = (counts[item.servicio_id] || 0) + 1
+                }
+            })
+        }
+        return counts
+    }, [inventarioData])
+
+    const totalDisponibles = useMemo(() => {
+        return Object.values(cuentasDisponiblesPorServicio).reduce((acc, curr) => acc + curr, 0)
+    }, [cuentasDisponiblesPorServicio])
+
     const filterControls = (
         <div className="text-center">
-            <CFormLabel className="fw-bold small text-uppercase text-secondary d-block mb-3" style={{ letterSpacing: '0.1em' }}>
+            <CFormLabel className="fw-bold small text-uppercase text-secondary d-block mb-3" style={{ letterSpacing: '0.15em' }}>
                 Filtrar por Servicio
             </CFormLabel>
-            <div className="d-flex flex-wrap justify-content-center gap-2">
+            <div className="d-flex flex-wrap justify-content-center gap-3">
                 <CButton 
-                    color={!filtroServicio ? 'primary' : 'light'} 
+                    color={!filtroServicio ? 'dark' : 'light'} 
                     variant={!filtroServicio ? 'solid' : 'outline'}
                     shape="rounded-pill"
                     onClick={() => setFiltroServicio('')}
-                    className="fw-semibold px-4 py-2 border-0 shadow-sm"
-                    style={{ minWidth: '100px', transition: 'all 0.2s ease' }}
+                    className={`d-flex align-items-center justify-content-center gap-2 px-4 py-2 border shadow-sm transition-all ${!filtroServicio ? 'btn-premium-active' : 'btn-premium-inactive'}`}
+                    style={{ minWidth: '120px' }}
                 >
-                    Todos
+                    <span className="fw-bold fs-6">Todos</span>
+                    <span className={`badge rounded-pill text-dark d-flex align-items-center justify-content-center ${!filtroServicio ? 'bg-white' : 'bg-secondary text-white'}`} style={{ width: '24px', height: '24px', fontSize: '12px' }}>
+                        {totalDisponibles}
+                    </span>
                 </CButton>
-                {Array.isArray(serviciosData) && serviciosData.map(serv => (
-                    <CButton 
-                        key={serv.id}
-                        color={String(filtroServicio) === String(serv.id) ? 'primary' : 'light'} 
-                        variant={String(filtroServicio) === String(serv.id) ? 'solid' : 'outline'}
-                        shape="rounded-pill"
-                        onClick={() => setFiltroServicio(serv.id)}
-                        className="fw-semibold px-4 py-2 border-0 shadow-sm"
-                        style={{ minWidth: '100px', transition: 'all 0.2s ease' }}
-                    >
-                        {serv.nombre}
-                    </CButton>
-                ))}
+                {Array.isArray(serviciosData) && serviciosData.map(serv => {
+                    const count = cuentasDisponiblesPorServicio[serv.id] || 0
+                    const isActive = String(filtroServicio) === String(serv.id)
+                    
+                    return (
+                        <CButton 
+                            key={serv.id}
+                            color={isActive ? 'dark' : 'light'} 
+                            variant={isActive ? 'solid' : 'outline'}
+                            shape="rounded-pill"
+                            onClick={() => setFiltroServicio(serv.id)}
+                            className={`d-flex align-items-center gap-2 px-3 py-2 border shadow-sm transition-all ${isActive ? 'btn-premium-active' : 'btn-premium-inactive'}`}
+                            style={{ minWidth: '160px' }}
+                        >
+                            {serv.imagen && (
+                                <img src={serv.imagen} alt={serv.nombre} style={{ height: '20px', width: '20px', objectFit: 'cover', borderRadius: '50%' }} />
+                            )}
+                            <span className="fw-bold small">{serv.nombre}</span>
+                            <span className={`badge rounded-pill d-flex align-items-center justify-content-center ms-auto ${isActive ? 'bg-white text-dark' : 'bg-secondary text-white'}`} style={{ width: '24px', height: '24px', fontSize: '12px' }}>
+                                {count}
+                            </span>
+                        </CButton>
+                    )
+                })}
             </div>
+            
+            <style>{`
+                .btn-premium-active {
+                    background-color: var(--cui-body-color) !important;
+                    color: var(--cui-body-bg) !important;
+                    border-color: var(--cui-body-color) !important;
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+                }
+                .btn-premium-inactive {
+                    background: var(--cui-body-bg) !important;
+                    color: var(--cui-body-color) !important;
+                    border-color: var(--cui-border-color) !important;
+                }
+                .btn-premium-inactive:hover {
+                    background: var(--cui-tertiary-bg) !important;
+                    transform: translateY(-1px);
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+                }
+                .transition-all {
+                    transition: all 0.2s ease-in-out;
+                }
+                html[data-coreui-theme='dark'] .btn-premium-inactive {
+                    background: var(--cui-dark) !important;
+                    border-color: rgba(255,255,255,0.1) !important;
+                }
+            `}</style>
         </div>
     )
 

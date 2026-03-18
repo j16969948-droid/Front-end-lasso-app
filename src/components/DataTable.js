@@ -85,8 +85,8 @@ const DataTable = ({
 
                 <CCardBody>
                     <div className="p-3 p-md-4 mb-4 rounded-3 bg-body-tertiary border-0">
-                        <CRow className="g-3 align-items-end">
-                            <CCol md={filterControls ? 4 : 10}>
+                        <CRow className="g-3 align-items-end mb-4">
+                            <CCol md={10}>
                                 <CFormLabel className="fw-semibold small text-uppercase text-secondary">Buscar</CFormLabel>
                                 <CFormInput 
                                     className="premium-input"
@@ -95,11 +95,21 @@ const DataTable = ({
                                     onChange={(e) => cambiarBusqueda(e.target.value)} 
                                 />
                             </CCol>
-                            {filterControls && <CCol md={6}>{filterControls}</CCol>}
-                            <CCol md={filterControls ? 2 : 2}>
+                            <CCol md={2}>
                                 <CButton color="secondary" className="w-100 btn-premium btn-premium-secondary" onClick={handleLimpiar}>Limpiar</CButton>
                             </CCol>
                         </CRow>
+
+                        {filterControls && (
+                            <div>
+                                <hr className="my-4 text-secondary opacity-25" />
+                                <CRow>
+                                    <CCol md={12}>
+                                        {filterControls}
+                                    </CCol>
+                                </CRow>
+                            </div>
+                        )}
                     </div>
 
                     <div className="table-responsive table-premium-container">

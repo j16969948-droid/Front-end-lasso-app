@@ -18,7 +18,6 @@ import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash } from '@coreui/icons'
 import {
     useInventario,
-    useCreateInventario,
     useUpdateInventario,
     useDeleteInventario
 } from '../../core/hooks/useInventario'
@@ -31,11 +30,9 @@ const InventarioGeneral = () => {
     const { data: inventarioData, isLoading: isLoadingInv, error: errorInv } = useInventario()
     const { data: serviciosData, isLoading: isLoadingServ } = useServicios()
 
-    const createMutation = useCreateInventario()
     const updateMutation = useUpdateInventario()
     const deleteMutation = useDeleteInventario()
 
-    const [modalCrearVisible, setModalCrearVisible] = useState(false)
     const [modalEditarVisible, setModalEditarVisible] = useState(false)
     const [modalEliminarVisible, setModalEliminarVisible] = useState(false)
     const [registroSeleccionado, setRegistroSeleccionado] = useState(null)
@@ -76,8 +73,7 @@ const InventarioGeneral = () => {
         setFormulario((prev) => ({ ...prev, [name]: value }))
     }
 
-    const abrirModalCrear = () => { resetFormulario(); setModalCrearVisible(true); }
-    const cerrarModalCrear = () => { setModalCrearVisible(false); resetFormulario(); }
+
 
     const abrirModalEditar = (item) => {
         setRegistroSeleccionado(item)
@@ -116,15 +112,7 @@ const InventarioGeneral = () => {
         return true
     }
 
-    const handleCrearRegistro = async () => {
-        if (!validarFormulario()) return
-        try {
-            await createMutation.mutateAsync(formulario)
-            cerrarModalCrear()
-        } catch (err) {
-            console.error("Error al crear:", err)
-        }
-    }
+
 
     const handleEditarRegistro = async () => {
         if (!registroSeleccionado) return
@@ -186,15 +174,36 @@ const InventarioGeneral = () => {
     ]
 
     const filterControls = (
-        <CCol md={12}>
-            <CFormLabel className="fw-semibold small text-uppercase text-secondary">Filtrar por Servicio</CFormLabel>
-            <CFormSelect className="premium-input" value={filtroServicio} onChange={(e) => setFiltroServicio(e.target.value)}>
-                <option value="">Todos los servicios</option>
+        <div className="text-center">
+            <CFormLabel className="fw-bold small text-uppercase text-secondary d-block mb-3" style={{ letterSpacing: '0.1em' }}>
+                Filtrar por Servicio
+            </CFormLabel>
+            <div className="d-flex flex-wrap justify-content-center gap-2">
+                <CButton 
+                    color={!filtroServicio ? 'primary' : 'light'} 
+                    variant={!filtroServicio ? 'solid' : 'outline'}
+                    shape="rounded-pill"
+                    onClick={() => setFiltroServicio('')}
+                    className="fw-semibold px-4 py-2 border-0 shadow-sm"
+                    style={{ minWidth: '100px', transition: 'all 0.2s ease' }}
+                >
+                    Todos
+                </CButton>
                 {Array.isArray(serviciosData) && serviciosData.map(serv => (
-                    <option key={serv.id} value={serv.id}>{serv.nombre}</option>
+                    <CButton 
+                        key={serv.id}
+                        color={String(filtroServicio) === String(serv.id) ? 'primary' : 'light'} 
+                        variant={String(filtroServicio) === String(serv.id) ? 'solid' : 'outline'}
+                        shape="rounded-pill"
+                        onClick={() => setFiltroServicio(serv.id)}
+                        className="fw-semibold px-4 py-2 border-0 shadow-sm"
+                        style={{ minWidth: '100px', transition: 'all 0.2s ease' }}
+                    >
+                        {serv.nombre}
+                    </CButton>
                 ))}
-            </CFormSelect>
-        </CCol>
+            </div>
+        </div>
     )
 
     const opcionesEstado = [
@@ -217,48 +226,10 @@ const InventarioGeneral = () => {
                 filterFunction={filterFunction}
                 filterControls={filterControls}
                 onClear={() => setFiltroServicio('')}
-                onAddItem={abrirModalCrear}
-                addItemLabel="+ Agregar registro"
                 searchPlaceholder="ID, servicio, correo, perfil, pin, teléfono, estado..."
             />
 
-            <CModal visible={modalCrearVisible} onClose={cerrarModalCrear} alignment="center" size="xl" className="premium-modal">
-                <CModalHeader onClose={cerrarModalCrear} className="border-0 pb-0">
-                    <CModalTitle className="fw-bold fs-4">Agregar Nuevo Registro</CModalTitle>
-                </CModalHeader>
-                <CModalBody className="p-4">
-                    <CRow className="g-3">
-                        <CCol md={6}>
-                            <CFormLabel>Servicio <span className="text-danger">*</span></CFormLabel>
-                            <CFormSelect name="servicio_id" value={formulario.servicio_id} onChange={handleChangeFormulario}>
-                                <option value="">Selecciona un servicio</option>
-                                {Array.isArray(serviciosData) && serviciosData.map(serv => (
-                                    <option key={serv.id} value={serv.id}>{serv.nombre}</option>
-                                ))}
-                            </CFormSelect>
-                        </CCol>
-                        <CCol md={6}><CFormLabel>Fecha compra <span className="text-danger">*</span></CFormLabel><CFormInput name="fecha_compra" type="date" value={formulario.fecha_compra} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Correo <span className="text-danger">*</span></CFormLabel><CFormInput name="correo" value={formulario.correo} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={6}><CFormLabel>Clave <span className="text-danger">*</span></CFormLabel><CFormInput name="clave" value={formulario.clave} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={4}><CFormLabel>Perfil <span className="text-danger">*</span></CFormLabel><CFormInput name="perfil" value={formulario.perfil} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={4}><CFormLabel>PIN <span className="text-danger">*</span></CFormLabel><CFormInput name="pin" value={formulario.pin} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={4}><CFormLabel>Fecha vencimiento <span className="text-danger">*</span></CFormLabel><CFormInput name="fecha_vencimiento" type="date" value={formulario.fecha_vencimiento} onChange={handleChangeFormulario} /></CCol>
-                        <CCol md={4}>
-                            <CFormLabel>Estado <span className="text-danger">*</span></CFormLabel>
-                            <CFormSelect name="estado" value={formulario.estado} onChange={handleChangeFormulario}>
-                                <option value="">Selecciona un estado</option>
-                                {opcionesEstado.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                            </CFormSelect>
-                        </CCol>
-                    </CRow>
-                </CModalBody>
-                <CModalFooter className="border-0 pt-0 gap-2">
-                    <CButton color="secondary" onClick={cerrarModalCrear} className="btn-premium btn-premium-secondary">Cancelar</CButton>
-                    <CButton color="primary" onClick={handleCrearRegistro} disabled={createMutation.isPending} className="btn-premium btn-premium-primary">
-                        {createMutation.isPending ? 'Guardando...' : 'Guardar Registro'}
-                    </CButton>
-                </CModalFooter>
-            </CModal>
+
 
             <CModal visible={modalEditarVisible} onClose={cerrarModalEditar} alignment="center" size="xl" className="premium-modal">
                 <CModalHeader onClose={cerrarModalEditar} className="border-0 pb-0">

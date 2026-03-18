@@ -62,7 +62,11 @@ const ServiciosEnVenta = () => {
             { field: 'precio_revendedor', label: 'Precio Revendedor' },
         ]
 
-        const faltantes = camposObligatorios.filter(item => !formulario[item.field])
+        const faltantes = camposObligatorios.filter(item => {
+            const val = formulario[item.field]
+            // Admitir 0 como valor válido
+            return val === '' || val === null || val === undefined
+        })
 
         if (faltantes.length > 0) {
             alert(`Por favor, completa: ${faltantes.map(f => f.label).join(', ')}`)
@@ -82,14 +86,14 @@ const ServiciosEnVenta = () => {
     const abrirModalEditar = (servicio) => {
         setServicioSeleccionado(servicio)
         setFormulario({
-            nombre: servicio?.nombre || '',
-            slug: servicio?.slug || '',
-            precio_usuario: servicio?.precio_usuario || '',
-            precio_revendedor: servicio?.precio_revendedor || '',
-            estado: servicio?.estado || '',
-            imagen: servicio?.imagen || '',
-            proveedor: servicio?.proveedor || '',
-            telefono_proveedor: servicio?.telefono_proveedor || '',
+            nombre: servicio?.nombre ?? '',
+            slug: servicio?.slug ?? '',
+            precio_usuario: servicio?.precio_usuario ?? '',
+            precio_revendedor: servicio?.precio_revendedor ?? '',
+            estado: servicio?.estado ?? 1,
+            imagen: servicio?.imagen ?? '',
+            proveedor: servicio?.proveedor ?? '',
+            telefono_proveedor: servicio?.telefono_proveedor ?? '',
         })
         setModalEditarVisible(true)
     }
@@ -101,14 +105,46 @@ const ServiciosEnVenta = () => {
 
     const handleCrearServicio = () => {
         if (!validarFormulario()) return
-        createServicio.mutate(formulario, {
-            onSuccess: () => cerrarModalCrear()
+        
+        const dataSanitada = {
+            nombre: String(formulario.nombre),
+            slug: String(formulario.slug),
+            precio_usuario: Number(formulario.precio_usuario),
+            precio_revendedor: Number(formulario.precio_revendedor),
+            estado: 1,
+            imagen: formulario.imagen || null,
+            proveedor: formulario.proveedor || null,
+            telefono_proveedor: formulario.telefono_proveedor || null,
+        }
+
+        console.log('Enviando datos (Crear):', dataSanitada)
+        
+        createServicio.mutate(dataSanitada, {
+            onSuccess: () => cerrarModalCrear(),
+            onError: (err) => {
+                const msg = err.response?.data?.message || err.message
+                alert('Error al crear: ' + msg)
+            }
         })
     }
 
     const handleEditarServicio = () => {
         if (!servicioSeleccionado || !validarFormulario()) return
-        updateServicio.mutate({ id: servicioSeleccionado.id, data: formulario }, {
+        
+        const dataSanitada = {
+            nombre: String(formulario.nombre),
+            slug: String(formulario.slug),
+            precio_usuario: Number(formulario.precio_usuario),
+            precio_revendedor: Number(formulario.precio_revendedor),
+            estado: Number(formulario.estado),
+            imagen: formulario.imagen || null,
+            proveedor: formulario.proveedor || null,
+            telefono_proveedor: formulario.telefono_proveedor || null,
+        }
+
+        console.log('Enviando datos (Editar):', dataSanitada)
+
+        updateServicio.mutate({ id: servicioSeleccionado.id, data: dataSanitada }, {
             onSuccess: () => cerrarModalEditar()
         })
     }
@@ -169,7 +205,7 @@ const ServiciosEnVenta = () => {
             key: 'acciones',
             renderFunc: (s) => (
                 <div className="d-flex gap-2">
-                    <CButton className="btn-lasso btn-lasso-soft-warning" onClick={() => abrirModalEditar(s)} title="Editar">
+                    <CButton className="btn-lasso btn-lasso-soft-primary" onClick={() => abrirModalEditar(s)} title="Editar">
                         <CIcon icon={cilPencil} size="sm" />
                     </CButton>
                     <CButton className="btn-lasso btn-lasso-soft-danger" onClick={() => abrirModalEliminar(s)} title="Eliminar">

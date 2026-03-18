@@ -10,16 +10,16 @@
   --lasso-primary: #6366f1;
   --lasso-primary-soft: rgba(99, 102, 241, 0.1);
   --lasso-primary-hover: #4f46e5;
-  
+
   --lasso-success: #10b981;
   --lasso-success-soft: rgba(16, 185, 129, 0.1);
-  
+
   --lasso-danger: #ef4444;
   --lasso-danger-soft: rgba(239, 68, 68, 0.1);
-  
+
   --lasso-warning: #f59e0b;
   --lasso-warning-soft: rgba(245, 158, 11, 0.1);
-  
+
   --lasso-info: #0ea5e9;
   --lasso-info-soft: rgba(14, 165, 233, 0.1);
 
@@ -72,7 +72,7 @@ body {
 
 .premium-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 25px 30px -5px rgba(0,0,0,0.08) !important;
+  box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.08) !important;
 }
 
 .premium-card-static:hover {
@@ -147,6 +147,16 @@ body {
 
 .btn-lasso-soft-danger:hover {
   background: var(--lasso-danger) !important;
+  color: white !important;
+}
+
+.btn-lasso-soft-info {
+  background: var(--lasso-info-soft) !important;
+  color: var(--lasso-info) !important;
+}
+
+.btn-lasso-soft-info:hover {
+  background: var(--lasso-info) !important;
   color: white !important;
 }
 
@@ -277,14 +287,21 @@ body {
 }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* --- Premium Sidebar --- */
 .sidebar {
   background: #0f172a !important;
-  border-right: 1px solid rgba(255,255,255,0.05) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
 
 .sidebar-nav .nav-link {
@@ -299,7 +316,7 @@ body {
 }
 
 .sidebar-nav .nav-link:hover {
-  background: rgba(255,255,255,0.05) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
   color: white !important;
 }
 
@@ -314,7 +331,8 @@ body {
   display: flex !important;
   align-items: center !important;
   padding: 10px 16px !important;
-  gap: 10px !important; /* Force tight grouping */
+  gap: 10px !important;
+  /* Force tight grouping */
 }
 
 .lasso-sidebar-icon {
@@ -333,7 +351,7 @@ body {
 
 
 /* Legacy Overrides to prevent breakage - using duplications instead of @extend for standard CSS */
-.premium-input { 
+.premium-input {
   border-radius: 12px !important;
   padding: 0.75rem 1rem !important;
   border: 1.5px solid var(--lasso-border) !important;
@@ -341,7 +359,8 @@ body {
   transition: var(--lasso-transition) !important;
   font-size: 0.95rem !important;
 }
-.btn-premium { 
+
+.btn-premium {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -353,7 +372,8 @@ body {
   transition: var(--lasso-transition) !important;
   border: 1px solid transparent !important;
 }
-.btn-premium-primary { 
+
+.btn-premium-primary {
   background: var(--lasso-primary) !important;
   color: white !important;
   box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3) !important;
@@ -368,7 +388,8 @@ body {
   transition: var(--lasso-transition) !important;
   border: 1px solid transparent !important;
 }
-.btn-premium-danger { 
+
+.btn-premium-danger {
   background: var(--lasso-danger-soft) !important;
   color: var(--lasso-danger) !important;
   display: inline-flex;
@@ -382,7 +403,8 @@ body {
   transition: var(--lasso-transition) !important;
   border: 1px solid transparent !important;
 }
-.btn-premium-warning { 
+
+.btn-premium-warning {
   background: var(--lasso-warning-soft) !important;
   color: var(--lasso-warning) !important;
   display: inline-flex;
@@ -396,6 +418,7 @@ body {
   transition: var(--lasso-transition) !important;
   border: 1px solid transparent !important;
 }
+
 .btn-premium-secondary {
   background: var(--lasso-bg) !important;
   color: var(--lasso-text-muted) !important;

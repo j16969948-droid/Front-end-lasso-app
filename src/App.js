@@ -23,6 +23,7 @@ const ServiciosEnVenta = React.lazy(() => import('./views/serviciosVenta/Servici
 const Validar = React.lazy(() => import('./views/validar/Validar'))
 const Informe = React.lazy(() => import('./views/ventas/Informe'))
 const Codigos = React.lazy(() => import('./views/codigos/codigos'))
+const Ordenes = React.lazy(() => import('./views/inventario/ordenes'))
 
 // Layout
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -70,6 +71,7 @@ const App = () => {
               <Route path="/validar" element={<Validar />} />
               <Route path="/informe" element={<Informe />} />
               <Route path="/codigos" element={<Codigos />} />
+              <Route path="/ordenes" element={<Ordenes />} />
             </Route>
           </Route>
         </Routes>

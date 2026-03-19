@@ -27,6 +27,13 @@ import { formatearFecha, getBadgeColorEstado } from '../../utils/formatters'
 import { LoadingState, ErrorState } from '../../components/TableFeedback'
 import DataTable from '../../components/DataTable'
 
+const SERVICE_CONFIGS = {
+    'netflix': { perfiles: 5, pins: ['1212', '2323', '3434', '4545', '5656'] },
+    'disney': { perfiles: 4, pins: ['1111', '2222', '3333', '4444'] },
+    'max': { perfiles: 5, pins: ['0000', '1111', '2222', '3333', '4444'] },
+    'paramount': { perfiles: 5, pins: ['1234', '1234', '1234', '1234', '1234'] },
+}
+
 const InventarioGeneral = () => {
     const { data: inventarioData, isLoading: isLoadingInv, error: errorInv } = useInventario()
     const { data: serviciosData, isLoading: isLoadingServ } = useServicios()
@@ -40,11 +47,22 @@ const InventarioGeneral = () => {
     const [registroSeleccionado, setRegistroSeleccionado] = useState(null)
     const [filtroServicio, setFiltroServicio] = useState('')
 
+    const getToday = () => new Date().toISOString().split('T')[0]
+    const getIn30Days = () => {
+        const d = new Date()
+        d.setDate(d.getDate() + 30)
+        return d.toISOString().split('T')[0]
+    }
+
     const [formulario, setFormulario] = useState({
-        servicio_id: '', fecha_compra: '', correo: '', clave: '',
-        perfil: '', pin: '', fecha_vencimiento: '', telefono_asignado: '',
+        servicio_id: '', fecha_compra: getToday(), correo: '', clave: '',
+        perfil: '', pin: '', fecha_vencimiento: getIn30Days(), telefono_asignado: '',
         cliente_id_asignado: '', estado: 'disponible',
+        datos_cuenta: '', // Para creación masiva
     })
+
+    const [bulkLoading, setBulkLoading] = useState(false)
+    const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0 })
 
     const filterFunction = (item) => {
         return !filtroServicio || String(item?.servicio_id) === String(filtroServicio)
@@ -64,9 +82,10 @@ const InventarioGeneral = () => {
 
     const resetFormulario = () => {
         setFormulario({
-            servicio_id: '', fecha_compra: '', correo: '', clave: '',
-            perfil: '', pin: '', fecha_vencimiento: '', telefono_asignado: '',
+            servicio_id: '', fecha_compra: getToday(), correo: '', clave: '',
+            perfil: '', pin: '', fecha_vencimiento: getIn30Days(), telefono_asignado: '',
             cliente_id_asignado: '', estado: 'disponible',
+            datos_cuenta: '',
         })
     }
 
@@ -114,12 +133,63 @@ const InventarioGeneral = () => {
         return true
     }
     const handleCrearRegistro = async () => {
-        if (!validarFormulario()) return
+        if (!formulario.servicio_id || !formulario.datos_cuenta || !formulario.fecha_compra || !formulario.fecha_vencimiento) {
+            alert('Por favor, selecciona servicio, pega los datos y pon las fechas.')
+            return
+        }
+
+        const lines = formulario.datos_cuenta.trim().split(/\s+/)
+        if (lines.length < 2) {
+            alert('Formato de datos incorrecto. Debe ser: correo contraseña')
+            return
+        }
+
+        const correo = lines[0]
+        const clave = lines[1]
+        
+        const servicioSeleccionadoObj = serviciosData?.find(s => s.id === parseInt(formulario.servicio_id))
+        const slug = servicioSeleccionadoObj?.slug?.toLowerCase() || ''
+        
+        let config = { perfiles: 1, pins: ['0000'] }
+        for (const key in SERVICE_CONFIGS) {
+            if (slug.includes(key) || servicioSeleccionadoObj?.nombre?.toLowerCase().includes(key)) {
+                config = SERVICE_CONFIGS[key]
+                break
+            }
+        }
+
+        setBulkLoading(true)
+        setBulkProgress({ current: 0, total: config.perfiles })
+
         try {
-            await createMutation.mutateAsync(formulario)
+            const promesas = []
+            for (let i = 1; i <= config.perfiles; i++) {
+                const pin = config.pins[i - 1] || '0000'
+                const payload = {
+                    servicio_id: formulario.servicio_id,
+                    correo: correo,
+                    clave: clave,
+                    perfil: `Perfil ${i}`,
+                    pin: pin,
+                    fecha_compra: formulario.fecha_compra,
+                    fecha_vencimiento: formulario.fecha_vencimiento,
+                    estado: formulario.estado || 'disponible'
+                }
+                // Añadir promesa al array y actualizar progreso al terminar cada una
+                const p = createMutation.mutateAsync(payload).then(() => {
+                    setBulkProgress(prev => ({ ...prev, current: prev.current + 1 }))
+                })
+                promesas.push(p)
+            }
+            
+            await Promise.all(promesas)
+            alert('¡Cuenta creada con éxito con todos sus perfiles en paralelo!')
             cerrarModalEditar()
         } catch (err) {
-            console.error("Error al crear:", err)
+            console.error("Error en creación masiva:", err)
+            alert('Ocurrió un error en la creación. Algunos perfiles podrían no haberse creado.')
+        } finally {
+            setBulkLoading(false)
         }
     }
 
@@ -134,13 +204,17 @@ const InventarioGeneral = () => {
         }
     }
 
+    const [loadingEliminar, setLoadingEliminar] = useState(false)
     const handleEliminarRegistro = async () => {
         if (!registroSeleccionado) return
+        setLoadingEliminar(true)
         try {
             await deleteMutation.mutateAsync(registroSeleccionado.id)
             cerrarModalEliminar()
         } catch (err) {
             console.error("Error al eliminar:", err)
+        } finally {
+            setLoadingEliminar(false)
         }
     }
 
@@ -291,63 +365,105 @@ const InventarioGeneral = () => {
                     </CModalTitle>
                 </CModalHeader>
                 <CModalBody>
-                    <CRow className="g-4">
-                        <CCol md={6}>
-                            <CFormLabel className="fw-semibold small">Servicio Asociado *</CFormLabel>
-                            <CFormSelect className="lasso-input" name="servicio_id" value={formulario.servicio_id} onChange={handleChangeFormulario}>
-                                <option value="">Selecciona plataforma</option>
-                                {Array.isArray(serviciosData) && serviciosData.map(serv => (
-                                    <option key={serv.id} value={serv.id}>{serv.nombre}</option>
-                                ))}
-                            </CFormSelect>
-                        </CCol>
-                        <CCol md={6}>
-                            <CFormLabel className="fw-semibold small">Estado de Cuenta *</CFormLabel>
-                            <CFormSelect className="lasso-input" name="estado" value={formulario.estado} onChange={handleChangeFormulario}>
-                                {opcionesEstado.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                            </CFormSelect>
-                        </CCol>
+                    {registroSeleccionado ? (
+                        <CRow className="g-4">
+                            <CCol md={6}>
+                                <CFormLabel className="fw-semibold small">Servicio Asociado *</CFormLabel>
+                                <CFormSelect className="lasso-input" name="servicio_id" value={formulario.servicio_id} onChange={handleChangeFormulario}>
+                                    <option value="">Selecciona plataforma</option>
+                                    {Array.isArray(serviciosData) && serviciosData.map(serv => (
+                                        <option key={serv.id} value={serv.id}>{serv.nombre}</option>
+                                    ))}
+                                </CFormSelect>
+                            </CCol>
+                            <CCol md={6}>
+                                <CFormLabel className="fw-semibold small">Estado de Cuenta *</CFormLabel>
+                                <CFormSelect className="lasso-input" name="estado" value={formulario.estado} onChange={handleChangeFormulario}>
+                                    {opcionesEstado.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                                </CFormSelect>
+                            </CCol>
+                            <CCol md={12}><hr className="my-2 opacity-10" /></CCol>
+                            <CCol md={6}>
+                                <CFormLabel className="fw-semibold small">Correo Electrónico *</CFormLabel>
+                                <CFormInput className="lasso-input" name="correo" placeholder="ejemplo@correo.com" value={formulario.correo} onChange={handleChangeFormulario} />
+                            </CCol>
+                            <CCol md={6}>
+                                <CFormLabel className="fw-semibold small">Contraseña *</CFormLabel>
+                                <CFormInput className="lasso-input" name="clave" type="text" value={formulario.clave} onChange={handleChangeFormulario} />
+                            </CCol>
+                            <CCol md={4}>
+                                <CFormLabel className="fw-semibold small">Perfil *</CFormLabel>
+                                <CFormInput className="lasso-input" name="perfil" placeholder="Nombre de perfil" value={formulario.perfil} onChange={handleChangeFormulario} />
+                            </CCol>
+                            <CCol md={4}>
+                                <CFormLabel className="fw-semibold small">PIN Acceso *</CFormLabel>
+                                <CFormInput className="lasso-input" name="pin" maxLength={4} value={formulario.pin} onChange={handleChangeFormulario} />
+                            </CCol>
+                            <CCol md={4}>
+                                <CFormLabel className="fw-semibold small">Teléfono</CFormLabel>
+                                <CFormInput className="lasso-input" name="telefono_asignado" value={formulario.telefono_asignado} onChange={handleChangeFormulario} />
+                            </CCol>
+                            <CCol md={12}><hr className="my-2 opacity-10" /></CCol>
+                            <CCol md={6}>
+                                <CFormLabel className="fw-semibold small">Fecha de Compra *</CFormLabel>
+                                <CFormInput className="lasso-input" name="fecha_compra" type="date" value={formulario.fecha_compra} onChange={handleChangeFormulario} />
+                            </CCol>
+                            <CCol md={6}>
+                                <CFormLabel className="fw-semibold small">Fecha de Vencimiento *</CFormLabel>
+                                <CFormInput className="lasso-input" name="fecha_vencimiento" type="date" value={formulario.fecha_vencimiento} onChange={handleChangeFormulario} />
+                            </CCol>
+                        </CRow>
+                    ) : (
+                        <CRow className="g-4">
+                            <CCol md={12}>
+                                <div className="p-3 mb-3 badge-lasso-info-soft rounded-3 border-start border-4 border-info">
+                                    <h6 className="fw-bold mb-1">Creación Masiva</h6>
+                                    <p className="text-muted small mb-0">Selecciona el servicio y pega los datos. El sistema creará todos los perfiles automáticamente.</p>
+                                </div>
+                            </CCol>
+                            <CCol md={12}>
+                                <CFormLabel className="fw-semibold small">Servicio Asociado *</CFormLabel>
+                                <CFormSelect className="lasso-input" name="servicio_id" value={formulario.servicio_id} onChange={handleChangeFormulario}>
+                                    <option value="">Selecciona plataforma (Netflix, Disney+, etc.)</option>
+                                    {Array.isArray(serviciosData) && serviciosData.map(serv => (
+                                        <option key={serv.id} value={serv.id}>{serv.nombre}</option>
+                                    ))}
+                                </CFormSelect>
+                            </CCol>
+                            
+                            <CCol md={12}>
+                                <CFormLabel className="fw-semibold small">Datos de la Cuenta (Correo Password) *</CFormLabel>
+                                <CFormTextarea 
+                                    className="lasso-input" 
+                                    name="datos_cuenta" 
+                                    rows={2} 
+                                    placeholder="ejemplo@correo.com clave123"
+                                    value={formulario.datos_cuenta} 
+                                    onChange={handleChangeFormulario}
+                                />
+                                <div className="text-muted small mt-1">Pega el correo y la clave. Las fechas (hoy + 30 días) y perfiles se generan automáticamente.</div>
+                            </CCol>
 
-                        <CCol md={12}><hr className="my-2 opacity-10" /></CCol>
-
-                        <CCol md={6}>
-                            <CFormLabel className="fw-semibold small">Correo Electrónico *</CFormLabel>
-                            <CFormInput className="lasso-input" name="correo" placeholder="ejemplo@correo.com" value={formulario.correo} onChange={handleChangeFormulario} />
-                        </CCol>
-                        <CCol md={6}>
-                            <CFormLabel className="fw-semibold small">Contraseña *</CFormLabel>
-                            <CFormInput className="lasso-input" name="clave" type="text" value={formulario.clave} onChange={handleChangeFormulario} />
-                        </CCol>
-
-                        <CCol md={4}>
-                            <CFormLabel className="fw-semibold small">Perfil *</CFormLabel>
-                            <CFormInput className="lasso-input" name="perfil" placeholder="Nombre de perfil" value={formulario.perfil} onChange={handleChangeFormulario} />
-                        </CCol>
-                        <CCol md={4}>
-                            <CFormLabel className="fw-semibold small">PIN Acceso *</CFormLabel>
-                            <CFormInput className="lasso-input" name="pin" maxLength={4} value={formulario.pin} onChange={handleChangeFormulario} />
-                        </CCol>
-                        <CCol md={4}>
-                            <CFormLabel className="fw-semibold small">Teléfono</CFormLabel>
-                            <CFormInput className="lasso-input" name="telefono_asignado" value={formulario.telefono_asignado} onChange={handleChangeFormulario} />
-                        </CCol>
-
-                        <CCol md={12}><hr className="my-2 opacity-10" /></CCol>
-
-                        <CCol md={6}>
-                            <CFormLabel className="fw-semibold small">Fecha de Compra *</CFormLabel>
-                            <CFormInput className="lasso-input" name="fecha_compra" type="date" value={formulario.fecha_compra} onChange={handleChangeFormulario} />
-                        </CCol>
-                        <CCol md={6}>
-                            <CFormLabel className="fw-semibold small">Fecha de Vencimiento *</CFormLabel>
-                            <CFormInput className="lasso-input" name="fecha_vencimiento" type="date" value={formulario.fecha_vencimiento} onChange={handleChangeFormulario} />
-                        </CCol>
-                    </CRow>
+                            {bulkLoading && (
+                                <CCol md={12}>
+                                    <div className="text-center p-3">
+                                        <div className="fw-bold text-primary mb-2">Creando perfiles: {bulkProgress.current} / {bulkProgress.total}</div>
+                                        <div className="progress" style={{ height: '8px' }}>
+                                            <div 
+                                                className="progress-bar progress-bar-striped progress-bar-animated" 
+                                                style={{ width: `${(bulkProgress.current / bulkProgress.total) * 100}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                </CCol>
+                            )}
+                        </CRow>
+                    )}
                 </CModalBody>
                 <CModalFooter>
                     <CButton className="btn-lasso btn-lasso-soft-primary border-0" onClick={cerrarModalEditar}>Descartar</CButton>
-                    <CButton className="btn-lasso btn-lasso-primary" onClick={registroSeleccionado ? handleEditarRegistro : handleCrearRegistro} disabled={updateMutation.isPending || createMutation.isPending}>
-                        {(updateMutation.isPending || createMutation.isPending) ? 'Procesando...' : (registroSeleccionado ? 'Guardar Cambios' : 'Crear Registro')}
+                    <CButton className="btn-lasso btn-lasso-primary" onClick={registroSeleccionado ? handleEditarRegistro : handleCrearRegistro} disabled={updateMutation.isPending || createMutation.isPending || bulkLoading}>
+                        {(updateMutation.isPending || createMutation.isPending || bulkLoading) ? 'Procesando...' : (registroSeleccionado ? 'Guardar Cambios' : 'Crear Registro Masivo')}
                     </CButton>
                 </CModalFooter>
             </CModal>
@@ -365,8 +481,8 @@ const InventarioGeneral = () => {
                 </CModalBody>
                 <CModalFooter className="justify-content-center">
                     <CButton className="btn-lasso btn-lasso-soft-primary border-0 px-4" onClick={cerrarModalEliminar}>No, cancelar</CButton>
-                    <CButton className="btn-lasso btn-lasso-primary px-4" style={{ background: 'var(--lasso-danger)' }} onClick={handleEliminarRegistro} disabled={deleteMutation.isPending}>
-                        {deleteMutation.isPending ? 'Eliminando...' : 'Sí, eliminar'}
+                    <CButton className="btn-lasso btn-lasso-primary px-4" style={{ background: 'var(--lasso-danger)' }} onClick={handleEliminarRegistro} disabled={deleteMutation.isPending || loadingEliminar}>
+                        {deleteMutation.isPending || loadingEliminar ? 'Eliminando...' : 'Sí, eliminar'}
                     </CButton>
                 </CModalFooter>
             </CModal>

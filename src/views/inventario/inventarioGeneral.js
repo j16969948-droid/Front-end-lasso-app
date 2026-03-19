@@ -197,26 +197,31 @@ const InventarioGeneral = () => {
     const handleEditarRegistro = async () => {
         if (!registroSeleccionado) return
         if (!validarFormulario()) return
-        try {
-            await updateMutation.mutateAsync({ id: registroSeleccionado.id, data: formulario })
-            cerrarModalEditar()
-        } catch (err) {
-            console.error("Error al editar:", err)
-        }
+        
+        // Cierre inmediato para optimismo visual
+        cerrarModalEditar()
+        
+        updateMutation.mutate({ id: registroSeleccionado.id, data: formulario }, {
+            onError: (err) => {
+                console.error("Error al editar:", err)
+                // Opcional: Reabrir modal o mostrar toast en caso de error crítico
+                alert('No se pudo guardar el cambio. El registro volverá a su estado anterior.')
+            }
+        })
     }
 
-    const [loadingEliminar, setLoadingEliminar] = useState(false)
     const handleEliminarRegistro = async () => {
         if (!registroSeleccionado) return
-        setLoadingEliminar(true)
-        try {
-            await deleteMutation.mutateAsync(registroSeleccionado.id)
-            cerrarModalEliminar()
-        } catch (err) {
-            console.error("Error al eliminar:", err)
-        } finally {
-            setLoadingEliminar(false)
-        }
+        
+        // Cierre inmediato
+        cerrarModalEliminar()
+        
+        deleteMutation.mutate(registroSeleccionado.id, {
+            onError: (err) => {
+                console.error("Error al eliminar:", err)
+                alert('Error al eliminar el registro.')
+            }
+        })
     }
 
     const handleCopiar = (item) => {
@@ -476,7 +481,7 @@ const InventarioGeneral = () => {
                 title="Confirmar Eliminación"
                 message="¿Estás seguro de eliminar este registro?"
                 subMessage={`Esta acción no se puede deshacer y el registro de ${registroSeleccionado?.correo} será borrado permanentemente.`}
-                isLoading={deleteMutation.isPending || loadingEliminar}
+                isLoading={deleteMutation.isPending}
             />
         </>
     )

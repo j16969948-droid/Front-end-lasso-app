@@ -132,6 +132,8 @@ const ServiciosEnVenta = () => {
     const handleEditarServicio = () => {
         if (!servicioSeleccionado || !validarFormulario()) return
         
+        cerrarModalEditar()
+
         const dataSanitada = {
             nombre: String(formulario.nombre),
             slug: String(formulario.slug),
@@ -145,16 +147,13 @@ const ServiciosEnVenta = () => {
 
         console.log('Enviando datos (Editar):', dataSanitada)
 
-        updateServicio.mutate({ id: servicioSeleccionado.id, data: dataSanitada }, {
-            onSuccess: () => cerrarModalEditar()
-        })
+        updateServicio.mutate({ id: servicioSeleccionado.id, data: dataSanitada })
     }
 
     const handleEliminarServicio = () => {
         if (!servicioSeleccionado) return
-        deleteServicio.mutate(servicioSeleccionado.id, {
-            onSuccess: () => cerrarModalEliminar()
-        })
+        cerrarModalEliminar()
+        deleteServicio.mutate(servicioSeleccionado.id)
     }
 
     const columns = [

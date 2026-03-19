@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const getPagosEntrantes = async (params = {}) => {
     const response = await Api.get("api/v1/pagos-entrantes", { params });
-    console.log(response.data);
     return response.data;
 };
 

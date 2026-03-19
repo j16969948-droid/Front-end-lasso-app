@@ -18,6 +18,7 @@ import { useServicios, useCreateServicio, useUpdateServicio, useDeleteServicio }
 import { formatearMonto } from '../../utils/formatters'
 import { LoadingState, ErrorState } from '../../components/TableFeedback'
 import DataTable from '../../components/DataTable'
+import ConfirmModal from '../../components/ConfirmModal'
 
 const ServiciosEnVenta = () => {
     const { data: serviciosData, isLoading, error } = useServicios()
@@ -329,20 +330,15 @@ const ServiciosEnVenta = () => {
                 </CModalFooter>
             </CModal>
 
-            {/* Modal Eliminar */}
-            <CModal visible={modalEliminarVisible} onClose={cerrarModalEliminar} alignment="center" className="lasso-modal">
-                <CModalHeader className="border-0 pb-0">
-                    <CModalTitle className="text-danger fw-bold">⚠️ ELIMINAR SERVICIO</CModalTitle>
-                </CModalHeader>
-                <CModalBody className="p-4 text-center">
-                    <p className="fs-5">¿Estás seguro de que deseas eliminar permanentemente el servicio <br /><strong>{servicioSeleccionado?.nombre}</strong>?</p>
-                    <p className="text-muted small">Esta acción no se puede deshacer y afectará al catálogo público.</p>
-                </CModalBody>
-                <CModalFooter className="border-0 pt-0 justify-content-center gap-3">
-                    <CButton onClick={cerrarModalEliminar} className="btn-lasso btn-lasso-soft-secondary">No, Mantener</CButton>
-                    <CButton onClick={handleEliminarServicio} className="btn-lasso btn-lasso-danger shadow-sm">Sí, Eliminar</CButton>
-                </CModalFooter>
-            </CModal>
+            <ConfirmModal 
+                visible={modalEliminarVisible} 
+                onClose={cerrarModalEliminar} 
+                onConfirm={handleEliminarServicio}
+                title="Eliminar Servicio"
+                message={`¿Estás seguro de que deseas eliminar permanentemente el servicio ${servicioSeleccionado?.nombre}?`}
+                subMessage="Esta acción no se puede deshacer y afectará al catálogo público."
+                isLoading={deleteServicio.isPending}
+            />
         </div>
     )
 }

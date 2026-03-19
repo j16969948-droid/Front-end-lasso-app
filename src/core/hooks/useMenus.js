@@ -48,7 +48,6 @@ export const useMenusUser = () => {
         queryKey: ["menusUsuario"],
         queryFn: getMenusUser,
         enabled: false,
-        staleTime: 0,
     });
 
     const formatMenus = (data) => {

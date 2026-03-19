@@ -1,15 +1,16 @@
 import Api from "../services/ApiService";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
+const QUERY_KEY = ["ordenes"];
+
 const getOrdenes = async () => {
     const response = await Api.get("api/v1/ordenes");
-    console.log(response.data);
     return response.data;
 };
 
 export const useOrdenes = () => {
     return useQuery({
-        queryKey: ["ordenes"],
+        queryKey: QUERY_KEY,
         queryFn: getOrdenes,
     });
 };
@@ -22,7 +23,7 @@ export const useCreateOrdenes = () => {
             return response.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["ordenes"] });
+            queryClient.invalidateQueries({ queryKey: QUERY_KEY });
         },
     });
 };
@@ -34,8 +35,26 @@ export const useUpdateOrdenes = () => {
             const response = await Api.put(`api/v1/ordenes/${id}`, data);
             return response.data;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["ordenes"] });
+        onMutate: async ({ id, data }) => {
+            await queryClient.cancelQueries({ queryKey: QUERY_KEY });
+            const previousData = queryClient.getQueryData(QUERY_KEY);
+
+            queryClient.setQueryData(QUERY_KEY, (old) => {
+                if (!Array.isArray(old)) return old;
+                return old.map((item) =>
+                    item.id === id ? { ...item, ...data } : item
+                );
+            });
+
+            return { previousData };
+        },
+        onError: (_err, _vars, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(QUERY_KEY, context.previousData);
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: QUERY_KEY });
         },
     });
 };
@@ -47,8 +66,24 @@ export const useDeleteOrdenes = () => {
             const response = await Api.delete(`api/v1/ordenes/${id}`);
             return response.data;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["ordenes"] });
+        onMutate: async (id) => {
+            await queryClient.cancelQueries({ queryKey: QUERY_KEY });
+            const previousData = queryClient.getQueryData(QUERY_KEY);
+
+            queryClient.setQueryData(QUERY_KEY, (old) => {
+                if (!Array.isArray(old)) return old;
+                return old.filter((item) => item.id !== id);
+            });
+
+            return { previousData };
+        },
+        onError: (_err, _vars, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(QUERY_KEY, context.previousData);
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: QUERY_KEY });
         },
     });
 };

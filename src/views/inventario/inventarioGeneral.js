@@ -25,6 +25,7 @@ import {
 import { useServicios } from '../../core/hooks/useServicios'
 import { formatearFecha, getBadgeColorEstado } from '../../utils/formatters'
 import { LoadingState, ErrorState } from '../../components/TableFeedback'
+import ConfirmModal from '../../components/ConfirmModal'
 import DataTable from '../../components/DataTable'
 
 const SERVICE_CONFIGS = {
@@ -146,10 +147,10 @@ const InventarioGeneral = () => {
 
         const correo = lines[0]
         const clave = lines[1]
-        
+
         const servicioSeleccionadoObj = serviciosData?.find(s => s.id === parseInt(formulario.servicio_id))
         const slug = servicioSeleccionadoObj?.slug?.toLowerCase() || ''
-        
+
         let config = { perfiles: 1, pins: ['0000'] }
         for (const key in SERVICE_CONFIGS) {
             if (slug.includes(key) || servicioSeleccionadoObj?.nombre?.toLowerCase().includes(key)) {
@@ -181,7 +182,7 @@ const InventarioGeneral = () => {
                 })
                 promesas.push(p)
             }
-            
+
             await Promise.all(promesas)
             alert('¡Cuenta creada con éxito con todos sus perfiles en paralelo!')
             cerrarModalEditar()
@@ -430,15 +431,15 @@ const InventarioGeneral = () => {
                                     ))}
                                 </CFormSelect>
                             </CCol>
-                            
+
                             <CCol md={12}>
                                 <CFormLabel className="fw-semibold small">Datos de la Cuenta (Correo Password) *</CFormLabel>
-                                <CFormTextarea 
-                                    className="lasso-input" 
-                                    name="datos_cuenta" 
-                                    rows={2} 
+                                <CFormTextarea
+                                    className="lasso-input"
+                                    name="datos_cuenta"
+                                    rows={2}
                                     placeholder="ejemplo@correo.com clave123"
-                                    value={formulario.datos_cuenta} 
+                                    value={formulario.datos_cuenta}
                                     onChange={handleChangeFormulario}
                                 />
                                 <div className="text-muted small mt-1">Pega el correo y la clave. Las fechas (hoy + 30 días) y perfiles se generan automáticamente.</div>
@@ -449,8 +450,8 @@ const InventarioGeneral = () => {
                                     <div className="text-center p-3">
                                         <div className="fw-bold text-primary mb-2">Creando perfiles: {bulkProgress.current} / {bulkProgress.total}</div>
                                         <div className="progress" style={{ height: '8px' }}>
-                                            <div 
-                                                className="progress-bar progress-bar-striped progress-bar-animated" 
+                                            <div
+                                                className="progress-bar progress-bar-striped progress-bar-animated"
                                                 style={{ width: `${(bulkProgress.current / bulkProgress.total) * 100}%` }}
                                             ></div>
                                         </div>
@@ -468,24 +469,15 @@ const InventarioGeneral = () => {
                 </CModalFooter>
             </CModal>
 
-            <CModal visible={modalEliminarVisible} onClose={cerrarModalEliminar} alignment="center" className="lasso-modal">
-                <CModalHeader onClose={cerrarModalEliminar}>
-                    <CModalTitle className="fw-bold text-danger">Confirmar Eliminación</CModalTitle>
-                </CModalHeader>
-                <CModalBody className="p-4 text-center">
-                    <div className="mb-4">
-                        <CIcon icon={cilTrash} size="3xl" className="text-danger opacity-50" />
-                    </div>
-                    <h6>¿Estás seguro de eliminar este registro?</h6>
-                    <p className="text-muted small">Esta acción no se puede deshacer y el registro de <strong>{registroSeleccionado?.correo}</strong> será borrado permanentemente.</p>
-                </CModalBody>
-                <CModalFooter className="justify-content-center">
-                    <CButton className="btn-lasso btn-lasso-soft-primary border-0 px-4" onClick={cerrarModalEliminar}>No, cancelar</CButton>
-                    <CButton className="btn-lasso btn-lasso-primary px-4" style={{ background: 'var(--lasso-danger)' }} onClick={handleEliminarRegistro} disabled={deleteMutation.isPending || loadingEliminar}>
-                        {deleteMutation.isPending || loadingEliminar ? 'Eliminando...' : 'Sí, eliminar'}
-                    </CButton>
-                </CModalFooter>
-            </CModal>
+            <ConfirmModal
+                visible={modalEliminarVisible}
+                onClose={cerrarModalEliminar}
+                onConfirm={handleEliminarRegistro}
+                title="Confirmar Eliminación"
+                message="¿Estás seguro de eliminar este registro?"
+                subMessage={`Esta acción no se puede deshacer y el registro de ${registroSeleccionado?.correo} será borrado permanentemente.`}
+                isLoading={deleteMutation.isPending || loadingEliminar}
+            />
         </>
     )
 }

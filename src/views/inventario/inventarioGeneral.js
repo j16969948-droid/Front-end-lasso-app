@@ -15,7 +15,7 @@ import {
     CFormSelect,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilPencil, cilTrash } from '@coreui/icons'
+import { cilPencil, cilTrash, cilCopy } from '@coreui/icons'
 import {
     useInventario,
     useUpdateInventario,
@@ -144,6 +144,13 @@ const InventarioGeneral = () => {
         }
     }
 
+    const handleCopiar = (item) => {
+        const textoParaCopiar = `Correo: ${item.correo}\nClave: ${item.clave}\nPIN: ${item.pin || 'N/A'}`
+        navigator.clipboard.writeText(textoParaCopiar)
+            .then(() => alert('¡Datos copiados al portapapeles!'))
+            .catch(err => console.error('Error al copiar:', err))
+    }
+
     const columns = [
         { header: 'ID', key: 'id', className: 'fw-bold text-primary' },
         {
@@ -154,15 +161,15 @@ const InventarioGeneral = () => {
                 </div>
             )
         },
-        { 
-            header: 'Fechas (C/V)', 
-            key: 'fechas', 
+        {
+            header: 'Fechas (C/V)',
+            key: 'fechas',
             renderFunc: (row) => (
                 <div style={{ lineHeight: '1.2' }}>
                     <div className="text-muted small mb-1" title="Fecha de Compra">C: {formatearFecha(row.fecha_compra)}</div>
                     <div className="fw-semibold small text-primary" title="Fecha de Vencimiento">V: {formatearFecha(row.fecha_vencimiento)}</div>
                 </div>
-            ) 
+            )
         },
         { header: 'Correo', key: 'correo', className: 'fw-semibold' },
         { header: 'Clave', key: 'clave' },
@@ -182,6 +189,9 @@ const InventarioGeneral = () => {
             key: 'acciones',
             renderFunc: (row) => (
                 <div className="d-flex gap-2">
+                    <CButton className="btn-lasso btn-lasso-soft-info" onClick={() => handleCopiar(row)} title="Copiar Datos">
+                        <CIcon icon={cilCopy} size="sm" />
+                    </CButton>
                     <CButton className="btn-lasso btn-lasso-soft-primary" onClick={() => abrirModalEditar(row)} title="Editar">
                         <CIcon icon={cilPencil} size="sm" />
                     </CButton>

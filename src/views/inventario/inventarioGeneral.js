@@ -221,11 +221,11 @@ const InventarioGeneral = () => {
     }, [cuentasDisponiblesPorServicio])
 
     const filterControls = (
-        <div className="text-center fade-up">
+        <div className="fade-up px-3">
             <h6 className="fw-bold small text-uppercase text-muted mb-4" style={{ letterSpacing: '0.1em' }}>
                 Filtrar por Categoría
             </h6>
-            <div className="d-flex flex-wrap justify-content-center gap-3">
+            <div className="lasso-filter-grid">
                 <CButton
                     onClick={() => setFiltroServicio('')}
                     className={`btn-lasso ${!filtroServicio ? 'btn-lasso-primary' : 'btn-lasso-soft-primary'} px-4`}

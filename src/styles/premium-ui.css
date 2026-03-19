@@ -450,3 +450,34 @@ body {
   font-size: 0.875rem !important;
   transition: var(--lasso-transition) !important;
 }
+
+/* --- Filter Grid Layout --- */
+.lasso-filter-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important;
+  gap: 12px !important;
+  width: 100% !important;
+  margin-top: 1rem;
+}
+
+.lasso-filter-grid .btn-lasso {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0.6rem 1rem !important;
+  min-height: 46px !important;
+  border: 1px solid var(--lasso-border) !important;
+}
+
+.lasso-filter-grid .btn-lasso span {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.lasso-filter-grid .btn-lasso .badge {
+  flex-shrink: 0 !important;
+  font-size: 0.75rem !important;
+  margin-left: 8px !important;
+}

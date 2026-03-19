@@ -179,6 +179,14 @@ body {
   border: 1px solid transparent;
 }
 
+.lasso-info-box {
+  padding: 10px 10px;
+  background: var(--lasso-bg) !important;
+  border: 1px solid var(--lasso-border) !important;
+  border-radius: 12px !important;
+  transition: var(--lasso-transition);
+}
+
 .badge-lasso-success {
   background: var(--lasso-success-soft) !important;
   color: var(--lasso-success) !important;

@@ -207,13 +207,13 @@ const Ordenes = () => {
 
                     <CRow className="g-4">
                         <CCol md={6}>
-                            <div className="p-3 bg-light rounded-3 border border-light-subtle">
+                            <div className="lasso-info-box">
                                 <div className="lasso-label mb-1" style={{ fontSize: '0.7rem' }}>Total General</div>
                                 <div className="fw-bold text-success fs-4">${formatearMonto(ordenSeleccionada?.total)}</div>
                             </div>
                         </CCol>
                         <CCol md={6}>
-                            <div className="p-3 bg-light rounded-3 border border-light-subtle">
+                            <div className="lasso-info-box">
                                 <div className="lasso-label mb-1" style={{ fontSize: '0.7rem' }}>Usuario / Cliente</div>
                                 <div className="fw-bold fs-5">{ordenSeleccionada?.usuario?.nombre || 'Desconocido'}</div>
                             </div>

@@ -44,7 +44,7 @@ const DataTable = ({
     filterControls,
     headerBadges,
     onClear,
-    itemsPerPage = 15
+    itemsPerPage = 50
 }) => {
     const {
         busqueda,

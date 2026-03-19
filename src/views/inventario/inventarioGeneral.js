@@ -154,12 +154,20 @@ const InventarioGeneral = () => {
                 </div>
             )
         },
-        { header: 'Fecha compra', key: 'fecha_compra', renderFunc: (row) => <span className="text-muted">{formatearFecha(row.fecha_compra)}</span> },
+        { 
+            header: 'Fechas (C/V)', 
+            key: 'fechas', 
+            renderFunc: (row) => (
+                <div style={{ lineHeight: '1.2' }}>
+                    <div className="text-muted small mb-1" title="Fecha de Compra">C: {formatearFecha(row.fecha_compra)}</div>
+                    <div className="fw-semibold small text-primary" title="Fecha de Vencimiento">V: {formatearFecha(row.fecha_vencimiento)}</div>
+                </div>
+            ) 
+        },
         { header: 'Correo', key: 'correo', className: 'fw-semibold' },
         { header: 'Clave', key: 'clave' },
         { header: 'Perfil', key: 'perfil', className: 'text-center' },
         { header: 'PIN', key: 'pin', className: 'text-center' },
-        { header: 'Vencimiento', key: 'fecha_vencimiento', renderFunc: (row) => <span className="fw-medium">{formatearFecha(row.fecha_vencimiento)}</span> },
         {
             header: 'Estado',
             key: 'estado',

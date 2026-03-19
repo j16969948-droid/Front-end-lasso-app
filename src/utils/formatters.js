@@ -16,7 +16,7 @@ export const formatearFecha = (fecha) => {
 
     return new Intl.DateTimeFormat('es-CO', {
         year: 'numeric',
-        month: 'short',
+        month: '2-digit',
         day: '2-digit',
     }).format(date)
 }

@@ -20,12 +20,14 @@ import {
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash, cilSearch, cilCheckCircle } from '@coreui/icons'
 import { useOrdenes, useDeleteOrdenes, useUpdateOrdenes } from '../../core/hooks/useOrdenes'
+import { useInventario } from '../../core/hooks/useInventario'
 import { formatearMonto } from '../../utils/formatters'
 import DataTable from '../../components/DataTable'
 import { LoadingState, ErrorState } from '../../components/TableFeedback'
 
 const Ordenes = () => {
     const { data, isLoading, error, refetch } = useOrdenes()
+    const { data: inventarioData } = useInventario()
     const deleteMutation = useDeleteOrdenes()
     const updateMutation = useUpdateOrdenes()
     
@@ -37,6 +39,18 @@ const Ordenes = () => {
         if (!data) return []
         return Array.isArray(data) ? data : (data.data || [])
     }, [data])
+
+    const stockMap = useMemo(() => {
+        if (!inventarioData) return {}
+        const items = Array.isArray(inventarioData) ? inventarioData : (inventarioData.data || [])
+        return items.reduce((acc, item) => {
+            if (item.estado === 'disponible') {
+                const sId = item.servicio_id
+                acc[sId] = (acc[sId] || 0) + 1
+            }
+            return acc
+        }, {})
+    }, [inventarioData])
 
     const handleVerDetalles = (orden) => {
         setOrdenSeleccionada(orden)
@@ -146,18 +160,39 @@ const Ordenes = () => {
                                 </CTableHead>
                                 <CTableBody>
                                     {ordenSeleccionada?.servicios && ordenSeleccionada.servicios.length > 0 ? (
-                                        ordenSeleccionada.servicios.map((item, idx) => (
-                                            <CTableRow key={idx}>
-                                                <CTableDataCell className="py-3 ps-3">
-                                                    <div className="fw-semibold">{item.nombre || 'Desconocido'}</div>
-                                                    <div className="text-muted x-small">ID: #{item.id}</div>
-                                                </CTableDataCell>
-                                                <CTableDataCell className="py-3">{item.cantidad} x ${formatearMonto(item.precio_unitario)}</CTableDataCell>
-                                                <CTableDataCell className="py-3 text-end pe-3 fw-bold text-success">
-                                                    ${formatearMonto(item.cantidad * item.precio_unitario)}
-                                                </CTableDataCell>
-                                            </CTableRow>
-                                        ))
+                                        ordenSeleccionada.servicios.map((item, idx) => {
+                                            const stockDisponible = stockMap[item.id] || 0
+                                            const tieneStockSuficiente = stockDisponible >= item.cantidad
+                                            
+                                            let stockBadgeColor = 'success'
+                                            let stockBadgeText = 'En Stock'
+                                            
+                                            if (stockDisponible === 0) {
+                                                stockBadgeColor = 'danger'
+                                                stockBadgeText = 'Sin Stock'
+                                            } else if (!tieneStockSuficiente) {
+                                                stockBadgeColor = 'warning'
+                                                stockBadgeText = `Insuficiente (${stockDisponible})`
+                                            }
+
+                                            return (
+                                                <CTableRow key={idx}>
+                                                    <CTableDataCell className="py-3 ps-3">
+                                                        <div className="d-flex align-items-center gap-2">
+                                                            <div className="fw-semibold">{item.nombre || 'Desconocido'}</div>
+                                                            <CBadge color={stockBadgeColor} className="badge-lasso-mini">
+                                                                {stockBadgeText}
+                                                            </CBadge>
+                                                        </div>
+                                                        <div className="text-muted x-small">ID: #{item.id}</div>
+                                                    </CTableDataCell>
+                                                    <CTableDataCell className="py-3">{item.cantidad} x ${formatearMonto(item.precio_unitario)}</CTableDataCell>
+                                                    <CTableDataCell className="py-3 text-end pe-3 fw-bold text-success">
+                                                        ${formatearMonto(item.cantidad * item.precio_unitario)}
+                                                    </CTableDataCell>
+                                                </CTableRow>
+                                            )
+                                        })
                                     ) : (
                                         <CTableRow>
                                             <CTableDataCell colSpan={3} className="text-center py-4 text-muted small">

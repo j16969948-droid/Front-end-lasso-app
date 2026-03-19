@@ -19,7 +19,8 @@ import { cilPencil, cilTrash } from '@coreui/icons'
 import {
     useInventario,
     useUpdateInventario,
-    useDeleteInventario
+    useDeleteInventario,
+    useCreateInventario
 } from '../../core/hooks/useInventario'
 import { useServicios } from '../../core/hooks/useServicios'
 import { formatearFecha, getBadgeColorEstado } from '../../utils/formatters'
@@ -30,6 +31,7 @@ const InventarioGeneral = () => {
     const { data: inventarioData, isLoading: isLoadingInv, error: errorInv } = useInventario()
     const { data: serviciosData, isLoading: isLoadingServ } = useServicios()
 
+    const createMutation = useCreateInventario()
     const updateMutation = useUpdateInventario()
     const deleteMutation = useDeleteInventario()
 
@@ -111,8 +113,15 @@ const InventarioGeneral = () => {
         }
         return true
     }
-
-
+    const handleCrearRegistro = async () => {
+        if (!validarFormulario()) return
+        try {
+            await createMutation.mutateAsync(formulario)
+            cerrarModalEditar()
+        } catch (err) {
+            console.error("Error al crear:", err)
+        }
+    }
 
     const handleEditarRegistro = async () => {
         if (!registroSeleccionado) return
@@ -137,12 +146,14 @@ const InventarioGeneral = () => {
 
     const columns = [
         { header: 'ID', key: 'id', className: 'fw-bold text-primary' },
-        { header: 'Servicio', key: 'servicio_nombre', renderFunc: (row) => (
-            <div className="d-flex align-items-center gap-2">
-                {row.servicio?.imagen && <img src={row.servicio.imagen} alt="" style={{ width: 24, height: 24, borderRadius: '50%' }} />}
-                <span className="fw-semibold">{row.servicio?.nombre || 'N/A'}</span>
-            </div>
-        )},
+        {
+            header: 'Servicio', key: 'servicio_nombre', renderFunc: (row) => (
+                <div className="d-flex align-items-center gap-2">
+                    {row.servicio?.imagen && <img src={row.servicio.imagen} alt="" style={{ width: 24, height: 24, borderRadius: '50%' }} />}
+                    <span className="fw-semibold">{row.servicio?.nombre || 'N/A'}</span>
+                </div>
+            )
+        },
         { header: 'Fecha compra', key: 'fecha_compra', renderFunc: (row) => <span className="text-muted">{formatearFecha(row.fecha_compra)}</span> },
         { header: 'Correo', key: 'correo', className: 'fw-semibold' },
         { header: 'Clave', key: 'clave' },
@@ -197,7 +208,7 @@ const InventarioGeneral = () => {
                 Filtrar por Categoría
             </h6>
             <div className="d-flex flex-wrap justify-content-center gap-3">
-                <CButton 
+                <CButton
                     onClick={() => setFiltroServicio('')}
                     className={`btn-lasso ${!filtroServicio ? 'btn-lasso-primary' : 'btn-lasso-soft-primary'} px-4`}
                 >
@@ -209,9 +220,9 @@ const InventarioGeneral = () => {
                 {Array.isArray(serviciosData) && serviciosData.map(serv => {
                     const count = cuentasDisponiblesPorServicio[serv.id] || 0
                     const isActive = String(filtroServicio) === String(serv.id)
-                    
+
                     return (
-                        <CButton 
+                        <CButton
                             key={serv.id}
                             onClick={() => setFiltroServicio(serv.id)}
                             className={`btn-lasso ${isActive ? 'btn-lasso-primary' : 'btn-lasso-soft-primary'} px-3`}
@@ -278,7 +289,7 @@ const InventarioGeneral = () => {
                                 {opcionesEstado.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                             </CFormSelect>
                         </CCol>
-                        
+
                         <CCol md={12}><hr className="my-2 opacity-10" /></CCol>
 
                         <CCol md={6}>
@@ -317,8 +328,8 @@ const InventarioGeneral = () => {
                 </CModalBody>
                 <CModalFooter>
                     <CButton className="btn-lasso btn-lasso-soft-primary border-0" onClick={cerrarModalEditar}>Descartar</CButton>
-                    <CButton className="btn-lasso btn-lasso-primary" onClick={handleEditarRegistro} disabled={updateMutation.isPending}>
-                        {updateMutation.isPending ? 'Procesando...' : (registroSeleccionado ? 'Guardar Cambios' : 'Crear Registro')}
+                    <CButton className="btn-lasso btn-lasso-primary" onClick={registroSeleccionado ? handleEditarRegistro : handleCrearRegistro} disabled={updateMutation.isPending || createMutation.isPending}>
+                        {(updateMutation.isPending || createMutation.isPending) ? 'Procesando...' : (registroSeleccionado ? 'Guardar Cambios' : 'Crear Registro')}
                     </CButton>
                 </CModalFooter>
             </CModal>

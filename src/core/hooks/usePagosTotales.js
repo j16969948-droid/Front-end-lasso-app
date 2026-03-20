@@ -10,5 +10,6 @@ export const usePagosTotales = (filters = {}) => {
     return useQuery({
         queryKey: ["pagosTotales", filters],
         queryFn: () => getPagosTotales(filters),
+        refetchInterval: 1000 * 30, 
     });
 };

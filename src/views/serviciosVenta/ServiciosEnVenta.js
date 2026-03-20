@@ -106,7 +106,7 @@ const ServiciosEnVenta = () => {
 
     const handleCrearServicio = () => {
         if (!validarFormulario()) return
-        
+
         const dataSanitada = {
             nombre: String(formulario.nombre),
             slug: String(formulario.slug),
@@ -119,7 +119,7 @@ const ServiciosEnVenta = () => {
         }
 
         console.log('Enviando datos (Crear):', dataSanitada)
-        
+
         createServicio.mutate(dataSanitada, {
             onSuccess: () => cerrarModalCrear(),
             onError: (err) => {
@@ -131,7 +131,7 @@ const ServiciosEnVenta = () => {
 
     const handleEditarServicio = () => {
         if (!servicioSeleccionado || !validarFormulario()) return
-        
+
         cerrarModalEditar()
 
         const dataSanitada = {
@@ -329,9 +329,9 @@ const ServiciosEnVenta = () => {
                 </CModalFooter>
             </CModal>
 
-            <ConfirmModal 
-                visible={modalEliminarVisible} 
-                onClose={cerrarModalEliminar} 
+            <ConfirmModal
+                visible={modalEliminarVisible}
+                onClose={cerrarModalEliminar}
                 onConfirm={handleEliminarServicio}
                 title="Eliminar Servicio"
                 message={`¿Estás seguro de que deseas eliminar permanentemente el servicio ${servicioSeleccionado?.nombre}?`}

@@ -10,6 +10,7 @@ export const usePagosEntrantes = (filters = {}) => {
     return useQuery({
         queryKey: ["pagosEntrantes", filters],
         queryFn: () => getPagosEntrantes(filters),
+        staleTime: 1000 * 30,
     });
 };
 

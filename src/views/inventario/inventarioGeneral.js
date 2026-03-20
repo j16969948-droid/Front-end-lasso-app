@@ -197,10 +197,10 @@ const InventarioGeneral = () => {
     const handleEditarRegistro = async () => {
         if (!registroSeleccionado) return
         if (!validarFormulario()) return
-        
+
         // Cierre inmediato para optimismo visual
         cerrarModalEditar()
-        
+
         updateMutation.mutate({ id: registroSeleccionado.id, data: formulario }, {
             onError: (err) => {
                 console.error("Error al editar:", err)
@@ -212,10 +212,10 @@ const InventarioGeneral = () => {
 
     const handleEliminarRegistro = async () => {
         if (!registroSeleccionado) return
-        
+
         // Cierre inmediato
         cerrarModalEliminar()
-        
+
         deleteMutation.mutate(registroSeleccionado.id, {
             onError: (err) => {
                 console.error("Error al eliminar:", err)

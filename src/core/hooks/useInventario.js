@@ -12,6 +12,7 @@ export const useInventario = () => {
     return useQuery({
         queryKey: QUERY_KEY,
         queryFn: getInventario,
+        staleTime: 1000 * 30,
     });
 };
 

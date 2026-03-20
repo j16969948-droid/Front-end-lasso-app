@@ -10,9 +10,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5,      // 5 min — datos frescos, no re-fetch al volver a una página
+      staleTime: 1000 * 60 * 1,      // 1 min — compromiso seguro para app de gestión
       gcTime: 1000 * 60 * 10,         // 10 min — mantener en caché tras desmontarse
-      refetchOnWindowFocus: false,     // No re-fetch al cambiar tab/ventana
+      refetchOnWindowFocus: true,     // Re-fetch al volver a la pestaña (si es stale)
       retry: 1,                       // Solo 1 retry en error
     },
   },

@@ -1,55 +1,35 @@
 import React from "react";
+import { CCard, CCardBody, CButton, CBadge } from '@coreui/react';
+import CIcon from '@coreui/icons-react';
+import { cilPlus } from '@coreui/icons';
 
 const ServiceCard = ({ servicio, addToCart, formatPrice }) => {
   return (
-    <div
-      className="card h-100 border-0 shadow-sm"
-      style={{
-        borderRadius: "1rem",
-        overflow: "hidden",
-        backgroundColor: "#111827",
-        transition: "transform 0.3s ease",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = "scale(1.05)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "scale(1)";
-      }}
+    <CCard
+      className="h-100 border-0 shadow-sm premium-service-card"
     >
       <div
-        className="d-flex align-items-center justify-content-center"
-        style={{
-          height: "160px",
-          backgroundColor: "#1f2937",
-        }}
+        className="d-flex align-items-center justify-content-center position-relative premium-service-img-container"
       >
         <img
           src={servicio.imagen}
           alt={servicio.nombre}
-          style={{
-            maxHeight: "120px",
-            objectFit: "contain",
-          }}
+          className="premium-service-img"
         />
       </div>
 
-      <div className="card-body p-4 text-white">
-        <h3 className="h5 fw-semibold mb-2">{servicio.nombre}</h3>
-
-        <p className="text-secondary small mb-4">
-          Acceso premium disponible
+      <CCardBody className="p-4 d-flex flex-column">
+        <h3 className="h5 fw-bold mb-1">{servicio.nombre}</h3>
+        <p className="text-secondary small mb-4 flex-grow-1">
+          Acceso inmediato disponible
         </p>
 
         <div className="d-flex justify-content-between align-items-center">
-          <div
-            className="fw-bold fs-5"
-            style={{ color: "#818cf8" }}
-          >
-            {formatPrice(servicio.precio_usuario)}
+          <div className="fw-bold fs-5 text-primary">
+            ${formatPrice(servicio.precio_usuario)}
           </div>
 
-          <button
+          <CButton
             onClick={() =>
               addToCart(
                 servicio.id,
@@ -58,26 +38,57 @@ const ServiceCard = ({ servicio, addToCart, formatPrice }) => {
                 servicio.imagen
               )
             }
-            className="btn text-white fw-semibold"
-            style={{
-              background: "linear-gradient(135deg, #4f46e5, #6366f1)",
-              borderRadius: "14px",
-              padding: "0.5rem 1rem",
-              border: "none",
-              boxShadow: "0 10px 20px rgba(79,70,229,0.25)",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#6366f1";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "#4f46e5";
-            }}
+            className="btn-premium btn-premium-primary rounded-pill d-flex align-items-center gap-1"
           >
+            <CIcon icon={cilPlus} size="sm" />
             Agregar
-          </button>
+          </CButton>
         </div>
-      </div>
-    </div>
+      </CCardBody>
+
+      <style>{`
+        .premium-service-card {
+            border-radius: 1rem;
+            overflow: hidden;
+            background: var(--cui-body-bg);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border: 1px solid rgba(var(--cui-body-color-rgb), 0.05) !important;
+        }
+        .premium-service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1) !important;
+            border-color: rgba(var(--cui-primary-rgb), 0.2) !important;
+        }
+        .premium-service-img-container {
+            height: 160px;
+            background: linear-gradient(135deg, rgba(var(--cui-secondary-rgb), 0.1), rgba(var(--cui-secondary-rgb), 0.02));
+            border-bottom: 1px solid rgba(var(--cui-body-color-rgb), 0.05);
+            padding: 1.5rem;
+        }
+        .premium-service-img {
+            max-height: 100px;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+            transition: transform 0.3s ease;
+        }
+        .premium-service-card:hover .premium-service-img {
+            transform: scale(1.08);
+        }
+        
+        html[data-coreui-theme='dark'] .premium-service-card {
+            background: var(--cui-dark);
+            border-color: rgba(255, 255, 255, 0.05) !important;
+        }
+        html[data-coreui-theme='dark'] .premium-service-card:hover {
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4) !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+        html[data-coreui-theme='dark'] .premium-service-img-container {
+            background: linear-gradient(135deg, rgba(255,255,255,0.02), transparent);
+            border-bottom-color: rgba(255,255,255,0.05);
+        }
+      `}</style>
+    </CCard>
   );
 };
 

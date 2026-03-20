@@ -20,7 +20,8 @@ import {
     useInventario,
     useUpdateInventario,
     useDeleteInventario,
-    useCreateInventario
+    useCreateInventario,
+    useBulkCreateInventario
 } from '../../core/hooks/useInventario'
 import { useServicios } from '../../core/hooks/useServicios'
 import { formatearFecha, getBadgeColorEstado } from '../../utils/formatters'
@@ -28,12 +29,7 @@ import { LoadingState, ErrorState } from '../../components/TableFeedback'
 import ConfirmModal from '../../components/ConfirmModal'
 import DataTable from '../../components/DataTable'
 
-const SERVICE_CONFIGS = {
-    'netflix': { perfiles: 5, pins: ['1212', '2323', '3434', '4545', '5656'] },
-    'disney': { perfiles: 4, pins: ['1111', '2222', '3333', '4444'] },
-    'max': { perfiles: 5, pins: ['0000', '1111', '2222', '3333', '4444'] },
-    'paramount': { perfiles: 5, pins: ['1234', '1234', '1234', '1234', '1234'] },
-}
+
 
 const InventarioGeneral = () => {
     const { data: inventarioData, isLoading: isLoadingInv, error: errorInv } = useInventario()
@@ -42,17 +38,27 @@ const InventarioGeneral = () => {
     const createMutation = useCreateInventario()
     const updateMutation = useUpdateInventario()
     const deleteMutation = useDeleteInventario()
+    const bulkCreateMutation = useBulkCreateInventario()
 
     const [modalEditarVisible, setModalEditarVisible] = useState(false)
     const [modalEliminarVisible, setModalEliminarVisible] = useState(false)
     const [registroSeleccionado, setRegistroSeleccionado] = useState(null)
     const [filtroServicio, setFiltroServicio] = useState('')
 
-    const getToday = () => new Date().toISOString().split('T')[0]
+    const getToday = () => {
+        const d = new Date()
+        const year = d.getFullYear()
+        const month = String(d.getMonth() + 1).padStart(2, '0')
+        const day = String(d.getDate()).padStart(2, '0')
+        return `${year}-${month}-${day}`
+    }
     const getIn30Days = () => {
         const d = new Date()
         d.setDate(d.getDate() + 30)
-        return d.toISOString().split('T')[0]
+        const year = d.getFullYear()
+        const month = String(d.getMonth() + 1).padStart(2, '0')
+        const day = String(d.getDate()).padStart(2, '0')
+        return `${year}-${month}-${day}`
     }
 
     const [formulario, setFormulario] = useState({
@@ -62,8 +68,6 @@ const InventarioGeneral = () => {
         datos_cuenta: '', // Para creación masiva
     })
 
-    const [bulkLoading, setBulkLoading] = useState(false)
-    const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0 })
 
     const filterFunction = (item) => {
         return !filtroServicio || String(item?.servicio_id) === String(filtroServicio)
@@ -139,58 +143,20 @@ const InventarioGeneral = () => {
             return
         }
 
-        const lines = formulario.datos_cuenta.trim().split(/\s+/)
-        if (lines.length < 2) {
-            alert('Formato de datos incorrecto. Debe ser: correo contraseña')
-            return
-        }
-
-        const correo = lines[0]
-        const clave = lines[1]
-
-        const servicioSeleccionadoObj = serviciosData?.find(s => s.id === parseInt(formulario.servicio_id))
-        const slug = servicioSeleccionadoObj?.slug?.toLowerCase() || ''
-
-        let config = { perfiles: 1, pins: ['0000'] }
-        for (const key in SERVICE_CONFIGS) {
-            if (slug.includes(key) || servicioSeleccionadoObj?.nombre?.toLowerCase().includes(key)) {
-                config = SERVICE_CONFIGS[key]
-                break
-            }
-        }
-
-        setBulkLoading(true)
-        setBulkProgress({ current: 0, total: config.perfiles })
-
         try {
-            const promesas = []
-            for (let i = 1; i <= config.perfiles; i++) {
-                const pin = config.pins[i - 1] || '0000'
-                const payload = {
-                    servicio_id: formulario.servicio_id,
-                    correo: correo,
-                    clave: clave,
-                    perfil: `Perfil ${i}`,
-                    pin: pin,
-                    fecha_compra: formulario.fecha_compra,
-                    fecha_vencimiento: formulario.fecha_vencimiento,
-                    estado: formulario.estado || 'disponible'
-                }
-                // Añadir promesa al array y actualizar progreso al terminar cada una
-                const p = createMutation.mutateAsync(payload).then(() => {
-                    setBulkProgress(prev => ({ ...prev, current: prev.current + 1 }))
-                })
-                promesas.push(p)
-            }
-
-            await Promise.all(promesas)
-            alert('¡Cuenta creada con éxito con todos sus perfiles en paralelo!')
+            await bulkCreateMutation.mutateAsync({
+                servicio_id: formulario.servicio_id,
+                datos_cuenta: formulario.datos_cuenta,
+                fecha_compra: formulario.fecha_compra,
+                fecha_vencimiento: formulario.fecha_vencimiento,
+                estado: formulario.estado || 'disponible'
+            })
+            alert('¡Cuenta masiva creada con éxito!')
             cerrarModalEditar()
         } catch (err) {
             console.error("Error en creación masiva:", err)
-            alert('Ocurrió un error en la creación. Algunos perfiles podrían no haberse creado.')
-        } finally {
-            setBulkLoading(false)
+            // Error could be validation format
+            alert('Ocurrió un error en la creación. Asegúrate de que el formato sea "correo contraseña".')
         }
     }
 
@@ -458,14 +424,13 @@ const InventarioGeneral = () => {
                                 <div className="text-muted small mt-1">Pega el correo y la clave. Las fechas (hoy + 30 días) y perfiles se generan automáticamente.</div>
                             </CCol>
 
-                            {bulkLoading && (
+                            {bulkCreateMutation.isPending && (
                                 <CCol md={12}>
                                     <div className="text-center p-3">
-                                        <div className="fw-bold text-primary mb-2">Creando perfiles: {bulkProgress.current} / {bulkProgress.total}</div>
+                                        <div className="fw-bold text-primary mb-2">Creando perfiles en el servidor...</div>
                                         <div className="progress" style={{ height: '8px' }}>
                                             <div
-                                                className="progress-bar progress-bar-striped progress-bar-animated"
-                                                style={{ width: `${(bulkProgress.current / bulkProgress.total) * 100}%` }}
+                                                className="progress-bar progress-bar-striped progress-bar-animated w-100"
                                             ></div>
                                         </div>
                                     </div>
@@ -476,8 +441,8 @@ const InventarioGeneral = () => {
                 </CModalBody>
                 <CModalFooter>
                     <CButton className="btn-lasso btn-lasso-soft-primary border-0" onClick={cerrarModalEditar}>Descartar</CButton>
-                    <CButton className="btn-lasso btn-lasso-primary" onClick={registroSeleccionado ? handleEditarRegistro : handleCrearRegistro} disabled={updateMutation.isPending || createMutation.isPending || bulkLoading}>
-                        {(updateMutation.isPending || createMutation.isPending || bulkLoading) ? 'Procesando...' : (registroSeleccionado ? 'Guardar Cambios' : 'Crear Registro Masivo')}
+                    <CButton className="btn-lasso btn-lasso-primary" onClick={registroSeleccionado ? handleEditarRegistro : handleCrearRegistro} disabled={updateMutation.isPending || bulkCreateMutation.isPending}>
+                        {(updateMutation.isPending || bulkCreateMutation.isPending) ? 'Procesando...' : (registroSeleccionado ? 'Guardar Cambios' : 'Crear Registro Masivo')}
                     </CButton>
                 </CModalFooter>
             </CModal>

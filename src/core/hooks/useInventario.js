@@ -88,3 +88,16 @@ export const useDeleteInventario = () => {
         },
     });
 };
+
+export const useBulkCreateInventario = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (data) => {
+            const response = await Api.post("api/v1/inventario/bulk", data);
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+        },
+    });
+};

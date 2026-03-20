@@ -10,36 +10,53 @@ import {
     CModalTitle,
     CModalBody,
     CModalFooter,
+    CFormInput,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilCopy, cilUser, cilCheckCircle, cilChartPie } from '@coreui/icons'
+import { cilCopy, cilUser, cilCheckCircle, cilChartPie, cilCalendar } from '@coreui/icons'
 import { useInventario } from '../../core/hooks/useInventario'
 import { useServicios } from '../../core/hooks/useServicios'
-import { formatearFecha, getBadgeColorEstado } from '../../utils/formatters'
+import { formatearFecha, normalizarFecha, getBadgeColorEstado } from '../../utils/formatters'
 import { LoadingState, ErrorState } from '../../components/TableFeedback'
+import StatCard from '../../components/StatCard'
 import DataTable from '../../components/DataTable'
 
 const CuentasVendidas = () => {
     const { data: inventarioData, isLoading: isLoadingInv, error: errorInv } = useInventario()
     const { data: serviciosData, isLoading: isLoadingServ } = useServicios()
 
+    const getToday = () => {
+        const d = new Date()
+        const year = d.getFullYear()
+        const month = String(d.getMonth() + 1).padStart(2, '0')
+        const day = String(d.getDate()).padStart(2, '0')
+        return `${year}-${month}-${day}`
+    }
+
     const [modalDetallesVisible, setModalDetallesVisible] = useState(false)
     const [clienteSeleccionado, setClienteSeleccionado] = useState(null)
     const [filtroServicio, setFiltroServicio] = useState('')
+    const [filtroFecha, setFiltroFecha] = useState(getToday())
 
     // Solo cuentas con estado asignado (vendidas)
     const cuentasVendidas = useMemo(() => {
         if (!Array.isArray(inventarioData)) return []
-        return inventarioData.filter(item => item.estado?.toLowerCase() === 'asignado')
-    }, [inventarioData])
+        return inventarioData.filter(item => {
+            const matchesEstado = item.estado?.toLowerCase() === 'asignado'
+            const itemFecha = normalizarFecha(item.fecha_compra)
+            const matchesFecha = !filtroFecha || itemFecha === filtroFecha
+            return matchesEstado && matchesFecha
+        })
+    }, [inventarioData, filtroFecha])
 
     // Agrupando cuentas del mismo cliente compradas el mismo día
     const cuentasAgrupadas = useMemo(() => {
         const map = new Map();
         cuentasVendidas.forEach(cta => {
-            const key = `${cta.cliente_id_asignado || 'NO_ID'}_${cta.telefono_asignado || 'NO_PHONE'}_${cta.fecha_compra}`;
+            const normalizedDate = normalizarFecha(cta.fecha_compra) || 'NO_DATE';
+            const key = `${cta.cliente_id_asignado || 'NO_ID'}_${cta.telefono_asignado || 'NO_PHONE'}_${normalizedDate}`;
             if (!map.has(key)) {
-                map.set(key, { ...cta, cuentas_asociadas: [cta] });
+                map.set(key, { ...cta, cuentas_asociadas: [cta], fecha_compra_normalizada: normalizedDate });
             } else {
                 map.get(key).cuentas_asociadas.push(cta);
             }
@@ -50,7 +67,7 @@ const CuentasVendidas = () => {
     // Métricas Mini Dashboard
     const metricas = useMemo(() => {
         const total = cuentasVendidas.length
-        
+
         const telefonosUnicos = new Set()
         const clientesIdsUnicos = new Set()
         const conteoServicios = {}
@@ -58,7 +75,7 @@ const CuentasVendidas = () => {
         cuentasVendidas.forEach(item => {
             if (item.telefono_asignado) telefonosUnicos.add(item.telefono_asignado)
             if (item.cliente_id_asignado) clientesIdsUnicos.add(item.cliente_id_asignado)
-            
+
             if (item.servicio_id) {
                 conteoServicios[item.servicio_id] = (conteoServicios[item.servicio_id] || 0) + 1
             }
@@ -80,11 +97,16 @@ const CuentasVendidas = () => {
 
     const cuentasPorCliente = useMemo(() => {
         if (!clienteSeleccionado || !Array.isArray(inventarioData)) return []
-        
+
         return inventarioData.filter(item => {
             const coincideTelefono = clienteSeleccionado.telefono_asignado && item.telefono_asignado === clienteSeleccionado.telefono_asignado
             const coincideId = clienteSeleccionado.cliente_id_asignado && item.cliente_id_asignado === clienteSeleccionado.cliente_id_asignado
-            return coincideTelefono || coincideId
+            
+            const itemFecha = normalizarFecha(item.fecha_compra)
+            const selFecha = normalizarFecha(clienteSeleccionado.fecha_compra)
+            const coincideFecha = itemFecha === selFecha
+
+            return (coincideTelefono || coincideId) && coincideFecha
         })
     }, [clienteSeleccionado, inventarioData])
 
@@ -94,7 +116,7 @@ const CuentasVendidas = () => {
     }
 
     const searchFunction = (group, termino) => {
-        return group.cuentas_asociadas.some(item => 
+        return group.cuentas_asociadas.some(item =>
             String(item.id || '').toLowerCase().includes(termino) ||
             String(item.servicio?.nombre || '').toLowerCase().includes(termino) ||
             String(item.correo || '').toLowerCase().includes(termino) ||
@@ -126,7 +148,7 @@ const CuentasVendidas = () => {
     }
 
     const columns = [
-        { 
+        {
             header: 'Servicios',
             key: 'servicios',
             renderFunc: (row) => (
@@ -172,42 +194,72 @@ const CuentasVendidas = () => {
 
     const filterControls = (
         <div className="fade-up px-3">
-            <h6 className="fw-bold small text-uppercase text-muted mb-4" style={{ letterSpacing: '0.1em' }}>
-                Filtrar por Categoría
-            </h6>
-            <div className="lasso-filter-grid">
-                <CButton
-                    onClick={() => setFiltroServicio('')}
-                    className={`btn-lasso ${!filtroServicio ? 'btn-lasso-primary' : 'btn-lasso-soft-primary'} px-4`}
-                >
-                    <span>Todos</span>
-                    <span className="badge bg-white text-primary ms-2 rounded-pill px-2">
-                        {cuentasVendidas.length}
-                    </span>
-                </CButton>
-                {Array.isArray(serviciosData) && serviciosData.map(serv => {
-                    const count = cuentasVendidas.filter(c => c.servicio_id === serv.id).length
-                    if (count === 0) return null // Solo mostrar servicios que tengan ventas
-
-                    const isActive = String(filtroServicio) === String(serv.id)
-
-                    return (
-                         <CButton
-                            key={serv.id}
-                            onClick={() => setFiltroServicio(serv.id)}
-                            className={`btn-lasso ${isActive ? 'btn-lasso-primary' : 'btn-lasso-soft-primary'} px-3`}
+            <CRow className="align-items-end g-4 mb-4">
+                <CCol md={9}>
+                    <h6 className="fw-bold small text-uppercase text-muted mb-3" style={{ letterSpacing: '0.1em' }}>
+                        Filtrar por Categoría
+                    </h6>
+                    <div className="lasso-filter-grid">
+                        <CButton
+                            onClick={() => setFiltroServicio('')}
+                            className={`btn-lasso ${!filtroServicio ? 'btn-lasso-primary' : 'btn-lasso-soft-primary'} px-4`}
                         >
-                            {serv.imagen && (
-                                <img src={serv.imagen} alt="" style={{ height: '18px', width: '18px', objectFit: 'cover', borderRadius: '50%' }} />
-                            )}
-                            <span>{serv.nombre}</span>
-                            <span className={`badge ${isActive ? 'bg-white text-primary' : 'bg-primary text-white'} ms-2 rounded-pill px-2`}>
-                                {count}
+                            <span>Todos</span>
+                            <span className="badge bg-white text-primary ms-2 rounded-pill px-2">
+                                {cuentasVendidas.length}
                             </span>
                         </CButton>
-                    )
-                })}
-            </div>
+                        {Array.isArray(serviciosData) && serviciosData.map(serv => {
+                            const count = cuentasVendidas.filter(c => c.servicio_id === serv.id).length
+                            if (count === 0) return null
+
+                            const isActive = String(filtroServicio) === String(serv.id)
+
+                            return (
+                                <CButton
+                                    key={serv.id}
+                                    onClick={() => setFiltroServicio(serv.id)}
+                                    className={`btn-lasso ${isActive ? 'btn-lasso-primary' : 'btn-lasso-soft-primary'} px-3`}
+                                >
+                                    {serv.imagen && (
+                                        <img src={serv.imagen} alt="" style={{ height: '18px', width: '18px', objectFit: 'cover', borderRadius: '50%' }} />
+                                    )}
+                                    <span>{serv.nombre}</span>
+                                    <span className={`badge ${isActive ? 'bg-white text-primary' : 'bg-primary text-white'} ms-2 rounded-pill px-2`}>
+                                        {count}
+                                    </span>
+                                </CButton>
+                            )
+                        })}
+                    </div>
+                </CCol>
+                <CCol md={3}>
+                    <h6 className="fw-bold small text-uppercase text-muted mb-3" style={{ letterSpacing: '0.1em' }}>
+                        Seleccionar Fecha
+                    </h6>
+                    <div className="d-flex align-items-center gap-2 bg-white p-2 rounded-3 border shadow-sm">
+                        <CIcon icon={cilCalendar} className="text-muted ms-1" />
+                        <CFormInput
+                            type="date"
+                            value={filtroFecha}
+                            onChange={(e) => setFiltroFecha(e.target.value)}
+                            className="border-0 p-0 shadow-none bg-transparent text-muted"
+                        />
+                        {filtroFecha && (
+                            <CButton
+                                size="sm"
+                                color="light"
+                                className="rounded-circle p-0"
+                                style={{ width: '20px', height: '20px', lineHeight: '1' }}
+                                onClick={() => setFiltroFecha('')}
+                                title="Ver todas las fechas"
+                            >
+                                
+                            </CButton>
+                        )}
+                    </div>
+                </CCol>
+            </CRow>
         </div>
     )
 
@@ -219,46 +271,31 @@ const CuentasVendidas = () => {
             {/* Mini Dashboard */}
             <CRow className="mb-4 px-3 align-items-stretch g-4">
                 <CCol xs={12} sm={4}>
-                    <CCard className="h-100 border-0 shadow-sm" style={{ borderRadius: '16px', background: 'linear-gradient(135deg, rgba(var(--cui-primary-rgb), 0.1), rgba(var(--cui-primary-rgb), 0.02))' }}>
-                        <CCardBody className="d-flex align-items-center justify-content-between p-4">
-                            <div>
-                                <h6 className="text-secondary fw-bold mb-2">Cuentas Vendidas Totales</h6>
-                                <h3 className="fw-bold text-primary mb-0">{metricas.total}</h3>
-                            </div>
-                            <div className="bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style={{ width: '48px', height: '48px', color: 'var(--cui-primary)' }}>
-                                <CIcon icon={cilCheckCircle} size="xl" />
-                            </div>
-                        </CCardBody>
-                    </CCard>
+                    <StatCard 
+                        title="Cuentas Vendidas Totales" 
+                        value={metricas.total} 
+                        icon={cilCheckCircle} 
+                        color="primary" 
+                    />
                 </CCol>
 
                 <CCol xs={12} sm={4}>
-                    <CCard className="h-100 border-0 shadow-sm" style={{ borderRadius: '16px', background: 'linear-gradient(135deg, rgba(var(--cui-info-rgb), 0.1), rgba(var(--cui-info-rgb), 0.02))' }}>
-                        <CCardBody className="d-flex align-items-center justify-content-between p-4">
-                            <div>
-                                <h6 className="text-secondary fw-bold mb-2">Servicio Estrella</h6>
-                                <h4 className="fw-bold text-info mb-1">{metricas.topServicio.nombre}</h4>
-                                <small className="text-muted fw-semibold">{metricas.topServicio.count} ventas</small>
-                            </div>
-                            <div className="bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style={{ width: '48px', height: '48px', color: 'var(--cui-info)' }}>
-                                <CIcon icon={cilChartPie} size="xl" />
-                            </div>
-                        </CCardBody>
-                    </CCard>
+                    <StatCard 
+                        title="Servicio Estrella" 
+                        value={metricas.topServicio.nombre} 
+                        text={`${metricas.topServicio.count} ventas`}
+                        icon={cilChartPie} 
+                        color="info" 
+                    />
                 </CCol>
 
                 <CCol xs={12} sm={4}>
-                    <CCard className="h-100 border-0 shadow-sm" style={{ borderRadius: '16px', background: 'linear-gradient(135deg, rgba(var(--cui-success-rgb), 0.1), rgba(var(--cui-success-rgb), 0.02))' }}>
-                        <CCardBody className="d-flex align-items-center justify-content-between p-4">
-                            <div>
-                                <h6 className="text-secondary fw-bold mb-2">Clientes Únicos</h6>
-                                <h3 className="fw-bold text-success mb-0">{metricas.totalClientesUnicos}</h3>
-                            </div>
-                            <div className="bg-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style={{ width: '48px', height: '48px', color: 'var(--cui-success)' }}>
-                                <CIcon icon={cilUser} size="xl" />
-                            </div>
-                        </CCardBody>
-                    </CCard>
+                    <StatCard 
+                        title="Clientes Únicos" 
+                        value={metricas.totalClientesUnicos} 
+                        icon={cilUser} 
+                        color="success" 
+                    />
                 </CCol>
             </CRow>
 
@@ -325,7 +362,7 @@ const CuentasVendidas = () => {
                                                 <div className="small fw-bold border bg-light rounded px-2 py-1 mb-1 d-inline-block">
                                                     P: {cta.perfil || '-'}
                                                 </div>
-                                                <br/>
+                                                <br />
                                                 <div className="small text-muted border bg-light rounded px-2 py-1 d-inline-block">
                                                     PIN: {cta.pin || '-'}
                                                 </div>

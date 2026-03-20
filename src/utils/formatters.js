@@ -10,16 +10,13 @@ export const formatearMonto = (valor) => {
 
 export const formatearFecha = (fecha) => {
     if (!fecha) return '-'
-
     const date = new Date(fecha)
     if (Number.isNaN(date.getTime())) return fecha
 
-    return new Intl.DateTimeFormat('es-CO', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        timeZone: 'UTC'
-    }).format(date)
+    const year = date.getUTCFullYear()
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+    const day = String(date.getUTCDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
 }
 
 export const normalizarFecha = (fecha) => {

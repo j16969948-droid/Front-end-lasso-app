@@ -16,6 +16,7 @@ import {
     CCard,
     CCardBody,
 } from '@coreui/react'
+import StatCard from '../../components/StatCard'
 import CIcon from '@coreui/icons-react'
 import { cilExternalLink, cilCheckCircle } from '@coreui/icons'
 import { usePagosEntrantes, useValidarPagoManual } from '../../core/hooks/usePagosEntrantes'
@@ -90,18 +91,7 @@ const PagosEntrantes = () => {
         }
     }
 
-    const StatCard = ({ title, value, text, icon, color }) => (
-        <CCol sm={6} lg={3}>
-            <div className="premium-card p-4 h-100 position-relative border-0 shadow-lg">
-                <div className={`position-absolute top-0 end-0 p-3 opacity-25 text-${color}`}>
-                    <CIcon icon={icon} size="xl" />
-                </div>
-                <div className="section-subtitle text-uppercase fw-bold mb-1" style={{ fontSize: '0.65rem', letterSpacing: '0.05em' }}>{title}</div>
-                <div className="section-title h2 mb-2">{value}</div>
-                <div className="text-muted small">{text}</div>
-            </div>
-        </CCol>
-    )
+
 
     const columns = [
         { header: 'ID', key: 'id', renderFunc: (p) => <span className="text-muted fw-bold">#{p.id}</span> },
@@ -206,10 +196,42 @@ const PagosEntrantes = () => {
         <div className="fade-up">
             {statistics && (
                 <CRow className="g-4 mb-4">
-                    <StatCard title="Pagos del Día" value={statistics.total_pagos_dia || 0} text="Comprobantes recibidos hoy" icon={cilCheckCircle} color="primary" />
-                    <StatCard title="Aprobados" value={statistics.total_aprobados || 0} text="Validados satisfactoriamente" icon={cilCheckCircle} color="success" />
-                    <StatCard title="Pendientes" value={statistics.total_pendientes || 0} text="Requieren revisión manual" icon={cilCheckCircle} color="warning" />
-                    <StatCard title="Monto Aprobado" value={formatearMonto(statistics.monto_total_aprobados || 0)} text="Recaudación total aprobada" icon={cilCheckCircle} color="info" />
+                    <CCol sm={6} lg={3}>
+                        <StatCard 
+                            title="Pagos del Día" 
+                            value={statistics.total_pagos_dia || 0} 
+                            text="Comprobantes recibidos hoy" 
+                            icon={cilCheckCircle} 
+                            color="primary" 
+                        />
+                    </CCol>
+                    <CCol sm={6} lg={3}>
+                        <StatCard 
+                            title="Aprobados" 
+                            value={statistics.total_aprobados || 0} 
+                            text="Validados satisfactoriamente" 
+                            icon={cilCheckCircle} 
+                            color="success" 
+                        />
+                    </CCol>
+                    <CCol sm={6} lg={3}>
+                        <StatCard 
+                            title="Pendientes" 
+                            value={statistics.total_pendientes || 0} 
+                            text="Requieren revisión manual" 
+                            icon={cilCheckCircle} 
+                            color="warning" 
+                        />
+                    </CCol>
+                    <CCol sm={6} lg={3}>
+                        <StatCard 
+                            title="Monto Aprobado" 
+                            value={formatearMonto(statistics.monto_total_aprobados || 0)} 
+                            text="Recaudación total aprobada" 
+                            icon={cilCheckCircle} 
+                            color="info" 
+                        />
+                    </CCol>
                 </CRow>
             )}
 

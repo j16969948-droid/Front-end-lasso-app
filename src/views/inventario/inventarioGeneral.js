@@ -143,20 +143,24 @@ const InventarioGeneral = () => {
             return
         }
 
+        // Count how many lines the user pasted
+        const lineas = formulario.datos_cuenta.trim().split('\n').filter(l => l.trim().length > 0)
+
         try {
-            await bulkCreateMutation.mutateAsync({
+            const result = await bulkCreateMutation.mutateAsync({
                 servicio_id: formulario.servicio_id,
                 datos_cuenta: formulario.datos_cuenta,
                 fecha_compra: formulario.fecha_compra,
                 fecha_vencimiento: formulario.fecha_vencimiento,
                 estado: formulario.estado || 'disponible'
             })
-            alert('¡Cuenta masiva creada con éxito!')
+            const totalPerfiles = Array.isArray(result) ? result.length : '?'
+            alert(`¡Creación masiva exitosa! Se crearon ${totalPerfiles} perfiles a partir de ${lineas.length} cuenta(s).`)
             cerrarModalEditar()
         } catch (err) {
             console.error("Error en creación masiva:", err)
-            // Error could be validation format
-            alert('Ocurrió un error en la creación. Asegúrate de que el formato sea "correo contraseña".')
+            const mensaje = err?.response?.data?.message || 'Asegúrate de que cada línea tenga el formato "correo contraseña".'
+            alert('Error: ' + mensaje)
         }
     }
 
@@ -416,12 +420,12 @@ const InventarioGeneral = () => {
                                 <CFormTextarea
                                     className="lasso-input"
                                     name="datos_cuenta"
-                                    rows={2}
-                                    placeholder="ejemplo@correo.com clave123"
+                                    rows={5}
+                                    placeholder={"cuenta1@correo.com clave123\ncuenta2@correo.com clave456\ncuenta3@correo.com clave789"}
                                     value={formulario.datos_cuenta}
                                     onChange={handleChangeFormulario}
                                 />
-                                <div className="text-muted small mt-1">Pega el correo y la clave. Las fechas (hoy + 30 días) y perfiles se generan automáticamente.</div>
+                                <div className="text-muted small mt-1">Pega una cuenta por línea: <code>correo contraseña</code>. Puedes agregar varias cuentas a la vez. Los perfiles y PINs se generan automáticamente.</div>
                             </CCol>
 
                             {bulkCreateMutation.isPending && (

@@ -19,7 +19,7 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilPencil, cilTrash, cilSearch, cilCheckCircle } from '@coreui/icons'
-import { useOrdenes, useDeleteOrdenes, useUpdateOrdenes } from '../../core/hooks/useOrdenes'
+import { useOrdenes, useDeleteOrdenes, useUpdateOrdenes, useEntregarPerfiles, usePerfilesEntregados } from '../../core/hooks/useOrdenes'
 import { useInventario } from '../../core/hooks/useInventario'
 import { formatearMonto } from '../../utils/formatters'
 import DataTable from '../../components/DataTable'
@@ -34,6 +34,9 @@ const Ordenes = () => {
     const [modalDetalleVisible, setModalDetalleVisible] = useState(false)
     const [ordenSeleccionada, setOrdenSeleccionada] = useState(null)
     const [isDelivering, setIsDelivering] = useState(false)
+    
+    const entregarMutation = useEntregarPerfiles()
+    const { data: perfilesData, isLoading: loadingPerfiles } = usePerfilesEntregados(ordenSeleccionada?.id)
 
     const listaOrdenes = useMemo(() => {
         if (!data) return []
@@ -68,10 +71,7 @@ const Ordenes = () => {
         
         setIsDelivering(true)
         try {
-            await updateMutation.mutateAsync({ 
-                id, 
-                data: { estado: 'entregado' } 
-            })
+            await entregarMutation.mutateAsync(id)
             setModalDetalleVisible(false)
         } catch (err) {
             console.error('Error al entregar:', err)
@@ -204,6 +204,54 @@ const Ordenes = () => {
                             </CTable>
                         </div>
                     </div>
+
+                    {ordenSeleccionada?.estado === 'entregado' && (
+                        <div className="mb-4">
+                            <label className="lasso-label mb-2">Perfiles Entregados</label>
+                            {loadingPerfiles ? (
+                                <CSpinner size="sm" />
+                            ) : perfilesData && perfilesData.length > 0 ? (
+                                <div className="table-lasso-container shadow-sm border rounded-3 overflow-hidden">
+                                    <CTable align="middle" className="mb-0 table-lasso" responsive hover>
+                                        <CTableHead className="bg-light">
+                                            <CTableRow>
+                                                <CTableHeaderCell className="text-uppercase small pt-3 pb-3 ps-3">Acceso</CTableHeaderCell>
+                                                <CTableHeaderCell className="text-uppercase small pt-3 pb-3">PIN</CTableHeaderCell>
+                                                <CTableHeaderCell className="text-uppercase small pt-3 pb-3 pe-3 text-end">Acciones</CTableHeaderCell>
+                                            </CTableRow>
+                                        </CTableHead>
+                                        <CTableBody>
+                                            {perfilesData.map((p, idx) => (
+                                                <CTableRow key={idx}>
+                                                    <CTableDataCell className="py-2 ps-3">
+                                                        <div className="fw-bold small">{p.email}</div>
+                                                        <div className="text-muted x-small">{p.password}</div>
+                                                    </CTableDataCell>
+                                                    <CTableDataCell className="py-2">
+                                                        <CBadge color="info" className="badge-lasso-mini">{p.pin || 'N/A'}</CBadge>
+                                                    </CTableDataCell>
+                                                    <CTableDataCell className="py-2 pe-3 text-end">
+                                                        <CButton 
+                                                            size="sm" 
+                                                            color="link" 
+                                                            className="p-0 text-primary"
+                                                            onClick={() => {
+                                                                navigator.clipboard.writeText(`${p.email} ${p.password} PIN: ${p.pin || 'N/A'}`)
+                                                            }}
+                                                        >
+                                                            Copiar
+                                                        </CButton>
+                                                    </CTableDataCell>
+                                                </CTableRow>
+                                            ))}
+                                        </CTableBody>
+                                    </CTable>
+                                </div>
+                            ) : (
+                                <div className="text-muted small p-2 bg-light rounded">No hay perfiles registrados para esta entrega.</div>
+                            )}
+                        </div>
+                    )}
 
                     <CRow className="g-4">
                         <CCol md={6}>

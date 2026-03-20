@@ -87,3 +87,35 @@ export const useDeleteOrdenes = () => {
         },
     });
 };
+
+/**
+ * Hook para entregar perfiles automáticamente en una orden
+ */
+export const useEntregarPerfiles = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id) => {
+            const response = await Api.post(`api/v1/ordenes/${id}/entregar-perfiles`);
+            return response.data;
+        },
+        onSuccess: (_, id) => {
+            queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+            queryClient.invalidateQueries({ queryKey: ["perfilesEntregados", id] });
+        },
+    });
+};
+
+/**
+ * Hook para obtener los perfiles entregados de una orden específica
+ */
+export const usePerfilesEntregados = (ordenId) => {
+    return useQuery({
+        queryKey: ["perfilesEntregados", ordenId],
+        queryFn: async () => {
+            if (!ordenId) return [];
+            const response = await Api.get(`api/v1/ordenes/${ordenId}/perfiles`);
+            return response.data;
+        },
+        enabled: !!ordenId,
+    });
+};

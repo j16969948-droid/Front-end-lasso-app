@@ -199,7 +199,7 @@ const Informe = () => {
     const isLoading = loadingEmail || loadingEntrantes
 
     return (
-        <div className="fade-up">|
+        <div className="fade-up">
             {/* Header */}
             <div className="d-flex align-items-center justify-content-between flex-wrap gap-4 p-4">
                 <div>

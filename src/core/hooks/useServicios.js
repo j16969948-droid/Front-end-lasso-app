@@ -81,3 +81,18 @@ export const useDeleteServicio = () => {
     },
   });
 };
+
+/**
+ * Hook para obtener el resumen de stock disponible por servicio
+ */
+export const useInventarioDisponible = () => {
+  return useQuery({
+    queryKey: ["inventarioDisponible"],
+    queryFn: async () => {
+      const response = await Api.get("api/v1/servicios/inventario-disponible");
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+};
+

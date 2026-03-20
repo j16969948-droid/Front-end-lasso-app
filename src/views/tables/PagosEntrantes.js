@@ -272,6 +272,7 @@ const PagosEntrantes = () => {
                                     { label: 'Fecha/Hora', value: `${pagoSeleccionado?.fecha_comprobante} ${pagoSeleccionado?.hora_comprobante}` },
                                     { label: 'Referencia', value: pagoSeleccionado?.referencia_pago, full: true },
                                     { label: 'Combo', value: pagoSeleccionado?.combo_adquirido, full: true },
+                                    { label: 'Saldo del Cliente', value: `$${formatearMonto(pagoSeleccionado?.usuario?.saldo || 0)}`, full: true },
                                     { label: 'Email Match ID', value: pagoSeleccionado?.pago_email_id, full: true },
                                 ].map((item, idx) => (
                                     <CCol key={idx} md={item.full ? 12 : 6}>

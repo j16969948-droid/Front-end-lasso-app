@@ -20,7 +20,7 @@ import {
 import { usePagosTotales } from '../../core/hooks/usePagosTotales'
 import { usePagosEntrantes } from '../../core/hooks/usePagosEntrantes'
 import { useInventario } from '../../core/hooks/useInventario'
-import { useServicios } from '../../core/hooks/useServicios'
+import { useServicios, useInventarioDisponible } from '../../core/hooks/useServicios'
 import { formatearMonto } from '../../utils/formatters'
 
 import WidgetsDropdown from '../widgets/WidgetsDropdown'
@@ -32,8 +32,9 @@ const Dashboard = () => {
     const { data: pagosEntrantes, isLoading: loadingEntrantes } = usePagosEntrantes()
     const { data: inventario, isLoading: loadingInventario } = useInventario()
     const { data: servicios, isLoading: loadingServicios } = useServicios()
+    const { data: stockDisponible, isLoading: loadingStock } = useInventarioDisponible()
 
-    const isLoading = loadingTotales || loadingEntrantes || loadingInventario || loadingServicios
+    const isLoading = loadingTotales || loadingEntrantes || loadingInventario || loadingServicios || loadingStock
 
     if (isLoading) {
         return (
@@ -63,6 +64,7 @@ const Dashboard = () => {
     }
 
     const recentPayments = pagosEntrantesList.slice(0, 8)
+    const stockList = Array.isArray(stockDisponible) ? stockDisponible : []
 
     return (
         <div className="fade-up">
@@ -134,6 +136,33 @@ const Dashboard = () => {
                             <div className="mt-4 pt-4 border-top text-center text-muted x-small fw-bold text-uppercase" style={{ cursor: 'pointer', letterSpacing: '0.1em' }}>
                                 Ver todos los pagos <CIcon icon={cilArrowRight} className="ms-1" size="sm" />
                             </div>
+                        </CCardBody>
+                    </CCard>
+                </CCol>
+            </CRow>
+            <CRow className="g-4 mb-5">
+                <CCol lg={12}>
+                    <CCard className="premium-card border-0 shadow-sm">
+                        <CCardBody className="p-4 p-md-5">
+                            <h4 className="fw-bold mb-4">Stock Disponible por Servicio</h4>
+                            <CRow className="g-3">
+                                {stockList.map((item) => (
+                                    <CCol key={item.id} sm={6} md={4} lg={3}>
+                                        <div className="p-3 bg-light rounded-3 border border-light-subtle d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <div className="lasso-label small" style={{ fontSize: '0.7rem' }}>{item.nombre}</div>
+                                                <div className="fw-bold fs-5">{item.disponible_count}</div>
+                                            </div>
+                                            <div className={`rounded-circle bg-${item.disponible_count > 5 ? 'success' : 'danger'} bg-opacity-10 p-2`}>
+                                                <div className={`rounded-circle bg-${item.disponible_count > 5 ? 'success' : 'danger'}`} style={{ width: '8px', height: '8px' }}></div>
+                                            </div>
+                                        </div>
+                                    </CCol>
+                                ))}
+                                {stockList.length === 0 && (
+                                    <div className="text-center py-4 text-muted small">Cargando información de inventario...</div>
+                                )}
+                            </CRow>
                         </CCardBody>
                     </CCard>
                 </CCol>

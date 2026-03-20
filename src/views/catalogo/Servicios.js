@@ -111,7 +111,7 @@ const CatalogoStreaming = () => {
     }
 
     return (
-        <div className="position-relative" style={{ paddingBottom: cart.length > 0 ? "100px" : "20px" }}>
+        <div className="position-relative" style={{ paddingBottom: cart.length > 0 ? "380px" : "40px" }}>
             <AppHeader cartCount={totalItems} />
 
             {/* Hero Section Premium */}

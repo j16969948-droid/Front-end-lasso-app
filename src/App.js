@@ -24,6 +24,7 @@ const Validar = React.lazy(() => import('./views/validar/Validar'))
 const Informe = React.lazy(() => import('./views/ventas/Informe'))
 const Codigos = React.lazy(() => import('./views/codigos/codigos'))
 const Ordenes = React.lazy(() => import('./views/inventario/ordenes'))
+const CheckOut = React.lazy(() => import('./views/catalogo/CheckOut'))
 
 // Layout
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -55,6 +56,7 @@ const App = () => {
           <Route path="/" element={<CatalogoStreaming />} />
           <Route path="/catalogo" element={<CatalogoStreaming />} />
           <Route path="/cart" element={<CartScreen />} />
+          <Route path="/checkout" element={<CheckOut />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/404" element={<Page404 />} />

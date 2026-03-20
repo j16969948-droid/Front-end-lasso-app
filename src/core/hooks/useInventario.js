@@ -3,15 +3,15 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 const QUERY_KEY = ["inventario"];
 
-const getInventario = async () => {
-    const response = await Api.get("api/v1/inventario");
+const getInventario = async (filters = {}) => {
+    const response = await Api.get("api/v1/inventario", { params: filters });
     return response.data;
 };
 
-export const useInventario = () => {
+export const useInventario = (filters = {}) => {
     return useQuery({
-        queryKey: QUERY_KEY,
-        queryFn: getInventario,
+        queryKey: [...QUERY_KEY, filters],
+        queryFn: () => getInventario(filters),
         staleTime: 1000 * 30,
     });
 };

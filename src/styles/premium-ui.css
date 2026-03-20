@@ -130,6 +130,18 @@ body {
   box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4) !important;
 }
 
+.btn-lasso-warning {
+  background: var(--lasso-warning) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3) !important;
+}
+
+.btn-lasso-warning:hover {
+  background: #d97706 !important;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4) !important;
+}
+
 .btn-lasso-soft-primary {
   background: var(--lasso-primary-soft) !important;
   color: var(--lasso-primary) !important;
@@ -157,6 +169,16 @@ body {
 
 .btn-lasso-soft-info:hover {
   background: var(--lasso-info) !important;
+  color: white !important;
+}
+
+.btn-lasso-soft-warning {
+  background: var(--lasso-warning-soft) !important;
+  color: var(--lasso-warning) !important;
+}
+
+.btn-lasso-soft-warning:hover {
+  background: var(--lasso-warning) !important;
   color: white !important;
 }
 

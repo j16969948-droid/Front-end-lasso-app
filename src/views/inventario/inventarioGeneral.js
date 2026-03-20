@@ -15,7 +15,7 @@ import {
     CFormSelect,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilPencil, cilTrash, cilCopy } from '@coreui/icons'
+import { cilPencil, cilTrash, cilCopy, cilReload } from '@coreui/icons'
 import {
     useInventario,
     useUpdateInventario,
@@ -32,18 +32,64 @@ import DataTable from '../../components/DataTable'
 
 
 const InventarioGeneral = () => {
-    const { data: inventarioData, isLoading: isLoadingInv, error: errorInv } = useInventario()
+    const [modalEditarVisible, setModalEditarVisible] = useState(false)
+    const [modalEliminarVisible, setModalEliminarVisible] = useState(false)
+    const [modalRecargarVisible, setModalRecargarVisible] = useState(false)
+    const [registroSeleccionado, setRegistroSeleccionado] = useState(null)
+    const [filtroServicio, setFiltroServicio] = useState('')
+    const [filtroExpired, setFiltroExpired] = useState(false)
+    const [pinRecarga, setPinRecarga] = useState('')
+
+    const { data: allInventarioData, isLoading: isLoadingInv, error: errorInv } = useInventario({})
     const { data: serviciosData, isLoading: isLoadingServ } = useServicios()
+
+    const inventarioData = useMemo(() => {
+        if (!allInventarioData) return []
+        if (filtroExpired) {
+            const today = new Date().setHours(0, 0, 0, 0)
+            return allInventarioData.filter(item => new Date(item.fecha_vencimiento) < today)
+        }
+        return allInventarioData
+    }, [allInventarioData, filtroExpired])
 
     const createMutation = useCreateInventario()
     const updateMutation = useUpdateInventario()
     const deleteMutation = useDeleteInventario()
     const bulkCreateMutation = useBulkCreateInventario()
 
-    const [modalEditarVisible, setModalEditarVisible] = useState(false)
-    const [modalEliminarVisible, setModalEliminarVisible] = useState(false)
-    const [registroSeleccionado, setRegistroSeleccionado] = useState(null)
-    const [filtroServicio, setFiltroServicio] = useState('')
+    const cerrarModalRecargar = () => {
+        setModalRecargarVisible(false)
+        setRegistroSeleccionado(null)
+        setPinRecarga('')
+    }
+
+    const abrirModalRecargar = (registro) => {
+        setRegistroSeleccionado(registro)
+        setPinRecarga('')
+        setModalRecargarVisible(true)
+    }
+
+    const handleRecargarCuenta = () => {
+        if (!registroSeleccionado) return
+
+        // Por defecto extendemos 15 dias según el contexto previo
+        const today = new Date()
+        today.setDate(today.getDate() + 15)
+        const newVencimiento = today.toISOString().split('T')[0]
+
+        updateMutation.mutate({
+            id: registroSeleccionado.id,
+            data: {
+                pin: pinRecarga,
+                fecha_vencimiento: newVencimiento,
+                estado: 'disponible' // Al recargar vuelve a estar disponible
+            }
+        }, {
+            onSuccess: () => {
+                cerrarModalRecargar()
+            }
+        })
+    }
 
     const getToday = () => {
         const d = new Date()
@@ -247,9 +293,19 @@ const InventarioGeneral = () => {
             key: 'acciones',
             renderFunc: (row) => (
                 <div className="d-flex gap-2">
-                    <CButton className="btn-lasso btn-lasso-soft-info" onClick={() => handleCopiar(row)} title="Copiar Datos">
-                        <CIcon icon={cilCopy} size="sm" />
-                    </CButton>
+                    {(() => {
+                        const isExpired = new Date(row.fecha_vencimiento) < new Date().setHours(0, 0, 0, 0);
+                        return (
+                            <CButton
+                                className={`btn-lasso ${isExpired ? 'btn-lasso-soft-warning' : 'btn-lasso-soft-secondary opacity-50'}`}
+                                onClick={() => isExpired && abrirModalRecargar(row)}
+                                title={isExpired ? "Recargar Cuenta" : "Cuenta Vigente"}
+                                disabled={!isExpired}
+                            >
+                                <CIcon icon={cilReload} size="sm" />
+                            </CButton>
+                        )
+                    })()}
                     <CButton className="btn-lasso btn-lasso-soft-primary" onClick={() => abrirModalEditar(row)} title="Editar">
                         <CIcon icon={cilPencil} size="sm" />
                     </CButton>
@@ -264,19 +320,25 @@ const InventarioGeneral = () => {
     // Cálculos para contadores de disponibles
     const cuentasDisponiblesPorServicio = useMemo(() => {
         const counts = {}
-        if (Array.isArray(inventarioData)) {
-            inventarioData.forEach(item => {
+        if (Array.isArray(allInventarioData)) {
+            allInventarioData.forEach(item => {
                 if (item.estado === 'disponible') {
                     counts[item.servicio_id] = (counts[item.servicio_id] || 0) + 1
                 }
             })
         }
         return counts
-    }, [inventarioData])
+    }, [allInventarioData])
 
     const totalDisponibles = useMemo(() => {
         return Object.values(cuentasDisponiblesPorServicio).reduce((acc, curr) => acc + curr, 0)
     }, [cuentasDisponiblesPorServicio])
+
+    const totalExpired = useMemo(() => {
+        if (!Array.isArray(allInventarioData)) return 0
+        const today = new Date().setHours(0, 0, 0, 0)
+        return allInventarioData.filter(item => new Date(item.fecha_vencimiento) < today).length
+    }, [allInventarioData])
 
     const filterControls = (
         <div className="fade-up px-3">
@@ -285,12 +347,31 @@ const InventarioGeneral = () => {
             </h6>
             <div className="lasso-filter-grid">
                 <CButton
-                    onClick={() => setFiltroServicio('')}
-                    className={`btn-lasso ${!filtroServicio ? 'btn-lasso-primary' : 'btn-lasso-soft-primary'} px-4`}
+                    onClick={() => {
+                        setFiltroServicio('')
+                        setFiltroExpired(false)
+                    }}
+                    className={`btn-lasso ${(!filtroServicio && !filtroExpired) ? 'btn-lasso-primary' : 'btn-lasso-soft-primary'} px-4`}
                 >
                     <span>Todos</span>
-                    <span className="badge bg-white text-primary ms-2 rounded-pill px-2">
+                    <span className={`badge ${(!filtroServicio && !filtroExpired) ? 'bg-white text-primary' : 'bg-primary text-white'} ms-2 rounded-pill px-2`}>
                         {totalDisponibles}
+                    </span>
+                </CButton>
+
+                <CButton
+                    onClick={() => {
+                        setFiltroExpired(!filtroExpired)
+                        setFiltroServicio('') // Opcional: limpiar filtro de servicio al buscar vencidos
+                    }}
+                    className={`btn-lasso ${filtroExpired ? 'btn-lasso-warning' : 'btn-lasso-soft-warning'} px-4`}
+                >
+                    <div className="d-flex align-items-center gap-2">
+                        <CIcon icon={cilReload} />
+                        <span>Recargar</span>
+                    </div>
+                    <span className={`badge ${filtroExpired ? 'bg-white text-warning' : 'bg-warning text-white'} ms-2 rounded-pill px-2`}>
+                        {totalExpired}
                     </span>
                 </CButton>
                 {Array.isArray(serviciosData) && serviciosData.map(serv => {
@@ -300,7 +381,10 @@ const InventarioGeneral = () => {
                     return (
                         <CButton
                             key={serv.id}
-                            onClick={() => setFiltroServicio(serv.id)}
+                            onClick={() => {
+                                setFiltroServicio(serv.id)
+                                setFiltroExpired(false)
+                            }}
                             className={`btn-lasso ${isActive ? 'btn-lasso-primary' : 'btn-lasso-soft-primary'} px-3`}
                         >
                             {serv.imagen && (
@@ -460,6 +544,45 @@ const InventarioGeneral = () => {
                 subMessage={`Esta acción no se puede deshacer y el registro de ${registroSeleccionado?.correo} será borrado permanentemente.`}
                 isLoading={deleteMutation.isPending}
             />
+
+            {/* Modal de Recarga Dedicado */}
+            <CModal visible={modalRecargarVisible} onClose={cerrarModalRecargar} className="lasso-modal">
+                <CModalHeader>
+                    <CModalTitle className="fw-bold fs-5">Recargar Cuenta</CModalTitle>
+                </CModalHeader>
+                <CModalBody>
+                    <div className="mb-3">
+                        <div className="text-muted small mb-3">
+                            Estás recargando la cuenta: <br />
+                            <strong>{registroSeleccionado?.correo}</strong>
+                        </div>
+                        <CRow>
+                            <CCol md={12}>
+                                <CFormLabel className="fw-semibold small">Ingresa el nuevo PIN de recarga *</CFormLabel>
+                                <CFormInput
+                                    className="lasso-input"
+                                    type="text"
+                                    placeholder="Ej: 1234"
+                                    value={pinRecarga}
+                                    onChange={(e) => setPinRecarga(e.target.value)}
+                                />
+                            </CCol>
+                        </CRow>
+                    </div>
+                </CModalBody>
+                <CModalFooter className="gap-2">
+                    <CButton className="btn-lasso btn-lasso-soft-primary border-0" onClick={cerrarModalRecargar}>
+                        Cerrar
+                    </CButton>
+                    <CButton
+                        className="btn-lasso btn-lasso-primary"
+                        onClick={handleRecargarCuenta}
+                        disabled={updateMutation.isPending || !pinRecarga}
+                    >
+                        {updateMutation.isPending ? 'Recargando...' : 'Recargar Ahora'}
+                    </CButton>
+                </CModalFooter>
+            </CModal>
         </>
     )
 }

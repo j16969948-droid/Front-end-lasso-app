@@ -253,8 +253,16 @@ const InventarioGeneral = () => {
         },
         { header: 'Correo', key: 'correo', className: 'fw-semibold' },
         { header: 'Clave', key: 'clave' },
-        { header: 'Perfil', key: 'perfil', className: 'text-center' },
-        { header: 'PIN', key: 'pin', className: 'text-center' },
+        {
+            header: 'Datos Acceso',
+            key: 'acceso',
+            renderFunc: (row) => (
+                <div style={{ lineHeight: '1.2' }}>
+                    <div className="small fw-bold">P: {row.perfil || '-'}</div>
+                    <div className="text-muted small">PIN: {row.pin || '-'}</div>
+                </div>
+            )
+        },
         {
             header: 'Estado',
             key: 'estado',

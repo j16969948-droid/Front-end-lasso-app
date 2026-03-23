@@ -16,7 +16,8 @@ import CIcon from '@coreui/icons-react'
 import { cilCopy, cilUser, cilCheckCircle, cilChartPie, cilCalendar } from '@coreui/icons'
 import { useInventario } from '../../core/hooks/useInventario'
 import { useServicios } from '../../core/hooks/useServicios'
-import { formatearFecha, normalizarFecha, getBadgeColorEstado } from '../../utils/formatters'
+import { usePagosEntrantes } from '../../core/hooks/usePagosEntrantes'
+import { formatearFecha, normalizarFecha, getBadgeColorEstado, formatearMonto } from '../../utils/formatters'
 import { LoadingState, ErrorState } from '../../components/TableFeedback'
 import StatCard from '../../components/StatCard'
 import DataTable from '../../components/DataTable'
@@ -24,6 +25,8 @@ import DataTable from '../../components/DataTable'
 const CuentasVendidas = () => {
     const { data: inventarioData, isLoading: isLoadingInv, error: errorInv } = useInventario()
     const { data: serviciosData, isLoading: isLoadingServ } = useServicios()
+    const { data: responsePagos } = usePagosEntrantes()
+    const pagosEntrantes = responsePagos?.data || []
 
     const getToday = () => {
         const d = new Date()
@@ -101,7 +104,7 @@ const CuentasVendidas = () => {
         return inventarioData.filter(item => {
             const coincideTelefono = clienteSeleccionado.telefono_asignado && item.telefono_asignado === clienteSeleccionado.telefono_asignado
             const coincideId = clienteSeleccionado.cliente_id_asignado && item.cliente_id_asignado === clienteSeleccionado.cliente_id_asignado
-            
+
             const itemFecha = normalizarFecha(item.fecha_compra)
             const selFecha = normalizarFecha(clienteSeleccionado.fecha_compra)
             const coincideFecha = itemFecha === selFecha
@@ -109,6 +112,26 @@ const CuentasVendidas = () => {
             return (coincideTelefono || coincideId) && coincideFecha
         })
     }, [clienteSeleccionado, inventarioData])
+
+    // Pago asociado a la orden seleccionada (por cliente y fecha)
+    const pagoAsociado = useMemo(() => {
+        if (!clienteSeleccionado || !Array.isArray(pagosEntrantes)) return null
+
+        const selFecha = normalizarFecha(clienteSeleccionado.fecha_compra)
+        const selClienteId = String(clienteSeleccionado.cliente_id_asignado || '').toLowerCase()
+        const selTelefono = String(clienteSeleccionado.telefono_asignado || '').toLowerCase()
+
+        return pagosEntrantes.find(p => {
+            const pagoFecha = normalizarFecha(p.fecha_comprobante || p.fecha)
+            const matchesFecha = pagoFecha === selFecha
+
+            const pagoClienteId = String(p.user_id || p.cliente_id || '').toLowerCase()
+            const matchesCliente = (selClienteId && pagoClienteId.includes(selClienteId)) ||
+                (selTelefono && pagoClienteId.includes(selTelefono))
+
+            return matchesFecha && matchesCliente
+        })
+    }, [clienteSeleccionado, pagosEntrantes])
 
     const filterFunction = (item) => {
         if (!filtroServicio) return true;
@@ -254,7 +277,7 @@ const CuentasVendidas = () => {
                                 onClick={() => setFiltroFecha('')}
                                 title="Ver todas las fechas"
                             >
-                                
+
                             </CButton>
                         )}
                     </div>
@@ -271,30 +294,30 @@ const CuentasVendidas = () => {
             {/* Mini Dashboard */}
             <CRow className="mb-4 px-3 align-items-stretch g-4">
                 <CCol xs={12} sm={4}>
-                    <StatCard 
-                        title="Cuentas Vendidas Totales" 
-                        value={metricas.total} 
-                        icon={cilCheckCircle} 
-                        color="primary" 
+                    <StatCard
+                        title="Cuentas Vendidas Totales"
+                        value={metricas.total}
+                        icon={cilCheckCircle}
+                        color="primary"
                     />
                 </CCol>
 
                 <CCol xs={12} sm={4}>
-                    <StatCard 
-                        title="Servicio Estrella" 
-                        value={metricas.topServicio.nombre} 
+                    <StatCard
+                        title="Servicio Estrella"
+                        value={metricas.topServicio.nombre}
                         text={`${metricas.topServicio.count} ventas`}
-                        icon={cilChartPie} 
-                        color="info" 
+                        icon={cilChartPie}
+                        color="info"
                     />
                 </CCol>
 
                 <CCol xs={12} sm={4}>
-                    <StatCard 
-                        title="Clientes Únicos" 
-                        value={metricas.totalClientesUnicos} 
-                        icon={cilUser} 
-                        color="success" 
+                    <StatCard
+                        title="Clientes Únicos"
+                        value={metricas.totalClientesUnicos}
+                        icon={cilUser}
+                        color="success"
                     />
                 </CCol>
             </CRow>
@@ -332,6 +355,53 @@ const CuentasVendidas = () => {
                             </CCol>
                         </CRow>
                     </div>
+
+                    {pagoAsociado && (
+                        <div className="mb-4 premium-card p-3 rounded-4 border-0 shadow-sm bg-primary bg-opacity-10">
+                            <h6 className="fw-bold mb-3 text-primary d-flex align-items-center gap-2">
+                                <CIcon icon={cilCheckCircle} size="sm" /> Datos del Pago Confirmado
+                            </h6>
+                            <CRow className="align-items-center g-3">
+                                <CCol xs={12} md={4}>
+                                    <div className="bg-white p-2 rounded-3 border text-center overflow-hidden" style={{ maxHeight: '200px' }}>
+                                        {pagoAsociado.comprobante_url ? (
+                                            <img
+                                                src={pagoAsociado.comprobante_url}
+                                                alt="Comprobante"
+                                                className="img-fluid rounded cursor-pointer"
+                                                style={{ maxHeight: '180px', objectFit: 'contain' }}
+                                                onClick={() => window.open(pagoAsociado.comprobante_url, '_blank')}
+                                            />
+                                        ) : (
+                                            <div className="py-4 text-muted small">Sin imagen disponible</div>
+                                        )}
+                                    </div>
+                                </CCol>
+                                <CCol xs={12} md={8}>
+                                    <CRow className="g-3">
+                                        <CCol xs={6}>
+                                            <div className="small text-secondary fw-bold text-uppercase" style={{ fontSize: '0.65rem' }}>Fecha Pagada</div>
+                                            <div className="fw-bold">{formatearFecha(pagoAsociado.fecha_comprobante || pagoAsociado.fecha)}</div>
+                                        </CCol>
+                                        <CCol xs={6}>
+                                            <div className="small text-secondary fw-bold text-uppercase" style={{ fontSize: '0.65rem' }}>Hora</div>
+                                            <div className="fw-bold">{pagoAsociado.hora_comprobante || '-'}</div>
+                                        </CCol>
+                                        <CCol xs={6}>
+                                            <div className="small text-secondary fw-bold text-uppercase" style={{ fontSize: '0.65rem' }}>Monto Pagado</div>
+                                            <div className="fw-bold text-success fs-5">${formatearMonto(pagoAsociado.monto_pagado)}</div>
+                                        </CCol>
+                                        <CCol xs={6}>
+                                            <div className="small text-secondary fw-bold text-uppercase" style={{ fontSize: '0.65rem' }}>Medio/Referencia</div>
+                                            <div className="small text-muted text-truncate" title={pagoAsociado.referencia_pago}>
+                                                {pagoAsociado.medio_pago || 'N/A'} - {pagoAsociado.referencia_pago || '-'}
+                                            </div>
+                                        </CCol>
+                                    </CRow>
+                                </CCol>
+                            </CRow>
+                        </div>
+                    )}
 
                     <h6 className="fw-bold mb-3 ms-1 border-start border-3 border-primary ps-2">Todas las Cuentas Asignadas/Compradas</h6>
                     <div className="table-responsive rounded-3 border shadow-sm" style={{ maxHeight: '400px' }}>

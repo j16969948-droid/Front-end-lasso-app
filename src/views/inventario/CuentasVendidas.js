@@ -13,10 +13,11 @@ import {
     CFormInput,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilCopy, cilUser, cilCheckCircle, cilChartPie, cilCalendar } from '@coreui/icons'
+import { cilCopy, cilUser, cilCheckCircle, cilChartPie, cilCalendar, cilX } from '@coreui/icons'
 import { useInventario } from '../../core/hooks/useInventario'
 import { useServicios } from '../../core/hooks/useServicios'
 import { usePagosEntrantes } from '../../core/hooks/usePagosEntrantes'
+import { useOrdenes } from '../../core/hooks/useOrdenes'
 import { formatearFecha, normalizarFecha, getBadgeColorEstado, formatearMonto } from '../../utils/formatters'
 import { LoadingState, ErrorState } from '../../components/TableFeedback'
 import StatCard from '../../components/StatCard'
@@ -26,7 +27,14 @@ const CuentasVendidas = () => {
     const { data: inventarioData, isLoading: isLoadingInv, error: errorInv } = useInventario()
     const { data: serviciosData, isLoading: isLoadingServ } = useServicios()
     const { data: responsePagos } = usePagosEntrantes()
+    const { data: ordenesResponse, isLoading: isLoadingOrdenes } = useOrdenes()
     const pagosEntrantes = responsePagos?.data || []
+    
+    // Lista de órdenes para relacionar estados
+    const listaOrdenes = useMemo(() => {
+        if (!ordenesResponse) return []
+        return Array.isArray(ordenesResponse) ? ordenesResponse : (ordenesResponse.data || [])
+    }, [ordenesResponse])
 
     const getToday = () => {
         const d = new Date()
@@ -203,6 +211,53 @@ const CuentasVendidas = () => {
             )
         },
         {
+            header: 'Estado',
+            key: 'estado',
+            renderFunc: (row) => {
+                const primerCuenta = row.cuentas_asociadas?.[0];
+                let ordenId = row.orden_id || 
+                              primerCuenta?.orden_id || 
+                              primerCuenta?.pivot?.orden_id || 
+                              primerCuenta?.orden_inventario?.orden_id;
+                
+                // Si estado actual es numérico, puede que sea el orden_id según se configuró en backend
+                if (!ordenId && primerCuenta?.estado && !isNaN(Number(primerCuenta.estado))) {
+                    ordenId = Number(primerCuenta.estado);
+                }
+
+                let ordenRelacionada = ordenId ? listaOrdenes.find(o => String(o.id) === String(ordenId)) : null;
+                
+                // Fallback por ID de Cliente y Fecha (si no se encuentra con ID directo)
+                if (!ordenRelacionada && primerCuenta) {
+                    const selFecha = normalizarFecha(primerCuenta.fecha_compra);
+                    const selClienteId = String(primerCuenta.cliente_id_asignado || '').toLowerCase();
+                    const selTelefono = String(primerCuenta.telefono_asignado || '').toLowerCase();
+
+                    ordenRelacionada = listaOrdenes.find(o => {
+                        const ordenUserId = String(o.usuario?.id || o.user_id || o.cliente_id || '').toLowerCase();
+                        const ordenTelefono = String(o.usuario?.telefono || o.telefono || '').toLowerCase();
+                        
+                        const matchesCliente = (selClienteId && ordenUserId && ordenUserId.includes(selClienteId)) || 
+                                               (selTelefono && ordenTelefono && ordenTelefono.includes(selTelefono));
+                        
+                        const ordenFecha = normalizarFecha(o.created_at || o.fecha);
+                        const matchesFecha = !selFecha || !ordenFecha || selFecha === ordenFecha;
+                        
+                        return matchesCliente && matchesFecha;
+                    });
+                }
+
+                const estadoOrden = ordenRelacionada ? ordenRelacionada.estado : 'Sin Orden';
+                const badgeClass = getBadgeColorEstado(estadoOrden)
+
+                return (
+                    <span className={`badge-lasso badge-lasso-${badgeClass}`}>
+                        {estadoOrden}
+                    </span>
+                )
+            }
+        },
+        {
             header: 'Acciones',
             key: 'acciones',
             renderFunc: (row) => (
@@ -272,12 +327,12 @@ const CuentasVendidas = () => {
                             <CButton
                                 size="sm"
                                 color="light"
-                                className="rounded-circle p-0"
-                                style={{ width: '20px', height: '20px', lineHeight: '1' }}
+                                className="rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm"
+                                style={{ width: '22px', height: '22px' }}
                                 onClick={() => setFiltroFecha('')}
                                 title="Ver todas las fechas"
                             >
-
+                                <CIcon icon={cilX} size="sm" />
                             </CButton>
                         )}
                     </div>
@@ -286,7 +341,7 @@ const CuentasVendidas = () => {
         </div>
     )
 
-    if (isLoadingInv || isLoadingServ) return <LoadingState message="Cargando cuentas vendidas..." />
+    if (isLoadingInv || isLoadingServ || isLoadingOrdenes) return <LoadingState message="Cargando cuentas vendidas..." />
     if (errorInv) return <ErrorState message="Error al cargar los datos." onRetry={() => window.location.reload()} />
 
     return (
@@ -412,13 +467,16 @@ const CuentasVendidas = () => {
                                     <th className="fw-semibold text-muted py-3">Correo</th>
                                     <th className="fw-semibold text-muted py-3 text-center">F. de Compra</th>
                                     <th className="fw-semibold text-muted py-3 text-center">Datos Acceso</th>
-                                    <th className="fw-semibold text-muted py-3 text-center">Estado</th>
+                                    <th className="fw-semibold text-muted py-3 text-center">Estado Cuenta</th>
                                     <th className="fw-semibold text-muted py-3 text-center">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {cuentasPorCliente.length > 0 ? (
-                                    cuentasPorCliente.map(cta => (
+                                    cuentasPorCliente.map(cta => {
+                                        // Extraemos el estado individual por cuenta (puede venir en cta.estado, cta.pivot.estado o cta.orden_inventario.estado)
+                                        const estadoCuenta = cta.pivot?.estado || cta.orden_inventario?.estado || cta.estado || 'N/A';
+                                        return (
                                         <tr key={cta.id}>
                                             <td className="fw-bold">
                                                 <div className="d-flex align-items-center gap-2">
@@ -438,8 +496,8 @@ const CuentasVendidas = () => {
                                                 </div>
                                             </td>
                                             <td className="text-center">
-                                                <span className={`badge-lasso badge-lasso-${getBadgeColorEstado(cta.estado)} px-2 py-1`}>
-                                                    {cta.estado}
+                                                <span className={`badge-lasso badge-lasso-${getBadgeColorEstado(estadoCuenta)}`}>
+                                                    {estadoCuenta}
                                                 </span>
                                             </td>
                                             <td className="text-center">
@@ -448,7 +506,8 @@ const CuentasVendidas = () => {
                                                 </CButton>
                                             </td>
                                         </tr>
-                                    ))
+                                        )
+                                    })
                                 ) : (
                                     <tr>
                                         <td colSpan="5" className="text-center text-muted py-4">

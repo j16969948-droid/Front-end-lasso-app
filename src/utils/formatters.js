@@ -55,6 +55,7 @@ export const getBadgeColorEstado = (estado) => {
         valor.includes('publicado') ||
         valor.includes('aprobado') ||
         valor.includes('pagado') ||
+        valor.includes('entregado') ||
         valor.includes('completado') ||
         valor.includes('encontrado') ||
         valor.includes('validado') ||
@@ -67,7 +68,8 @@ export const getBadgeColorEstado = (estado) => {
         valor === 'asignado' ||
         valor.includes('pendiente') ||
         valor.includes('proceso') ||
-        valor.includes('revisión')
+        valor.includes('revisión') ||
+        valor.includes('espera')
     ) {
         return 'warning'
     }
@@ -83,6 +85,7 @@ export const getBadgeColorEstado = (estado) => {
         valor.includes('anulado') ||
         valor.includes('no encontrado') ||
         valor.includes('sin match') ||
+        valor.includes('sin orden') ||
         valor.includes('error') ||
         valor.includes('cancelado') ||
         valor === '0'

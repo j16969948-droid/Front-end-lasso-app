@@ -239,6 +239,12 @@ body {
   border-color: rgba(168, 85, 247, 0.2) !important;
 }
 
+.badge-lasso-secondary {
+  background: rgba(100, 116, 139, 0.1) !important;
+  color: var(--lasso-text-muted) !important;
+  border-color: rgba(100, 116, 139, 0.2) !important;
+}
+
 /* Extra Soft Buttons */
 .btn-lasso-soft-success {
   background: var(--lasso-success-soft) !important;

@@ -18,7 +18,7 @@ import {
 } from '@coreui/react'
 import StatCard from '../../components/StatCard'
 import CIcon from '@coreui/icons-react'
-import { cilExternalLink, cilCheckCircle } from '@coreui/icons'
+import { cilExternalLink, cilCheckCircle, cilX, cilCalendar } from '@coreui/icons'
 import { usePagosEntrantes, useValidarPagoManual } from '../../core/hooks/usePagosEntrantes'
 import { formatearMonto } from '../../utils/formatters'
 import { LoadingState, ErrorState } from '../../components/TableFeedback'
@@ -65,7 +65,7 @@ const PagosEntrantes = () => {
             String(pago?.referencia_pago || '').toLowerCase().includes(t) ||
             String(pago?.combo_adquirido || '').toLowerCase().includes(t) ||
             String(pago?.medio_pago || '').toLowerCase().includes(t) ||
-            String(pago?.user_id || '').toLowerCase().includes(t)
+            String(pago?.cliente_id|| '').toLowerCase().includes(t)
         )
     }, [])
 
@@ -111,7 +111,7 @@ const PagosEntrantes = () => {
         {
             header: 'Cliente',
             key: 'cliente',
-            renderFunc: (p) => <span className="fw-bold">{p.user_id || '-'}</span>
+            renderFunc: (p) => <span className="fw-bold">{p.cliente_id || '-'}</span>
         },
         {
             header: 'Combo',
@@ -170,7 +170,27 @@ const PagosEntrantes = () => {
         <CRow className="g-3">
             <CCol md={4}>
                 <CFormLabel className="lasso-label">Filtrar por Fecha</CFormLabel>
-                <CFormInput type="date" className="lasso-input" value={filtroFecha} onChange={(e) => setFiltroFecha(e.target.value)} />
+                <div className="d-flex align-items-center gap-2 bg-white p-2 rounded-3 border shadow-sm" style={{ minHeight: '45px' }}>
+                    <CIcon icon={cilCalendar} className="text-muted ms-1" />
+                    <CFormInput
+                        type="date"
+                        value={filtroFecha}
+                        onChange={(e) => setFiltroFecha(e.target.value)}
+                        className="border-0 p-0 shadow-none bg-transparent text-muted flex-grow-1"
+                    />
+                    {filtroFecha && (
+                        <CButton
+                            size="sm"
+                            color="light"
+                            className="rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm"
+                            style={{ width: '22px', height: '22px' }}
+                            onClick={() => setFiltroFecha('')}
+                            title="Ver todas las fechas"
+                        >
+                            <CIcon icon={cilX} size="sm" />
+                        </CButton>
+                    )}
+                </div>
             </CCol>
             <CCol md={4}>
                 <CFormLabel className="lasso-label">Estado de Pago</CFormLabel>
@@ -266,7 +286,7 @@ const PagosEntrantes = () => {
                             <CRow className="g-3">
                                 {[
                                     { label: 'ID Transacción', value: pagoSeleccionado?.id },
-                                    { label: 'Cliente', value: pagoSeleccionado?.user_id },
+                                    { label: 'Cliente', value: pagoSeleccionado?.cliente_id },
                                     { label: 'Monto', value: formatearMonto(pagoSeleccionado?.monto_pagado) },
                                     { label: 'Medio', value: pagoSeleccionado?.medio_pago },
                                     { label: 'Fecha/Hora', value: `${pagoSeleccionado?.fecha_comprobante} ${pagoSeleccionado?.hora_comprobante}` },

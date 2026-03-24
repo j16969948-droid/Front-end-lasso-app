@@ -13,6 +13,8 @@ import { useValidarComprobante, useVincularPago } from '../../core/hooks/useVali
 import { formatearMonto } from '../../utils/formatters'
 import { LoadingState, ErrorState } from '../../components/TableFeedback'
 import DataTable from '../../components/DataTable'
+import CIcon from '@coreui/icons-react'
+import { cilCheckCircle, cilX, cilCalendar } from '@coreui/icons'
 
 // ── Validador de comprobantes 
 const ValidadorComprobante = () => {
@@ -229,7 +231,27 @@ const PagosEmail = () => {
         <CRow className="g-3 align-items-end">
             <CCol md={6}>
                 <CFormLabel className="lasso-label">Fecha de Notificación</CFormLabel>
-                <CFormInput type="date" value={fechaFiltro} onChange={(e) => setFechaFiltro(e.target.value)} className="lasso-input" />
+                <div className="d-flex align-items-center gap-2 bg-white p-2 rounded-3 border shadow-sm" style={{ minHeight: '45px' }}>
+                    <CIcon icon={cilCalendar} className="text-muted ms-1" />
+                    <CFormInput
+                        type="date"
+                        value={fechaFiltro}
+                        onChange={(e) => setFechaFiltro(e.target.value)}
+                        className="border-0 p-0 shadow-none bg-transparent text-muted flex-grow-1"
+                    />
+                    {fechaFiltro && (
+                        <CButton
+                            size="sm"
+                            color="light"
+                            className="rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm"
+                            style={{ width: '22px', height: '22px' }}
+                            onClick={() => setFechaFiltro('')}
+                            title="Ver todas las fechas"
+                        >
+                            <CIcon icon={cilX} size="sm" />
+                        </CButton>
+                    )}
+                </div>
             </CCol>
             <CCol md={6}>
                 <div className="d-flex gap-2">

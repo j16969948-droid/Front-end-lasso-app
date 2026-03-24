@@ -257,6 +257,7 @@ const InventarioGeneral = () => {
                 </div>
             )
         },
+        { header: 'Cliente', key: 'cliente_id_asignado', className: 'text-muted fw-bold' },
         {
             header: 'Fechas (C/V)',
             key: 'fechas',

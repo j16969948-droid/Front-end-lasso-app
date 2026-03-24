@@ -10,15 +10,13 @@ export const formatearMonto = (valor) => {
 
 export const formatearFecha = (fecha) => {
     if (!fecha) return '-'
-
     const date = new Date(fecha)
     if (Number.isNaN(date.getTime())) return fecha
 
-    return new Intl.DateTimeFormat('es-CO', {
-        year: 'numeric',
-        month: 'short',
-        day: '2-digit',
-    }).format(date)
+    const year = date.getUTCFullYear()
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+    const day = String(date.getUTCDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
 }
 
 export const normalizarFecha = (fecha) => {
@@ -57,8 +55,10 @@ export const getBadgeColorEstado = (estado) => {
         valor.includes('publicado') ||
         valor.includes('aprobado') ||
         valor.includes('pagado') ||
+        valor.includes('entregado') ||
         valor.includes('completado') ||
         valor.includes('encontrado') ||
+        valor.includes('validado') ||
         valor === '1'
     ) {
         return 'success'
@@ -68,7 +68,8 @@ export const getBadgeColorEstado = (estado) => {
         valor === 'asignado' ||
         valor.includes('pendiente') ||
         valor.includes('proceso') ||
-        valor.includes('revisión')
+        valor.includes('revisión') ||
+        valor.includes('espera')
     ) {
         return 'warning'
     }
@@ -84,6 +85,7 @@ export const getBadgeColorEstado = (estado) => {
         valor.includes('anulado') ||
         valor.includes('no encontrado') ||
         valor.includes('sin match') ||
+        valor.includes('sin orden') ||
         valor.includes('error') ||
         valor.includes('cancelado') ||
         valor === '0'

@@ -4,95 +4,294 @@ import {
     CRow,
     CCol,
     CButton,
-    CBadge,
+    CFormLabel,
+    CSpinner,
+    CAlert,
 } from '@coreui/react'
 import { usePagosTotales } from '../../core/hooks/usePagosTotales'
-import { formatearMonto, formatearFecha, normalizarFecha } from '../../utils/formatters'
+import { useValidarComprobante, useVincularPago } from '../../core/hooks/useValidarComprobante'
+import { formatearMonto } from '../../utils/formatters'
 import { LoadingState, ErrorState } from '../../components/TableFeedback'
 import DataTable from '../../components/DataTable'
+import CIcon from '@coreui/icons-react'
+import { cilCheckCircle, cilX, cilCalendar } from '@coreui/icons'
 
+// ── Validador de comprobantes 
+const ValidadorComprobante = () => {
+    const [url, setUrl] = useState('')
+    const { mutate: validar, data: resultado, isPending, error, reset } = useValidarComprobante()
+    const { mutate: vincular, isPending: isVinculando, isSuccess: isVinculado, data: vincularData } = useVincularPago()
+
+    const handleValidar = () => {
+        if (!url.trim()) return
+        reset()
+        validar(url.trim())
+    }
+
+    const handleLimpiar = () => {
+        setUrl('')
+        reset()
+    }
+
+    const handleVincular = () => {
+        if (!pagoExistente?.id || !emailMatch?.id) return
+        vincular({
+            pago_entrante_id: pagoExistente.id,
+            pago_email_id: emailMatch.id
+        })
+    }
+
+    const ocr = resultado?.datos_ocr || null
+    const pagoExistente = resultado?.pago_existente || null
+    const emailMatch = resultado?.pago_email || null
+
+    const campos = [
+        { label: 'HORA OCR', value: ocr?.hora_comprobante },
+        { label: 'MONTO OCR', value: ocr ? formatearMonto(ocr.monto_pagado) : null },
+        { label: 'REFERENCIA', value: ocr?.referencia_pago },
+        { label: 'FECHA OCR', value: ocr?.fecha_comprobante },
+    ]
+
+    return (
+        <div className="premium-card p-4 mb-4 border-0 shadow-lg fade-up">
+            <div className="d-flex align-items-center gap-2 mb-1">
+                <h5 className="section-title h5 mb-0">Validador</h5>
+                <span className="badge-lasso badge-lasso-success small">OCR</span>
+            </div>
+            <p className="section-subtitle mb-4">
+                Cruce automático de comprobantes con registros del sistema.
+            </p>
+
+            <div className="d-flex gap-3 mb-4">
+                <CFormInput
+                    type="text"
+                    placeholder="Pega aquí el enlace del comprobante (URL)..."
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleValidar()}
+                    className="lasso-input flex-grow-1"
+                    disabled={isPending || isVinculando}
+                />
+                <CButton
+                    onClick={handleValidar}
+                    disabled={isPending || isVinculando || !url.trim()}
+                    className="btn-lasso btn-lasso-primary px-4"
+                >
+                    {isPending ? <><CSpinner size="sm" className="me-2" /> Analizando...</> : 'Procesar'}
+                </CButton>
+                <CButton
+                    onClick={handleLimpiar}
+                    disabled={isPending || isVinculando}
+                    className="btn-lasso btn-lasso-soft-secondary"
+                >
+                    Limpiar
+                </CButton>
+            </div>
+
+            {error && (
+                <CAlert color="danger" className="border-0 rounded-3 py-2 small mb-3">
+                    <CIcon icon={cilCheckCircle} className="me-2" />
+                    {error?.response?.data?.message || 'Error al analizar el comprobante.'}
+                </CAlert>
+            )}
+
+            {isVinculado && (
+                <CAlert color="success" className="border-0 rounded-3 py-2 small mb-3">
+                    <CIcon icon={cilCheckCircle} className="me-2" />
+                    {vincularData?.mensaje || 'Pago vinculado y aprobado correctamente.'}
+                </CAlert>
+            )}
+
+            {ocr && (
+                <CRow className="g-3">
+                    <CCol md={4}>
+                        <div className="p-3 bg-light rounded-4 border border-light-subtle h-100">
+                            <div className="lasso-label mb-3" style={{ fontSize: '0.65rem' }}>📄 EXTRACCIÓN OCR</div>
+                            {campos.map((c, i) => (
+                                <div key={i} className="mb-2 d-flex justify-content-between border-bottom border-white pb-1">
+                                    <span className="text-muted x-small">{c.label}</span>
+                                    <span className="fw-bold small">{c.value || '-'}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </CCol>
+
+                    <CCol md={4}>
+                        <div className={`p-3 rounded-4 border h-100 ${pagoExistente ? 'bg-success-subtle border-success' : 'bg-danger-subtle border-danger'}`} style={{ opacity: pagoExistente ? 1 : 0.7 }}>
+                            <div className="lasso-label mb-3" style={{ fontSize: '0.65rem' }}>{pagoExistente ? '✅ REGISTRO ENCONTRADO' : '❌ SIN REGISTRO'}</div>
+                            {pagoExistente ? (
+                                <>
+                                    <div className="mb-2 d-flex justify-content-between border-bottom border-white pb-1">
+                                        <span className="text-muted x-small">ID PAGO</span>
+                                        <span className="fw-bold small">#{pagoExistente.id}</span>
+                                    </div>
+                                    <div className="mb-2 d-flex justify-content-between border-bottom border-white pb-1">
+                                        <span className="text-muted x-small">CLIENTE</span>
+                                        <span className="fw-bold small">{pagoExistente.user_id || '-'}</span>
+                                    </div>
+                                    <span className={`badge-lasso badge-lasso-${pagoExistente.estado === 'aprobado' ? 'success' : 'warning'} mt-2`}>
+                                        {String(pagoExistente.estado).toUpperCase()}
+                                    </span>
+                                </>
+                            ) : (
+                                <div className="text-muted small italic">No se halló el reporte del cliente.</div>
+                            )}
+                        </div>
+                    </CCol>
+
+                    <CCol md={4}>
+                        <div className={`p-3 rounded-4 border h-100 ${emailMatch ? 'bg-info-subtle border-info' : 'bg-warning-subtle border-warning'}`} style={{ opacity: emailMatch ? 1 : 0.7 }}>
+                            <div className="lasso-label mb-3" style={{ fontSize: '0.65rem' }}>{emailMatch ? '📩 CORREO DE BANCO' : '❓ SIN CORREO'}</div>
+                            {emailMatch ? (
+                                <>
+                                    <div className="mb-2 d-flex justify-content-between border-bottom border-white pb-1">
+                                        <span className="text-muted x-small">MONTO</span>
+                                        <span className="fw-bold small">{formatearMonto(emailMatch.monto)}</span>
+                                    </div>
+                                    <div className="mb-2 d-flex justify-content-between border-bottom border-white pb-1">
+                                        <span className="text-muted x-small">HORA</span>
+                                        <span className="fw-bold small">{emailMatch.hora_pago}</span>
+                                    </div>
+                                    {pagoExistente && !pagoExistente.pago_email_id && (
+                                        <CButton
+                                            onClick={handleVincular}
+                                            disabled={isVinculando || isVinculado}
+                                            className="btn-lasso btn-lasso-primary w-100 mt-2 py-1 shadow-sm"
+                                        >
+                                            {isVinculando ? <CSpinner size="sm" /> : 'Vincular y Aprobar'}
+                                        </CButton>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="text-muted small italic">Sin coincidencia de email.</div>
+                            )}
+                        </div>
+                    </CCol>
+                </CRow>
+            )}
+        </div>
+    )
+}
+
+// ── Página principal 
 const PagosEmail = () => {
-    const { data: pagosTotales, isLoading, error } = usePagosTotales()
+    const [fechaFiltro, setFechaFiltro] = useState(() => new Date().toISOString().split('T')[0])
 
-    const HOY_STRING = useMemo(() => normalizarFecha(new Date()), [])
-    const AYER_STRING = useMemo(() => {
-        const ayer = new Date()
-        ayer.setDate(ayer.getDate() - 1)
-        return normalizarFecha(ayer)
-    }, [])
-
-    const [fechaFiltro, setFechaFiltro] = useState(HOY_STRING)
-    const data = useMemo(() => (Array.isArray(pagosTotales) ? pagosTotales : []), [pagosTotales])
-
-    const filterFunction = useMemo(() => (pago) => {
-        const fechaPago = normalizarFecha(pago?.fecha_pago)
-        return !fechaFiltro || fechaPago === fechaFiltro
+    const filters = useMemo(() => {
+        const f = {}
+        if (fechaFiltro) f.fecha_pago = fechaFiltro
+        return f
     }, [fechaFiltro])
 
+    const { data: pagosTotales, isLoading, error } = usePagosTotales(filters)
+
+    const data = useMemo(() => (Array.isArray(pagosTotales) ? pagosTotales : []), [pagosTotales])
+
     const searchFunction = useMemo(() => (pago, termino) => {
+        const t = (termino || '').toLowerCase()
         return (
-            String(pago?.id || '').toLowerCase().includes(termino) ||
-            String(pago?.ordenante || '').toLowerCase().includes(termino) ||
-            String(pago?.monto || '').toLowerCase().includes(termino) ||
-            String(pago?.message_id || '').toLowerCase().includes(termino)
+            String(pago?.id || '').toLowerCase().includes(t) ||
+            String(pago?.ordenante || '').toLowerCase().includes(t) ||
+            String(pago?.monto || '').toLowerCase().includes(t) ||
+            String(pago?.user_id || '').toLowerCase().includes(t)
         )
     }, [])
 
-    const totalMontoHoy = useMemo(() => {
-        return data.filter(pago => normalizarFecha(pago?.fecha_pago) === HOY_STRING)
-            .reduce((acc, pago) => acc + Number(pago?.monto || 0), 0)
-    }, [data, HOY_STRING])
-
     const columns = [
-        { header: 'ID', key: 'id', className: 'fw-semibold' },
-        { header: 'Ordenante', key: 'ordenante', renderFunc: (item) => <div className="fw-semibold">{item.ordenante || '-'}</div> },
-        { header: 'Monto', key: 'monto', className: 'fw-semibold', renderFunc: (item) => formatearMonto(item.monto) },
-        { header: 'Fecha pago', key: 'fecha_pago', renderFunc: (item) => formatearFecha(item.fecha_pago) },
-        { header: 'Hora pago', key: 'hora_pago' },
-        { header: 'Registrado en sistema', key: 'creado_en', renderFunc: (item) => item.creado_en || '-' },
-        { header: 'Message ID', key: 'message_id', className: 'text-break' },
+        { header: 'ID', key: 'id', renderFunc: (p) => <span className="text-muted fw-bold">#{p.id}</span> },
+        {
+            header: 'Ordenante / Referencia', key: 'ordenante', renderFunc: (p) => (
+                <div>
+                    <div className="fw-bold">{p.ordenante || '-'}</div>
+                    <div className="text-muted x-small text-truncate" style={{ maxWidth: '200px' }}>{p.referencia_pago}</div>
+                </div>
+            )
+        },
+        { header: 'Monto Recibido', key: 'monto', renderFunc: (p) => <span className="fw-bold text-success">{formatearMonto(p.monto)}</span> },
+        {
+            header: 'Fecha / Hora',
+            key: 'fecha_pago',
+            renderFunc: (p) => (
+                <div>
+                    <div className="fw-medium small">{String(p.fecha_pago).split(/[ T]/)[0]}</div>
+                    <div className="text-muted x-small">{p.hora_pago}</div>
+                </div>
+            )
+        },
+        {
+            header: 'Vínculo Usuario',
+            key: 'user_id',
+            renderFunc: (p) => p.user_id
+                ? <span className="badge-lasso badge-lasso-primary">USUARIO #{p.user_id}</span>
+                : <span className="badge-lasso badge-lasso-warning small opacity-75">SIN VINCULAR</span>
+        },
     ]
 
-    if (isLoading) return <LoadingState message="Cargando pagos email..." />
-    if (error) return <ErrorState message="No se pudieron cargar los pagos" onRetry={() => window.location.reload()} />
-
-    const totalFiltrado = data.filter(filterFunction).reduce((acc, pago) => acc + Number(pago?.monto || 0), 0)
-
     const filterControls = (
-        <CRow className="g-2 align-items-end">
-            <CCol md={5}>
-                <CFormInput type="date" value={fechaFiltro} onChange={(e) => setFechaFiltro(e.target.value)} />
+        <CRow className="g-3 align-items-end">
+            <CCol md={6}>
+                <CFormLabel className="lasso-label">Fecha de Notificación</CFormLabel>
+                <div className="d-flex align-items-center gap-2 bg-white p-2 rounded-3 border shadow-sm" style={{ minHeight: '45px' }}>
+                    <CIcon icon={cilCalendar} className="text-muted ms-1" />
+                    <CFormInput
+                        type="date"
+                        value={fechaFiltro}
+                        onChange={(e) => setFechaFiltro(e.target.value)}
+                        className="border-0 p-0 shadow-none bg-transparent text-muted flex-grow-1"
+                    />
+                    {fechaFiltro && (
+                        <CButton
+                            size="sm"
+                            color="light"
+                            className="rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm"
+                            style={{ width: '22px', height: '22px' }}
+                            onClick={() => setFechaFiltro('')}
+                            title="Ver todas las fechas"
+                        >
+                            <CIcon icon={cilX} size="sm" />
+                        </CButton>
+                    )}
+                </div>
             </CCol>
-            <CCol md={7}>
-                <div className="d-flex flex-wrap gap-1">
-                    <CButton color="primary" variant="outline" size="sm" onClick={() => setFechaFiltro(HOY_STRING)}>Hoy</CButton>
-                    <CButton color="secondary" variant="outline" size="sm" onClick={() => setFechaFiltro(AYER_STRING)}>Ayer</CButton>
-                    <CButton color="secondary" variant="outline" size="sm" onClick={() => setFechaFiltro('')}>Todos</CButton>
+            <CCol md={6}>
+                <div className="d-flex gap-2">
+                    <CButton onClick={() => setFechaFiltro(new Date().toISOString().split('T')[0])} className="btn-lasso btn-lasso-soft-primary flex-grow-1">Hoy</CButton>
+                    <CButton onClick={() => setFechaFiltro('')} className="btn-lasso btn-lasso-soft-secondary flex-grow-1">Todos</CButton>
                 </div>
             </CCol>
         </CRow>
     )
 
-    const headerBadges = (
-        <>
-            <CBadge color="success" className="px-3 py-2 rounded-pill">Total filtrado: {formatearMonto(totalFiltrado)}</CBadge>
-            <CBadge color="warning" className="px-3 py-2 rounded-pill text-dark">Total hoy: {formatearMonto(totalMontoHoy)}</CBadge>
-        </>
+    if (isLoading) return (
+        <div className="fade-up">
+            <ValidadorComprobante />
+            <LoadingState message="Cargando reportes bancarios..." />
+        </div>
+    )
+
+    if (error) return (
+        <div className="fade-up">
+            <ValidadorComprobante />
+            <ErrorState message="No se pudieron cargar los registros bancarios" onRetry={() => window.location.reload()} />
+        </div>
     )
 
     return (
-        <DataTable
-            title="Pagos Email"
-            subtitle="Consulta y filtra los pagos recibidos por correo"
-            data={data}
-            columns={columns}
-            searchFunction={searchFunction}
-            filterFunction={filterFunction}
-            filterControls={filterControls}
-            onClear={() => setFechaFiltro(HOY_STRING)}
-            headerBadges={headerBadges}
-            searchPlaceholder="ID, ordenante, monto o message ID"
-        />
+        <div className="fade-up">
+            <ValidadorComprobante />
+
+            <DataTable
+                title="Pagos bre-b"
+                subtitle="Registro de pagos recibidos por correo"
+                data={data}
+                columns={columns}
+                searchFunction={searchFunction}
+                filterControls={filterControls}
+                onClear={() => setFechaFiltro(new Date().toISOString().split('T')[0])}
+                searchPlaceholder="Buscar por ordenante, monto o ID..."
+                itemsPerPage={50}
+            />
+        </div>
     )
 }
 

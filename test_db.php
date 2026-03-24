@@ -1,0 +1,1 @@
+<?php require __DIR__.'/vendor/autoload.php'; \ = require_once __DIR__.'/bootstrap/app.php'; \ = \->make(Illuminate\Contracts\Console\Kernel::class); \->bootstrap(); \ = App\Models\Inventario::orderBy('id', 'desc')->take(5)->get(['id', 'fecha_compra'])->toArray(); print_r(\);

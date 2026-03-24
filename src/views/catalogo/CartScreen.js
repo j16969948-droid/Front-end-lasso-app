@@ -482,7 +482,7 @@ const CartScreen = () => {
                                                     fontSize: "1rem",
                                                 }}
                                                 onClick={() => {
-                                                    console.log("Continuar compra", cart);
+                                                    navigate("/checkout");
                                                 }}
                                             >
                                                 Continuar compra

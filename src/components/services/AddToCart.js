@@ -5,71 +5,33 @@ const AddToCart = ({ cart, totalItems, totalPrice, formatPrice, decreaseQuantity
     const navigate = useNavigate();
     return (
         <div
-            className="position-fixed bottom-0 start-0 w-100"
-            style={{
-                zIndex: 1050,
-                background: "rgba(255,255,255,0.92)",
-                backdropFilter: "blur(14px)",
-                WebkitBackdropFilter: "blur(14px)",
-                borderTop: "1px solid rgba(0,0,0,0.06)",
-                boxShadow: "0 -10px 30px rgba(0,0,0,0.08)",
-            }}
+            className="position-fixed bottom-0 start-0 w-100 premium-cart-bar"
+            style={{ zIndex: 1050 }}
         >
             <div className="container py-2 py-md-3">
                 {/* Header */}
                 <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-3">
                     <div>
-                        <div
-                            className="fw-bold"
-                            style={{
-                                fontSize: "1.1rem",
-                                color: "#111827",
-                            }}
-                        >
+                        <div className="fw-bold fs-5 premium-text-color">
                             Resumen de tu compra
                         </div>
 
-                        <div
-                            className="d-flex flex-wrap align-items-center gap-2 mt-1"
-                            style={{ color: "#6b7280", fontSize: "0.95rem" }}
-                        >
+                        <div className="d-flex flex-wrap align-items-center gap-2 mt-1 text-secondary small">
                             <span>{totalItems} item(s)</span>
                             <span>•</span>
                             <span>
-                                Total:{" "}
-                                <span style={{ color: "#4f46e5", fontWeight: 700 }}>
+                                <span className="text-primary fw-bold">
                                     ${formatPrice(totalPrice)}
                                 </span>
                             </span>
                         </div>
                     </div>
 
-                    <div
-                        className="px-3 py-2"
-                        style={{
-                            background: "linear-gradient(135deg, #eef2ff, #f5f3ff)",
-                            border: "1px solid #e0e7ff",
-                            borderRadius: "14px",
-                            minWidth: "fit-content",
-                        }}
-                    >
-                        <div
-                            style={{
-                                fontSize: "0.8rem",
-                                color: "#6b7280",
-                                marginBottom: "2px",
-                            }}
-                        >
+                    <div className="px-3 py-2 premium-total-box rounded-3">
+                        <div className="small text-secondary mb-1">
                             Total a pagar
                         </div>
-                        <div
-                            className="fw-bold"
-                            style={{
-                                fontSize: "1.4rem",
-                                color: "#4338ca",
-                                lineHeight: 1,
-                            }}
-                        >
+                        <div className="fw-bold fs-4 text-primary lh-1">
                             ${formatPrice(totalPrice)}
                         </div>
                     </div>
@@ -77,131 +39,51 @@ const AddToCart = ({ cart, totalItems, totalPrice, formatPrice, decreaseQuantity
 
                 {/* Items */}
                 <div
-                    className="d-flex gap-2 mb-2"
-                    style={{
-                        overflowX: "auto",
-                        paddingBottom: "2px",
-                        scrollbarWidth: "thin",
-                    }}
+                    className="d-flex gap-2 mb-2 premium-scroll"
+                    style={{ overflowX: "auto", paddingBottom: "4px" }}
                 >
                     {cart.map((item) => (
                         <div
                             key={item.id}
-                            className="flex-shrink-0"
-                            style={{
-                                minWidth: "290px",
-                                maxWidth: "320px",
-                                background: "#f8fafc",
-                                border: "1px solid #e5e7eb",
-                                borderRadius: "18px",
-                                padding: "14px",
-                                boxShadow: "0 4px 12px rgba(15,23,42,0.04)",
-                            }}
+                            className="flex-shrink-0 premium-cart-item p-3"
+                            style={{ minWidth: "290px", maxWidth: "320px" }}
                         >
                             <div className="d-flex align-items-center justify-content-between gap-3">
                                 <div className="flex-grow-1" style={{ minWidth: 0 }}>
-                                    <div
-                                        className="fw-semibold text-truncate"
-                                        style={{
-                                            color: "#111827",
-                                            fontSize: "1rem",
-                                        }}
-                                    >
+                                    <div className="fw-semibold text-truncate premium-text-color">
                                         {item.nombre}
                                     </div>
-
-                                    <div
-                                        className="mt-1"
-                                        style={{
-                                            color: "#6b7280",
-                                            fontSize: "0.9rem",
-                                        }}
-                                    >
+                                    <div className="mt-1 text-secondary small">
                                         ${formatPrice(item.precio)} c/u
                                     </div>
                                 </div>
 
-                                <div
-                                    className="d-flex align-items-center"
-                                    style={{
-                                        background: "#ffffff",
-                                        border: "1px solid #e5e7eb",
-                                        borderRadius: "14px",
-                                        padding: "4px",
-                                        gap: "8px",
-                                    }}
-                                >
+                                <div className="d-flex align-items-center premium-qty-box gap-2 p-1">
                                     <button
-                                        className="btn p-0 d-flex align-items-center justify-content-center"
+                                        className="btn p-0 d-flex align-items-center justify-content-center premium-qty-btn-minus"
                                         onClick={() => decreaseQuantity(item.id)}
-                                        style={{
-                                            width: "34px",
-                                            height: "34px",
-                                            borderRadius: "10px",
-                                            border: "none",
-                                            background: "#f3f4f6",
-                                            color: "#111827",
-                                            fontSize: "1.1rem",
-                                            fontWeight: 600,
-                                        }}
                                     >
                                         -
                                     </button>
 
-                                    <span
-                                        className="fw-semibold text-center"
-                                        style={{
-                                            minWidth: "20px",
-                                            color: "#111827",
-                                            fontSize: "0.95rem",
-                                        }}
-                                    >
+                                    <span className="fw-semibold text-center premium-text-color" style={{ minWidth: "20px", fontSize: "0.95rem" }}>
                                         {item.cantidad}
                                     </span>
 
                                     <button
-                                        className="btn p-0 d-flex align-items-center justify-content-center"
+                                        className="btn p-0 d-flex align-items-center justify-content-center premium-qty-btn-plus"
                                         onClick={() => increaseQuantity(item.id)}
-                                        style={{
-                                            width: "34px",
-                                            height: "34px",
-                                            borderRadius: "10px",
-                                            border: "none",
-                                            background: "#4f46e5",
-                                            color: "#fff",
-                                            fontSize: "1.1rem",
-                                            fontWeight: 600,
-                                            boxShadow: "0 4px 10px rgba(79,70,229,0.25)",
-                                        }}
                                     >
                                         +
                                     </button>
                                 </div>
                             </div>
 
-                            <div
-                                className="mt-3 d-flex align-items-center justify-content-between"
-                                style={{
-                                    paddingTop: "10px",
-                                    borderTop: "1px solid #e5e7eb",
-                                }}
-                            >
-                                <span
-                                    style={{
-                                        fontSize: "0.85rem",
-                                        color: "#6b7280",
-                                    }}
-                                >
+                            <div className="mt-3 pt-2 d-flex align-items-center justify-content-between premium-cart-item-footer">
+                                <span className="small text-secondary">
                                     Subtotal
                                 </span>
-
-                                <span
-                                    className="fw-bold"
-                                    style={{
-                                        color: "#111827",
-                                        fontSize: "0.95rem",
-                                    }}
-                                >
+                                <span className="fw-bold premium-text-color fs-6">
                                     ${formatPrice(item.precio * item.cantidad)}
                                 </span>
                             </div>
@@ -210,49 +92,115 @@ const AddToCart = ({ cart, totalItems, totalPrice, formatPrice, decreaseQuantity
                 </div>
 
                 {/* Footer */}
-                <div
-                    className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3"
-                    style={{
-                        borderTop: "1px solid #e5e7eb",
-                        paddingTop: "14px",
-                    }}
-                >
+                <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 premium-cart-footer pt-3 mt-2">
                     <div>
-                        <div
-                            style={{
-                                color: "#111827",
-                                fontWeight: 600,
-                                fontSize: "0.95rem",
-                            }}
-                        >
+                        <div className="fw-semibold premium-text-color">
                             Puedes seguir agregando más plataformas
                         </div>
-                        <div
-                            style={{
-                                color: "#6b7280",
-                                fontSize: "0.85rem",
-                            }}
-                        >
+                        <div className="small text-secondary">
                             Tu carrito se guarda automáticamente mientras navegas.
                         </div>
                     </div>
 
                     <button
-                        className="btn text-white fw-semibold"
+                        className="btn-premium btn-premium-primary rounded-pill px-4 py-2"
                         onClick={() => navigate("/cart")}
-                        style={{
-                            background: "linear-gradient(135deg, #4f46e5, #6366f1)",
-                            borderRadius: "14px",
-                            padding: "0.9rem 1.6rem",
-                            border: "none",
-                            minWidth: "190px",
-                            boxShadow: "0 10px 20px rgba(79,70,229,0.25)",
-                        }}
+                        style={{ minWidth: "190px" }}
                     >
                         Comprar ahora
                     </button>
                 </div>
             </div>
+
+            <style>{`
+                .premium-scroll::-webkit-scrollbar {
+                    height: 6px;
+                }
+                .premium-scroll::-webkit-scrollbar-track {
+                    background: transparent;
+                }
+                .premium-scroll::-webkit-scrollbar-thumb {
+                    background-color: rgba(var(--cui-body-color-rgb), 0.15);
+                    border-radius: 10px;
+                }
+                
+                .premium-cart-bar {
+                    background: rgba(var(--cui-body-bg-rgb), 0.95);
+                    backdrop-filter: blur(14px);
+                    -webkit-backdrop-filter: blur(14px);
+                    border-top: 1px solid rgba(var(--cui-body-color-rgb), 0.1);
+                    box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
+                }
+                .premium-text-color {
+                    color: var(--cui-body-color);
+                }
+                .premium-total-box {
+                    background: rgba(var(--cui-primary-rgb), 0.05);
+                    border: 1px solid rgba(var(--cui-primary-rgb), 0.1);
+                }
+                .premium-cart-item {
+                    background: rgba(var(--cui-body-color-rgb), 0.02);
+                    border: 1px solid rgba(var(--cui-body-color-rgb), 0.08);
+                    border-radius: 1.1rem;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+                }
+                .premium-cart-item-footer {
+                    border-top: 1px solid rgba(var(--cui-body-color-rgb), 0.08);
+                }
+                .premium-cart-footer {
+                    border-top: 1px solid rgba(var(--cui-body-color-rgb), 0.08);
+                }
+                
+                .premium-qty-box {
+                    background: var(--cui-body-bg);
+                    border: 1px solid rgba(var(--cui-body-color-rgb), 0.1);
+                    border-radius: 14px;
+                }
+                .premium-qty-btn-minus, .premium-qty-btn-plus {
+                    width: 30px;
+                    height: 30px;
+                    border-radius: 10px;
+                    font-size: 1.1rem;
+                    font-weight: 600;
+                    transition: all 0.2s;
+                }
+                .premium-qty-btn-minus {
+                    background: rgba(var(--cui-body-color-rgb), 0.05);
+                    color: var(--cui-body-color);
+                }
+                .premium-qty-btn-plus {
+                    background: var(--cui-primary);
+                    color: #fff;
+                    box-shadow: 0 4px 10px rgba(var(--cui-primary-rgb), 0.25);
+                }
+                .premium-qty-btn-minus:hover {
+                    background: rgba(var(--cui-body-color-rgb), 0.1);
+                }
+                
+                html[data-coreui-theme='dark'] .premium-cart-bar {
+                    background: rgba(var(--cui-dark-rgb), 0.95);
+                    border-top-color: rgba(255,255,255,0.08);
+                    box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+                }
+                html[data-coreui-theme='dark'] .premium-cart-item {
+                    background: rgba(255,255,255,0.03);
+                    border-color: rgba(255,255,255,0.08);
+                }
+                html[data-coreui-theme='dark'] .premium-cart-item-footer,
+                html[data-coreui-theme='dark'] .premium-cart-footer {
+                    border-top-color: rgba(255,255,255,0.08);
+                }
+                html[data-coreui-theme='dark'] .premium-qty-box {
+                    border-color: rgba(255,255,255,0.1);
+                }
+                html[data-coreui-theme='dark'] .premium-qty-btn-minus {
+                    background: rgba(255,255,255,0.1);
+                    color: rgba(255,255,255,0.85);
+                }
+                html[data-coreui-theme='dark'] .premium-scroll::-webkit-scrollbar-thumb {
+                    background-color: rgba(255,255,255,0.2);
+                }
+            `}</style>
         </div>
     )
 }

@@ -1,26 +1,25 @@
 import Api from "../services/ApiService";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-const QUERY_KEY = ["inventario"];
+const QUERY_KEY = ["ordenes"];
 
-const getInventario = async (filters = {}) => {
-    const response = await Api.get("api/v1/inventario", { params: filters });
+const getOrdenes = async () => {
+    const response = await Api.get("api/v1/ordenes");
     return response.data;
 };
 
-export const useInventario = (filters = {}) => {
+export const useOrdenes = () => {
     return useQuery({
-        queryKey: [...QUERY_KEY, filters],
-        queryFn: () => getInventario(filters),
-        staleTime: 1000 * 30,
+        queryKey: QUERY_KEY,
+        queryFn: getOrdenes,
     });
 };
 
-export const useCreateInventario = () => {
+export const useCreateOrdenes = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (data) => {
-            const response = await Api.post("api/v1/inventario", data);
+            const response = await Api.post("api/v1/ordenes", data);
             return response.data;
         },
         onSuccess: () => {
@@ -29,11 +28,11 @@ export const useCreateInventario = () => {
     });
 };
 
-export const useUpdateInventario = () => {
+export const useUpdateOrdenes = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async ({ id, data }) => {
-            const response = await Api.put(`api/v1/inventario/${id}`, data);
+            const response = await Api.put(`api/v1/ordenes/${id}`, data);
             return response.data;
         },
         onMutate: async ({ id, data }) => {
@@ -60,11 +59,11 @@ export const useUpdateInventario = () => {
     });
 };
 
-export const useDeleteInventario = () => {
+export const useDeleteOrdenes = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (id) => {
-            const response = await Api.delete(`api/v1/inventario/${id}`);
+            const response = await Api.delete(`api/v1/ordenes/${id}`);
             return response.data;
         },
         onMutate: async (id) => {
@@ -89,15 +88,34 @@ export const useDeleteInventario = () => {
     });
 };
 
-export const useBulkCreateInventario = () => {
+/**
+ * Hook para entregar perfiles automáticamente en una orden
+ */
+export const useEntregarPerfiles = () => {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async (data) => {
-            const response = await Api.post("api/v1/inventario/bulk", data);
+        mutationFn: async (id) => {
+            const response = await Api.post(`api/v1/ordenes/${id}/entregar-perfiles`);
             return response.data;
         },
-        onSuccess: () => {
+        onSuccess: (_, id) => {
             queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+            queryClient.invalidateQueries({ queryKey: ["perfilesEntregados", id] });
         },
+    });
+};
+
+/**
+ * Hook para obtener los perfiles entregados de una orden específica
+ */
+export const usePerfilesEntregados = (ordenId) => {
+    return useQuery({
+        queryKey: ["perfilesEntregados", ordenId],
+        queryFn: async () => {
+            if (!ordenId) return [];
+            const response = await Api.get(`api/v1/ordenes/${ordenId}/perfiles`);
+            return response.data;
+        },
+        enabled: !!ordenId,
     });
 };

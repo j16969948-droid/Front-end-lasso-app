@@ -1,0 +1,511 @@
+/* 
+ * Lasso App - UI System 
+ * A modern, clean, and consistent design language for the administrative interface.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Colors - Modern Professional Palette */
+  --lasso-primary: #6366f1;
+  --lasso-primary-soft: rgba(99, 102, 241, 0.1);
+  --lasso-primary-hover: #4f46e5;
+
+  --lasso-success: #10b981;
+  --lasso-success-soft: rgba(16, 185, 129, 0.1);
+
+  --lasso-danger: #ef4444;
+  --lasso-danger-soft: rgba(239, 68, 68, 0.1);
+
+  --lasso-warning: #f59e0b;
+  --lasso-warning-soft: rgba(245, 158, 11, 0.1);
+
+  --lasso-info: #0ea5e9;
+  --lasso-info-soft: rgba(14, 165, 233, 0.1);
+
+  /* Neutrals */
+  --lasso-bg: #f8fafc;
+  --lasso-card-bg: #ffffff;
+  --lasso-border: rgba(0, 0, 0, 0.05);
+  --lasso-text-main: #1e293b;
+  --lasso-text-muted: #64748b;
+
+  /* Effects */
+  --lasso-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --lasso-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --lasso-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+  --lasso-radius: 16px;
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-blur: blur(12px);
+
+  /* Animation */
+  --lasso-transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-coreui-theme="dark"] {
+  --lasso-bg: #0f172a;
+  --lasso-card-bg: #1e293b;
+  --lasso-border: rgba(255, 255, 255, 0.08);
+  --lasso-text-main: #f1f5f9;
+  --lasso-text-muted: #94a3b8;
+  --glass-bg: rgba(30, 41, 59, 0.7);
+}
+
+/* Base Styles */
+body {
+  font-family: 'Outfit', sans-serif !important;
+  background-color: var(--lasso-bg) !important;
+  color: var(--lasso-text-main);
+  overflow-x: hidden;
+}
+
+/* Glassmorphism Components */
+.premium-card {
+  background: var(--lasso-card-bg);
+  border: 1px solid var(--lasso-border) !important;
+  border-radius: var(--lasso-radius) !important;
+  box-shadow: var(--lasso-shadow-lg) !important;
+  backdrop-filter: var(--glass-blur);
+  transition: var(--lasso-transition);
+  overflow: hidden;
+}
+
+.premium-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.08) !important;
+}
+
+.premium-card-static:hover {
+  transform: none !important;
+  box-shadow: var(--lasso-shadow-lg) !important;
+}
+
+/* Typography */
+.section-title {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--lasso-text-main);
+}
+
+.section-subtitle {
+  color: var(--lasso-text-muted);
+  font-size: 0.9rem;
+}
+
+/* Premium Buttons */
+.btn-lasso {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px !important;
+  padding: 0.6rem 1.25rem !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  transition: var(--lasso-transition) !important;
+  border: 1px solid transparent !important;
+}
+
+.btn-lasso-primary {
+  background: var(--lasso-primary) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3) !important;
+}
+
+.btn-lasso-primary:hover {
+  background: var(--lasso-primary-hover) !important;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4) !important;
+}
+
+.btn-lasso-success {
+  background: var(--lasso-success) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3) !important;
+}
+
+.btn-lasso-success:hover {
+  background: #059669 !important;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4) !important;
+}
+
+.btn-lasso-warning {
+  background: var(--lasso-warning) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3) !important;
+}
+
+.btn-lasso-warning:hover {
+  background: #d97706 !important;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4) !important;
+}
+
+.btn-lasso-soft-primary {
+  background: var(--lasso-primary-soft) !important;
+  color: var(--lasso-primary) !important;
+}
+
+.btn-lasso-soft-primary:hover {
+  background: var(--lasso-primary) !important;
+  color: white !important;
+}
+
+.btn-lasso-soft-danger {
+  background: var(--lasso-danger-soft) !important;
+  color: var(--lasso-danger) !important;
+}
+
+.btn-lasso-soft-danger:hover {
+  background: var(--lasso-danger) !important;
+  color: white !important;
+}
+
+.btn-lasso-soft-info {
+  background: var(--lasso-info-soft) !important;
+  color: var(--lasso-info) !important;
+}
+
+.btn-lasso-soft-info:hover {
+  background: var(--lasso-info) !important;
+  color: white !important;
+}
+
+.btn-lasso-soft-warning {
+  background: var(--lasso-warning-soft) !important;
+  color: var(--lasso-warning) !important;
+}
+
+.btn-lasso-soft-warning:hover {
+  background: var(--lasso-warning) !important;
+  color: white !important;
+}
+
+/* Badges - Unified System */
+.badge-lasso {
+  padding: 6px 14px !important;
+  border-radius: 100px !important;
+  font-weight: 600 !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
+}
+
+.badge-lasso-mini {
+  padding: 4px 10px !important;
+  border-radius: 100px !important;
+  font-weight: 600 !important;
+  font-size: 0.65rem !important;
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
+}
+
+.lasso-info-box {
+  padding: 10px 10px;
+  background: var(--lasso-bg) !important;
+  border: 1px solid var(--lasso-border) !important;
+  border-radius: 12px !important;
+  transition: var(--lasso-transition);
+}
+
+.badge-lasso-success {
+  background: var(--lasso-success-soft) !important;
+  color: var(--lasso-success) !important;
+  border-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+.badge-lasso-danger {
+  background: var(--lasso-danger-soft) !important;
+  color: var(--lasso-danger) !important;
+  border-color: rgba(239, 68, 68, 0.2) !important;
+}
+
+.badge-lasso-warning {
+  background: var(--lasso-warning-soft) !important;
+  color: var(--lasso-warning) !important;
+  border-color: rgba(245, 158, 11, 0.2) !important;
+}
+
+.badge-lasso-info {
+  background: var(--lasso-info-soft) !important;
+  color: var(--lasso-info) !important;
+  border-color: rgba(14, 165, 233, 0.2) !important;
+}
+
+.badge-lasso-purple {
+  background: rgba(168, 85, 247, 0.1) !important;
+  color: #a855f7 !important;
+  border-color: rgba(168, 85, 247, 0.2) !important;
+}
+
+.badge-lasso-secondary {
+  background: rgba(100, 116, 139, 0.1) !important;
+  color: var(--lasso-text-muted) !important;
+  border-color: rgba(100, 116, 139, 0.2) !important;
+}
+
+/* Extra Soft Buttons */
+.btn-lasso-soft-success {
+  background: var(--lasso-success-soft) !important;
+  color: var(--lasso-success) !important;
+}
+
+.btn-lasso-soft-success:hover {
+  background: var(--lasso-success) !important;
+  color: white !important;
+}
+
+/* Table Premium overhaul */
+.table-lasso-container {
+  border-radius: var(--lasso-radius);
+  border: 1px solid var(--lasso-border);
+  overflow: hidden;
+  background: var(--lasso-card-bg);
+}
+
+.table-lasso thead th {
+  background: var(--lasso-bg) !important;
+  color: var(--lasso-text-muted) !important;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 1.25rem 1rem !important;
+  border-bottom: 1px solid var(--lasso-border) !important;
+}
+
+.table-lasso tbody td {
+  padding: 1.25rem 1rem !important;
+  border-bottom: 1px solid var(--lasso-border) !important;
+  vertical-align: middle !important;
+  font-size: 0.9rem;
+  transition: var(--lasso-transition);
+}
+
+.table-lasso tbody tr:hover td {
+  background-color: var(--lasso-primary-soft) !important;
+}
+
+/* Form Controls */
+.lasso-input {
+  border-radius: 12px !important;
+  padding: 0.75rem 1rem !important;
+  border: 1.5px solid var(--lasso-border) !important;
+  background-color: var(--lasso-bg) !important;
+  transition: var(--lasso-transition) !important;
+  font-size: 0.95rem !important;
+}
+
+.lasso-input:focus {
+  background-color: var(--lasso-card-bg) !important;
+  border-color: var(--lasso-primary) !important;
+  box-shadow: 0 0 0 4px var(--lasso-primary-soft) !important;
+  outline: none;
+}
+
+/* Modals */
+.lasso-modal .modal-content {
+  border: none !important;
+  border-radius: 24px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  backdrop-filter: blur(20px);
+}
+
+.lasso-modal .modal-header {
+  border-bottom: 1px solid var(--lasso-border) !important;
+  padding: 1.5rem 2rem !important;
+}
+
+.lasso-modal .modal-body {
+  padding: 2rem !important;
+}
+
+.lasso-modal .modal-footer {
+  border-top: 1px solid var(--lasso-border) !important;
+  padding: 1.5rem 2rem !important;
+}
+
+/* Quick Animations */
+.fade-up {
+  animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- Premium Sidebar --- */
+.sidebar {
+  background: #0f172a !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.sidebar-nav .nav-link {
+  border-radius: 12px !important;
+  margin: 4px 12px !important;
+  padding: 10px 16px !important;
+  font-weight: 500 !important;
+  color: #94a3b8 !important;
+  transition: var(--lasso-transition) !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.sidebar-nav .nav-link:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: white !important;
+}
+
+.sidebar-nav .nav-link.active {
+  background: var(--lasso-primary) !important;
+  color: white !important;
+  box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4) !important;
+}
+
+/* Ensures icon is close to text ('inside the text flow') */
+.sidebar-nav .nav-link {
+  display: flex !important;
+  align-items: center !important;
+  padding: 10px 16px !important;
+  gap: 10px !important;
+  /* Force tight grouping */
+}
+
+.lasso-sidebar-icon {
+  width: 1.1rem !important;
+  height: 1.1rem !important;
+  color: inherit !important;
+  flex: 0 0 1.1rem !important;
+  transition: var(--lasso-transition);
+  margin: 0 !important;
+  position: static !important;
+}
+
+.sidebar-nav .nav-link:hover .lasso-sidebar-icon {
+  transform: scale(1.1);
+}
+
+
+/* Legacy Overrides to prevent breakage - using duplications instead of @extend for standard CSS */
+.premium-input {
+  border-radius: 12px !important;
+  padding: 0.75rem 1rem !important;
+  border: 1.5px solid var(--lasso-border) !important;
+  background-color: var(--lasso-bg) !important;
+  transition: var(--lasso-transition) !important;
+  font-size: 0.95rem !important;
+}
+
+.btn-premium {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px !important;
+  padding: 0.6rem 1.25rem !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  transition: var(--lasso-transition) !important;
+  border: 1px solid transparent !important;
+}
+
+.btn-premium-primary {
+  background: var(--lasso-primary) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px !important;
+  padding: 0.6rem 1.25rem !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  transition: var(--lasso-transition) !important;
+  border: 1px solid transparent !important;
+}
+
+.btn-premium-danger {
+  background: var(--lasso-danger-soft) !important;
+  color: var(--lasso-danger) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px !important;
+  padding: 0.6rem 1.25rem !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  transition: var(--lasso-transition) !important;
+  border: 1px solid transparent !important;
+}
+
+.btn-premium-warning {
+  background: var(--lasso-warning-soft) !important;
+  color: var(--lasso-warning) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px !important;
+  padding: 0.6rem 1.25rem !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  transition: var(--lasso-transition) !important;
+  border: 1px solid transparent !important;
+}
+
+.btn-premium-secondary {
+  background: var(--lasso-bg) !important;
+  color: var(--lasso-text-muted) !important;
+  border: 1px solid var(--lasso-border) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px !important;
+  padding: 0.6rem 1.25rem !important;
+  font-weight: 600 !important;
+  font-size: 0.875rem !important;
+  transition: var(--lasso-transition) !important;
+}
+
+/* --- Filter Grid Layout --- */
+.lasso-filter-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important;
+  gap: 12px !important;
+  width: 100% !important;
+  margin-top: 1rem;
+}
+
+.lasso-filter-grid .btn-lasso {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0.6rem 1rem !important;
+  min-height: 46px !important;
+  border: 1px solid var(--lasso-border) !important;
+}
+
+.lasso-filter-grid .btn-lasso span {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.lasso-filter-grid .btn-lasso .badge {
+  flex-shrink: 0 !important;
+  font-size: 0.75rem !important;
+  margin-left: 8px !important;
+}

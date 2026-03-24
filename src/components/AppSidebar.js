@@ -33,13 +33,9 @@ import {
 import CIcon from '@coreui/icons-react'
 
 import { AppSidebarNav } from './AppSidebarNav'
-
-import { logo } from 'src/assets/brand/logo'
-import { sygnet } from 'src/assets/brand/sygnet'
-
-// sidebar nav config
-import navigation from '../_nav'
 import { useMenusUser } from '../core/hooks/useMenus'
+
+import { getUserRole } from '../core/hooks/useRole'
 
 /**
  * AppSidebar functional component
@@ -58,10 +54,12 @@ const AppSidebar = () => {
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
   const sidebarShow = useSelector((state) => state.sidebarShow)
   const { menus } = useMenusUser()
+  const role = getUserRole()
+
   return (
     <Suspense fallback={<div>Cargando menú...</div>}>
       <CSidebar
-        className="border-end"
+        className="border-end premium-sidebar"
         colorScheme="dark"
         position="fixed"
         unfoldable={unfoldable}
@@ -70,13 +68,27 @@ const AppSidebar = () => {
           dispatch({ type: 'set', sidebarShow: visible })
         }}
       >
-        <CSidebarHeader className="border-bottom">
-          <CSidebarBrand to="/">
-            <CIcon customClassName="sidebar-brand-full" icon={logo} height={32} />
-            <CIcon customClassName="sidebar-brand-narrow" icon={sygnet} height={32} />
+        <CSidebarHeader className="border-bottom flex-column align-items-center py-4">
+          <CSidebarBrand to="/" className="text-decoration-none mb-2">
+            <div className="d-flex align-items-center gap-2">
+              <div className="bg-primary rounded-pill p-1 d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }}>
+                <span className="fw-bold text-white" style={{ fontSize: '1.2rem' }}>L</span>
+              </div>
+              {!unfoldable && (
+                <span className="fw-bold fs-4 tracking-tight" style={{ letterSpacing: '-0.5px' }}>LassoApp</span>
+              )}
+            </div>
           </CSidebarBrand>
+
+          {!unfoldable && role && (
+            <div className="px-2 py-1 rounded-pill bg-body-tertiary border border-light border-opacity-10 d-flex align-items-center gap-2" style={{ fontSize: '0.7rem' }}>
+              <div className="rounded-circle bg-success" style={{ width: '6px', height: '6px' }}></div>
+              <span className="text-secondary fw-bold text-uppercase opacity-75">Panel {role}</span>
+            </div>
+          )}
+
           <CCloseButton
-            className="d-lg-none"
+            className="d-lg-none position-absolute top-0 end-0 m-2"
             dark
             onClick={() => dispatch({ type: 'set', sidebarShow: false })}
           />

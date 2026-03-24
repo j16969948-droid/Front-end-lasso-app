@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux'
 import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
 import './scss/examples.scss'
+import './styles/premium-ui.css'
 import ProtectedRoute from './components/ProtectedRoute'
 
 // Pages
@@ -20,6 +21,12 @@ const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
 const InventarioGeneral = React.lazy(() => import('./views/inventario/inventarioGeneral'))
 const ServiciosEnVenta = React.lazy(() => import('./views/serviciosVenta/ServiciosEnVenta'))
 const Validar = React.lazy(() => import('./views/validar/Validar'))
+const Informe = React.lazy(() => import('./views/ventas/Informe'))
+const Codigos = React.lazy(() => import('./views/codigos/codigos'))
+const Ordenes = React.lazy(() => import('./views/inventario/ordenes'))
+const Usuarios = React.lazy(() => import('./views/usuarios/Usuarios'))
+const CheckOut = React.lazy(() => import('./views/catalogo/CheckOut'))
+const CuentasVendidas = React.lazy(() => import('./views/inventario/CuentasVendidas'))
 
 // Layout
 const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
@@ -51,6 +58,7 @@ const App = () => {
           <Route path="/" element={<CatalogoStreaming />} />
           <Route path="/catalogo" element={<CatalogoStreaming />} />
           <Route path="/cart" element={<CartScreen />} />
+          <Route path="/checkout" element={<CheckOut />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/404" element={<Page404 />} />
@@ -62,9 +70,14 @@ const App = () => {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/pagosEntrantes" element={<PagosEntrantes />} />
               <Route path="/pagosTotales" element={<PagosTotales />} />
+              <Route path="/cuentasVendidas" element={<CuentasVendidas />} />
               <Route path="/inventarioGeneral" element={<InventarioGeneral />} />
               <Route path="/serviciosEnVenta" element={<ServiciosEnVenta />} />
               <Route path="/validar" element={<Validar />} />
+              <Route path="/informe" element={<Informe />} />
+              <Route path="/codigos" element={<Codigos />} />
+              <Route path="/ordenes" element={<Ordenes />} />
+              <Route path="/usuarios" element={<Usuarios />} />
             </Route>
           </Route>
         </Routes>

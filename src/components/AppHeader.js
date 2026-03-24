@@ -48,6 +48,8 @@ import {
 
 import { AppBreadcrumb } from './index'
 import { AppHeaderDropdown } from './header/index'
+import DataService from '../core/services/DataService'
+import { hasRole } from '../utils/auth'
 
 /**
  * AppHeader functional component
@@ -63,6 +65,8 @@ import { AppHeaderDropdown } from './header/index'
 const AppHeader = ({ cartCount = 0 }) => {
   const headerRef = useRef()
   const { colorMode, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
+  const hasRoleAdmin = hasRole('admin')
+
 
   const dispatch = useDispatch()
   const sidebarShow = useSelector((state) => state.sidebarShow)
@@ -78,7 +82,7 @@ const AppHeader = ({ cartCount = 0 }) => {
   }, [])
 
   return (
-    <CHeader position="sticky" className="mb-4 p-0" ref={headerRef}>
+    <CHeader position="sticky" className="p-0" ref={headerRef}>
       <CContainer className="border-bottom px-4" fluid>
         {/* <CHeaderToggler
           onClick={() => dispatch({ type: 'set', sidebarShow: !sidebarShow })}
@@ -100,48 +104,40 @@ const AppHeader = ({ cartCount = 0 }) => {
           </CNavItem> */}
         </CHeaderNav>
         <CHeaderNav className="ms-auto">
-          {/* <CNavItem>
-            <CNavLink href="#">
-              <CIcon icon={cilBell} size="lg" />
-            </CNavLink>
-          </CNavItem> */}
-          <CNavItem>
-            <CNavLink
-              to="/cart"
-              className="position-relative d-flex align-items-center justify-content-center"
-              as={NavLink}
-            >
-              <CIcon icon={cilCart} size="lg" />
+          {!hasRoleAdmin && (
+            <CNavItem>
+              <CNavLink
+                to="/cart"
+                className="position-relative d-flex align-items-center justify-content-center"
+                as={NavLink}
+              >
+                <CIcon icon={cilCart} size="lg" />
 
-              {cartCount > 0 && (
-                <span
-                  className="position-absolute d-flex align-items-center justify-content-center"
-                  style={{
-                    top: "-6px",
-                    right: "-8px",
-                    minWidth: "18px",
-                    height: "18px",
-                    padding: "0 5px",
-                    borderRadius: "999px",
-                    background: "#4f46e5",
-                    color: "#fff",
-                    fontSize: "11px",
-                    fontWeight: 700,
-                    lineHeight: 1,
-                    boxShadow: "0 4px 10px rgba(79,70,229,0.25)",
-                    border: "2px solid var(--cui-body-bg)",
-                  }}
-                >
-                  {cartCount > 99 ? "99+" : cartCount}
-                </span>
-              )}
-            </CNavLink>
-          </CNavItem>
-          {/* <CNavItem>
-            <CNavLink href="#">
-              <CIcon icon={cilEnvelopeOpen} size="lg" />
-            </CNavLink>
-          </CNavItem> */}
+                {cartCount > 0 && (
+                  <span
+                    className="position-absolute d-flex align-items-center justify-content-center"
+                    style={{
+                      top: "-6px",
+                      right: "-8px",
+                      minWidth: "18px",
+                      height: "18px",
+                      padding: "0 5px",
+                      borderRadius: "999px",
+                      background: "#4f46e5",
+                      color: "#fff",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      lineHeight: 1,
+                      boxShadow: "0 4px 10px rgba(79,70,229,0.25)",
+                      border: "2px solid var(--cui-body-bg)",
+                    }}
+                  >
+                    {cartCount > 99 ? "99+" : cartCount}
+                  </span>
+                )}
+              </CNavLink>
+            </CNavItem>
+          )}
         </CHeaderNav>
         <CHeaderNav>
           <li className="nav-item py-1">

@@ -10,21 +10,16 @@ import { CBadge, CNavLink, CSidebarNav } from '@coreui/react'
 export const AppSidebarNav = ({ items }) => {
   const navLink = (name, icon, badge, indent = false) => {
     return (
-      <>
-        {icon
-          ? icon
-          : indent && (
-              <span className="nav-icon">
-                <span className="nav-icon-bullet"></span>
-              </span>
-            )}
-        {name && name}
+      <div className={`d-flex align-items-center gap-2 ${indent ? 'ps-4 ms-2 border-start border-white border-opacity-10' : ''}`}>
+        {icon && icon}
+        {indent && !icon && <span className="lasso-sidebar-icon"></span>}
+        <span className="text-truncate">{name && name}</span>
         {badge && (
           <CBadge color={badge.color} className="ms-auto" size="sm">
             {badge.text}
           </CBadge>
         )}
-      </>
+      </div>
     )
   }
 

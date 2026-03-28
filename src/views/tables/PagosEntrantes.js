@@ -170,19 +170,19 @@ const PagosEntrantes = () => {
         <CRow className="g-3">
             <CCol md={4}>
                 <CFormLabel className="lasso-label">Filtrar por Fecha</CFormLabel>
-                <div className="d-flex align-items-center gap-2 bg-white p-2 rounded-3 border shadow-sm" style={{ minHeight: '45px' }}>
+                <div className="lasso-input-group shadow-sm">
                     <CIcon icon={cilCalendar} className="text-muted ms-1" />
                     <CFormInput
                         type="date"
                         value={filtroFecha}
                         onChange={(e) => setFiltroFecha(e.target.value)}
-                        className="border-0 p-0 shadow-none bg-transparent text-muted flex-grow-1"
+                        className="border-0 p-0 shadow-none bg-transparent text-muted flex-grow-1 w-100"
                     />
                     {filtroFecha && (
                         <CButton
                             size="sm"
                             color="light"
-                            className="rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm"
+                            className="rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm flex-shrink-0"
                             style={{ width: '22px', height: '22px' }}
                             onClick={() => setFiltroFecha('')}
                             title="Ver todas las fechas"

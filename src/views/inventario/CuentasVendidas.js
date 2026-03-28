@@ -141,6 +141,72 @@ const CuentasVendidas = () => {
         })
     }, [clienteSeleccionado, pagosEntrantes])
 
+    // Orden asociada al cliente seleccionado
+    const ordenAsociada = useMemo(() => {
+        if (!clienteSeleccionado || !listaOrdenes.length) return null
+
+        let ordenId = clienteSeleccionado.orden_id || 
+                      clienteSeleccionado.pivot?.orden_id || 
+                      clienteSeleccionado.orden_inventario?.orden_id;
+        
+        if (!ordenId && clienteSeleccionado.estado && !isNaN(Number(clienteSeleccionado.estado))) {
+            ordenId = Number(clienteSeleccionado.estado);
+        }
+
+        let orden = ordenId ? listaOrdenes.find(o => String(o.id) === String(ordenId)) : null;
+
+        if (!orden) {
+            const selFecha = normalizarFecha(clienteSeleccionado.fecha_compra);
+            const selClienteId = String(clienteSeleccionado.cliente_id_asignado || '').toLowerCase();
+            const selTelefono = String(clienteSeleccionado.telefono_asignado || '').toLowerCase();
+
+            orden = listaOrdenes.find(o => {
+                const ordenUserId = String(o.usuario?.id || o.user_id || o.cliente_id || '').toLowerCase();
+                const ordenTelefono = String(o.usuario?.telefono || o.telefono || '').toLowerCase();
+                
+                const matchesCliente = (selClienteId && ordenUserId && ordenUserId.includes(selClienteId)) || 
+                                       (selTelefono && ordenTelefono && ordenTelefono.includes(selTelefono));
+                
+                const ordenFecha = normalizarFecha(o.created_at || o.fecha);
+                const matchesFecha = !selFecha || !ordenFecha || selFecha === ordenFecha;
+                
+                return matchesCliente && matchesFecha;
+            });
+        }
+        return orden;
+    }, [clienteSeleccionado, listaOrdenes])
+
+    // Calcular servicios pendientes de entregar
+    const serviciosPendientes = useMemo(() => {
+        if (!ordenAsociada || !ordenAsociada.servicios) return []
+        
+        // Contamos cuántas cuentas se han entregado por servicio en esta compra
+        const entregadasPorServicio = {}
+        cuentasPorCliente.forEach(c => {
+            if (c.servicio_id) {
+                entregadasPorServicio[c.servicio_id] = (entregadasPorServicio[c.servicio_id] || 0) + 1
+            }
+        })
+
+        const pendientes = []
+        ordenAsociada.servicios.forEach(s => {
+            const pedido = s.cantidad || 0
+            const entregado = entregadasPorServicio[s.id] || 0
+            const falta = pedido - entregado
+            if (falta > 0) {
+                pendientes.push({
+                    id: s.id,
+                    nombre: s.nombre,
+                    pedido: pedido,
+                    entregado: entregado,
+                    falta: falta
+                })
+            }
+        })
+
+        return pendientes
+    }, [ordenAsociada, cuentasPorCliente])
+
     const filterFunction = (item) => {
         if (!filtroServicio) return true;
         return item.cuentas_asociadas.some(c => String(c.servicio_id) === String(filtroServicio));
@@ -315,19 +381,19 @@ const CuentasVendidas = () => {
                     <h6 className="fw-bold small text-uppercase text-muted mb-3" style={{ letterSpacing: '0.1em' }}>
                         Seleccionar Fecha
                     </h6>
-                    <div className="d-flex align-items-center gap-2 bg-white p-2 rounded-3 border shadow-sm">
+                    <div className="lasso-input-group shadow-sm">
                         <CIcon icon={cilCalendar} className="text-muted ms-1" />
                         <CFormInput
                             type="date"
                             value={filtroFecha}
                             onChange={(e) => setFiltroFecha(e.target.value)}
-                            className="border-0 p-0 shadow-none bg-transparent text-muted"
+                            className="border-0 p-0 shadow-none bg-transparent text-muted flex-grow-1 w-100"
                         />
                         {filtroFecha && (
                             <CButton
                                 size="sm"
                                 color="light"
-                                className="rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm"
+                                className="rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm flex-shrink-0"
                                 style={{ width: '22px', height: '22px' }}
                                 onClick={() => setFiltroFecha('')}
                                 title="Ver todas las fechas"
@@ -454,6 +520,30 @@ const CuentasVendidas = () => {
                                         </CCol>
                                     </CRow>
                                 </CCol>
+                            </CRow>
+                        </div>
+                    )}
+
+                    {serviciosPendientes.length > 0 && (
+                        <div className="mb-4 premium-card p-3 rounded-4 border-1 border-warning shadow-sm bg-warning bg-opacity-10">
+                            <h6 className="fw-bold mb-3 text-warning d-flex align-items-center gap-2">
+                                <CIcon icon={cilChartPie} size="sm" /> Servicios Pendientes por Entregar
+                            </h6>
+                            <CRow className="g-3">
+                                {serviciosPendientes.map(sp => (
+                                    <CCol xs={12} sm={6} md={4} key={sp.id}>
+                                        <div className="bg-white p-3 rounded-3 border border-warning border-opacity-50 h-100 d-flex flex-column justify-content-center">
+                                            <div className="fw-bold text-dark mb-1">{sp.nombre}</div>
+                                            <div className="d-flex justify-content-between x-small text-muted mb-2">
+                                                <span>Comprados: {sp.pedido}</span>
+                                                <span>Entregados: {sp.entregado}</span>
+                                            </div>
+                                            <div className="fw-bold text-danger small bg-danger bg-opacity-10 py-1 px-2 rounded-2 text-center mt-auto">
+                                                Falta entregar: {sp.falta}
+                                            </div>
+                                        </div>
+                                    </CCol>
+                                ))}
                             </CRow>
                         </div>
                     )}

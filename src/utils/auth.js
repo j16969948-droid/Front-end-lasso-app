@@ -19,5 +19,11 @@ export const hasRole = (roleName) => {
 
   if (user.rol === roleName) return true
 
-  return user.roles?.some((role) => role.nombre === roleName)
+  if (Array.isArray(user.roles)) {
+    return user.roles.some((r) =>
+      typeof r === 'string' ? r === roleName : r?.nombre === roleName
+    )
+  }
+
+  return false
 }

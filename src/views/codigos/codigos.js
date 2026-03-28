@@ -12,7 +12,7 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilClipboard, cilCheckCircle, cilWarning, cilSync, cilSearch } from '@coreui/icons'
-import { useCodigosQuery, useActualizarPlataforma } from '../../core/hooks/useCodigos'
+import { useCodigosQuery } from '../../core/hooks/useCodigos'
 import DataTable from '../../components/DataTable'
 
 const Codigos = () => {
@@ -22,28 +22,6 @@ const Codigos = () => {
     const { data: codigos = [], isLoading, isError, refetch } = useCodigosQuery({
         correo: busqueda || undefined
     })
-
-    const { mutate: actualizarPlataforma, isPending: isUpdating } = useActualizarPlataforma()
-
-    const handleActualizarPlataforma = (plataforma) => {
-        actualizarPlataforma(plataforma, {
-            onSuccess: (data) => {
-                setToast({
-                    type: 'success',
-                    title: 'Sincronización Exitosa',
-                    body: data.message || `La plataforma ${plataforma} se está actualizando.`
-                })
-                refetch()
-            },
-            onError: (err) => {
-                setToast({
-                    type: 'danger',
-                    title: 'Error de Sincronización',
-                    body: err.response?.data?.message || `No se pudo conectar con ${plataforma}.`
-                })
-            }
-        })
-    }
 
     const handleCopiar = (texto) => {
         navigator.clipboard.writeText(texto)

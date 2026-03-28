@@ -231,19 +231,19 @@ const PagosEmail = () => {
         <CRow className="g-3 align-items-end">
             <CCol md={6}>
                 <CFormLabel className="lasso-label">Fecha de Notificación</CFormLabel>
-                <div className="d-flex align-items-center gap-2 bg-white p-2 rounded-3 border shadow-sm" style={{ minHeight: '45px' }}>
+                <div className="lasso-input-group shadow-sm">
                     <CIcon icon={cilCalendar} className="text-muted ms-1" />
                     <CFormInput
                         type="date"
                         value={fechaFiltro}
                         onChange={(e) => setFechaFiltro(e.target.value)}
-                        className="border-0 p-0 shadow-none bg-transparent text-muted flex-grow-1"
+                        className="border-0 p-0 shadow-none bg-transparent text-muted flex-grow-1 w-100"
                     />
                     {fechaFiltro && (
                         <CButton
                             size="sm"
                             color="light"
-                            className="rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm"
+                            className="rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm flex-shrink-0"
                             style={{ width: '22px', height: '22px' }}
                             onClick={() => setFechaFiltro('')}
                             title="Ver todas las fechas"
